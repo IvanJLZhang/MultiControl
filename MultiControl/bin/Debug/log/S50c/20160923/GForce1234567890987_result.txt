@@ -1,4 +1,0 @@
-Camera=1=5.91
-ConfigChk=2=2.356
-MultiTest:GPS:WF:=2=50.673
-QuickCharge=2=11.315

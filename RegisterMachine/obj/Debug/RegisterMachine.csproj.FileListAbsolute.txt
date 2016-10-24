@@ -1,7 +1,0 @@
-I:\Wistron\MultiControl\RegisterMachine\bin\Debug\RegisterMachine.exe
-I:\Wistron\MultiControl\RegisterMachine\bin\Debug\RegisterMachine.pdb
-I:\Wistron\MultiControl\RegisterMachine\obj\Debug\RegisterMachine.Form1.resources
-I:\Wistron\MultiControl\RegisterMachine\obj\Debug\RegisterMachine.Properties.Resources.resources
-I:\Wistron\MultiControl\RegisterMachine\obj\Debug\RegisterMachine.csproj.GenerateResource.Cache
-I:\Wistron\MultiControl\RegisterMachine\obj\Debug\RegisterMachine.exe
-I:\Wistron\MultiControl\RegisterMachine\obj\Debug\RegisterMachine.pdb
