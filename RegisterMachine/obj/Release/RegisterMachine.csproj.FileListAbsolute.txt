@@ -1,0 +1,7 @@
+I:\Wistron\MultiControl\RegisterMachine\bin\Release\RegisterMachine.exe
+I:\Wistron\MultiControl\RegisterMachine\bin\Release\RegisterMachine.pdb
+I:\Wistron\MultiControl\RegisterMachine\obj\Release\RegisterMachine.Form1.resources
+I:\Wistron\MultiControl\RegisterMachine\obj\Release\RegisterMachine.Properties.Resources.resources
+I:\Wistron\MultiControl\RegisterMachine\obj\Release\RegisterMachine.csproj.GenerateResource.Cache
+I:\Wistron\MultiControl\RegisterMachine\obj\Release\RegisterMachine.exe
+I:\Wistron\MultiControl\RegisterMachine\obj\Release\RegisterMachine.pdb

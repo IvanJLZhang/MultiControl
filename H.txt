@@ -1,0 +1,11 @@
+2016/9/2
+delete log.txt 
+2016/9/1
+ add sysinfo cfg form
+ 2016/8/11
+ ??:adb install configchk.apk
+??:adb shell am start -n com.wistron.get.config.information/.MainActivity
+2016/8/5
+在二维码中添加BuildNumber项；
+2016/7/29
+添加adb kill sever 

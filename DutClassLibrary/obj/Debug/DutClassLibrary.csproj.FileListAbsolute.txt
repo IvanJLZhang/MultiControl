@@ -1,0 +1,7 @@
+I:\Wistron\MultiControl\DutClassLibrary\bin\Debug\DutClassLibrary.dll
+I:\Wistron\MultiControl\DutClassLibrary\bin\Debug\DutClassLibrary.pdb
+I:\Wistron\MultiControl\DutClassLibrary\obj\Debug\DutClassLibrary.csproj.GenerateResource.Cache
+I:\Wistron\MultiControl\DutClassLibrary\obj\Debug\DutClassLibrary.dll
+I:\Wistron\MultiControl\DutClassLibrary\obj\Debug\DutClassLibrary.pdb
+I:\Wistron\MultiControl\DutClassLibrary\obj\Debug\DutClassLibrary.DutControl.resources
+I:\Wistron\MultiControl\DutClassLibrary\obj\Debug\DutClassLibrary.csprojResolveAssemblyReference.cache
