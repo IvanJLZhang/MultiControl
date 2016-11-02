@@ -56,7 +56,7 @@ namespace MultiControl
         {
             return Execute(dosCommand, 0);
         }
-        public static string Execute(string command, int seconds)
+        public string Execute(string command, int seconds)
         {
             string output = string.Empty; //输出字符串  
             if (command != null && !command.Equals(""))

@@ -5,12 +5,12 @@ using System.Text;
 
 namespace MultiControl
 {
-   
-    class DutDevice
+
+    class DutDevice : IEqualityComparer<DutDevice>
     {
         public DutDevice()
         {
-            
+
         }
 
         private string mmSDCard;//bonnie20160825
@@ -28,7 +28,7 @@ namespace MultiControl
         private float mInstallTime;
         private float mEstimate;
         private DateTime mBegin;
-        
+
         public string MSDCard
         {
             get { return mmSDCard; }
@@ -107,7 +107,7 @@ namespace MultiControl
         public string BuildNumber//bonnie20160805
         {
             get { return mBuildNumber; }
-            set {mBuildNumber =value;}
+            set { mBuildNumber = value; }
         }
 
         public string RAM
@@ -172,5 +172,16 @@ namespace MultiControl
             InstallTime = 0.0f;
             Estimate = 0.0f;
         }
+
+        public bool Equals(DutDevice x, DutDevice y)
+        {
+            return x.SerialNumber == null || y.SerialNumber == null ? false : x.SerialNumber.Equals(y.SerialNumber);
+        }
+
+        public int GetHashCode(DutDevice obj)
+        {
+            return obj.GetHashCode();
+        }
+        public static DutDevice Default = new DutDevice();
     }
 }

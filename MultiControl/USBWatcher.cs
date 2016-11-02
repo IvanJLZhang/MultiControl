@@ -32,6 +32,11 @@ namespace MultiControl
             Remove = 0,
             Insert = 1
         }
+        public const int WM_DEVICECHANGE = 0x219;// 设备插拔事件
+        public const int DBT_DEVICEARRIVAL = 0x8000;// 设备插入事件
+        public const int DBT_DEVICEREMOVECOMPLETE = 0x8004;// 设备拔出事件
+
+
         /// <summary>  
         /// USB插入事件监视  
         /// </summary>  
@@ -54,19 +59,16 @@ namespace MultiControl
             {
                 ManagementScope Scope = new ManagementScope("root\\CIMV2");
                 Scope.Options.EnablePrivileges = true;
-
                 // USB插入监视  
                 if (usbInsertHandler != null)
                 {
                     WqlEventQuery InsertQuery = new WqlEventQuery("__InstanceCreationEvent",
                         withinInterval,
                         "TargetInstance isa 'Win32_USBControllerDevice'");
-
                     insertWatcher = new ManagementEventWatcher(Scope, InsertQuery);
                     insertWatcher.EventArrived += usbInsertHandler;
                     insertWatcher.Start();
                 }
-
                 // USB拔出监视  
                 if (usbRemoveHandler != null)
                 {
@@ -78,10 +80,8 @@ namespace MultiControl
                     removeWatcher.EventArrived += usbRemoveHandler;
                     removeWatcher.Start();
                 }
-
                 return true;
             }
-
             catch (Exception)
             {
                 RemoveUSBEventWatcher();

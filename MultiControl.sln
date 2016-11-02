@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiControl", "MultiControl\MultiControl.csproj", "{B2B9696E-1D59-4EBB-B532-35A9F3308F3B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DutClassLibrary", "DutClassLibrary\DutClassLibrary.csproj", "{AB56EB79-682E-4C62-B258-B4158F0B9F52}"
@@ -10,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomListViewEx", "CustomListViewEx\CustomListViewEx.csproj", "{4B902DF5-6929-4192-A47E-856838055C16}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegisterMachine", "RegisterMachine\RegisterMachine.csproj", "{A270D6DF-ECBD-4471-BE1A-0ADAF4EA93D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsbTest", "UsbTest\UsbTest.csproj", "{9779F3AE-09E1-44D8-8688-C8BEC1027844}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,11 +55,16 @@ Global
 		{A270D6DF-ECBD-4471-BE1A-0ADAF4EA93D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A270D6DF-ECBD-4471-BE1A-0ADAF4EA93D5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A270D6DF-ECBD-4471-BE1A-0ADAF4EA93D5}.Release|x86.ActiveCfg = Release|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Debug|x86.Build.0 = Debug|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Release|x86.ActiveCfg = Release|Any CPU
+		{9779F3AE-09E1-44D8-8688-C8BEC1027844}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

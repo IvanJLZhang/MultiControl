@@ -14,22 +14,24 @@ using System.Threading;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using System.Collections;
+using System.Threading.Tasks;
 
 using ThoughtWorks.QRCode.Codec;
 using ThoughtWorks.QRCode.Codec.Data;
 using ThoughtWorks.QRCode.Codec.Util;
 
 using System.Management;
+using MultiControl.Common;
+using MultiControl.Lib;
 
 namespace MultiControl
 {
-    public partial class Form1 : Form
+    public partial class Form1 : Form, INotifyPropertyChanged
     {
+        #region 全局变量
         StringBuilder TestLog = new StringBuilder();
-        
+
         private int mCount = 0;
-        //private string[] mDevice;// = new string[9];
-        //private DutClassLibrary.DutControl[] mDuts;// = new DutClassLibrary.DutControl[9];
         private DutDevice[] mConnectedDut;
         private int mRows, mCols;
 
@@ -83,124 +85,33 @@ namespace MultiControl
         private string CFG_FILE_ROOT = "/Android/data/com.wistron.generic.pqaa/files/";
         private string CFG_FILE_PQAA = "/Android/data/com.wistron.generic.pqaa/files/pqaa_config";
 
-        //EVENT
-        public class ResultEventArgs : EventArgs
-        {
-            private string _resultFile;
-            private int _resultIndex;
-            
-            private int _current;
-            private int _total;
-            private string _item;
-
-            private string _model;
-
-            private float _time;
-
-            public int Current
-            {
-                get { return _current; }
-                set { _current = value; }
-            }
-
-            public int Total
-            {
-                get { return _total; }
-                set { _total = value; }
-            }
-
-            public string Item
-            {
-                get { return _item; }
-                set { _item = value; }
-            }
-
-            public string Model
-            {
-                get { return _model; }
-                set { _model = value; }
-            }
-
-            public ResultEventArgs(int index, string file)
-            {
-                this._resultIndex = index;
-                this._resultFile = file;
-            }
-
-            public int ResultIndex
-            {
-                get { return _resultIndex; }
-                set { _resultIndex = value; }
-            }
-
-            public string ResultFile
-            {
-                get { return _resultFile; }
-                set { _resultFile = value; }
-            }
-
-            public float Time
-            {
-                get { return _time; }
-                set { _time = value; }
-            }
-        }
-
-        public class TestProgressEventArgs : EventArgs
-        {
-            private int _resultIndex;
-            private int _current;
-            private int _total;
-            private string _item;
-
-            public TestProgressEventArgs()
-            {
-
-            }
-
-            public int ResultIndex
-            {
-                get { return _resultIndex; }
-                set { _resultIndex = value; }
-            }
-
-            public int Current
-            {
-                get { return _current; }
-                set { _current = value; }
-            }
-
-            public int Total
-            {
-                get { return _total; }
-                set { _total = value; }
-            }
-
-            public string Item
-            {
-                get { return _item; }
-                set { _item = value; }
-            }
-        }
-
-        public delegate void OnStartUpdateHandle(object sender, ResultEventArgs e);
+        //Event
         public event OnStartUpdateHandle StartUpdate;
-
-        public delegate void OnResultUpdateHandle(object sender, ResultEventArgs e);
         public event OnResultUpdateHandle ResultUpdate;
-
-        public delegate void OnProgressUpdateHandle(object sender, TestProgressEventArgs e);
         public event OnProgressUpdateHandle ProgressUpdate;
-
-        public delegate void OnFinishUpdateHandle(object sender, TestProgressEventArgs e);
         public event OnFinishUpdateHandle FinishUpdate;
-
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged(object sender, string e)
+        {
+            PropertyChanged?.Invoke(sender, new PropertyChangedEventArgs(e));
+        }
         private UserGridClassLibrary.UserGrid mDuts = new UserGridClassLibrary.UserGrid();
         private Bitmap mImageBackground = null;
 
+        /// <summary>
+        /// 处理CMD命令
+        /// </summary>
+        CMDHelper cmd;
+        #endregion
+
+        #region Initilize/Navigation methods
         public Form1()
         {
             InitializeComponent();
+            // cmd操作类初始化
+            cmd = new CMDHelper();
+            //cmd.OutputDataReceived += Cmd_OutputDataReceived;
+            //cmd.Exited += Cmd_Exited;
 
             _syncContext = SynchronizationContext.Current;
 
@@ -208,6 +119,7 @@ namespace MultiControl
             this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
             this.StartPosition = FormStartPosition.CenterScreen;
 
+            // 加载cfg参数
             LoadCfg();
 
             //SaveResultToFile("I:\\Wistron\\MultiControl\\MultiControl\\bin\\Debug\\log\\Tiger\\20160427\\32dcc06f_result.txt",0);
@@ -222,13 +134,311 @@ namespace MultiControl
 
             mContext = BufferedGraphicsManager.Current;
             mContext.MaximumBuffer = new Size(Width + 1, Height + 1);
-            mFontCaption = new Font("Microsoft YaHei", 11.0f,FontStyle.Bold);
+            mFontCaption = new Font("Microsoft YaHei", 11.0f, FontStyle.Bold);
             mFontBold = new Font("Microsoft YaHei", 12.0f);
             mTitleColor = System.Drawing.Color.Gray;
             //this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 26);
             //this.StartPosition = FormStartPosition.CenterScreen;
         }
+        private void LoadCfg()
+        {
+            IniFile mIni = new IniFile(Application.StartupPath + "\\cfg.ini");
+            mCfgFolder = mIni.IniReadValue("config", "Folder");
+            this.label1.Text = "Load CFG from <" + mCfgFolder + ">";
+            mLogFolder = mIni.IniReadValue("config", "Logger");
+
+            mRows = int.Parse(mIni.IniReadValue("layout", "Row").ToString());
+            mCols = int.Parse(mIni.IniReadValue("layout", "Column").ToString());
+
+            //LOAD CFG TABLE
+            mConfigPath = new DataSet("ConfigData");
+            mConfigPath.ReadXml("ConfigData.xml");
+
+            mConfigSDCard = new DataSet("ConfigPath");
+            mConfigSDCard.ReadXml("ConfigPath.xml");
+
+            int multiSupport = int.Parse(mIni.IniReadValue("mode", "MultiSupport").ToString());
+            if (multiSupport == 1)
+            {
+                bMultiModelSupport = true;
+            }
+            else
+            {
+                bMultiModelSupport = false;
+            }
+
+            if (bMultiModelSupport)
+            {
+                //this.label1.Visible = false;
+                this.label1.Text = "Auto download CFG by DUT model";
+                this.configurationToolStripMenuItem.Enabled = false;
+                this.modelMappingConfigurationToolStripMenuItem.Enabled = true;
+                this.checkBoxModel.Checked = true;
+            }
+            else
+            {
+                //this.label1.Visible = true;
+                this.label1.Text = "Load CFG from <" + mCfgFolder + ">";
+                this.configurationToolStripMenuItem.Enabled = true;
+                this.modelMappingConfigurationToolStripMenuItem.Enabled = false;
+                this.checkBoxModel.Checked = false;
+            }
+        }
+        #region .net framework 小于4.0时使用此方法
+        private void Cmd_Exited(object sender, ProcessExitAgs e)
+        {
+            Debug.WriteLine($"{e.Command} exited");
+        }
+
+        List<string> _deviceList = new List<string>();
+        List<string> DeviceList
+        {
+            get
+            {
+                return _deviceList;
+            }
+            set
+            {
+                _deviceList = value;
+                if (_deviceList != null && _deviceList.Count > 0)
+                {
+                    OnPropertyChanged(this, nameof(DeviceList));
+                }
+            }
+        }
+        private void Cmd_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            //Debug.WriteLine(e.Data);
+            if (e.Data != null && e.Data.Contains("\tdevice"))
+            {
+                Debug.WriteLine(e.Data);
+                string device = Regex.Split(e.Data, "\t", RegexOptions.IgnoreCase)[0];
+                if (!_deviceList.Contains(device))
+                {
+                    List<string> dvicelist = new List<string>(_deviceList.ToArray());
+                    dvicelist.Add(device);
+                    DeviceList = dvicelist;
+                }
+                else
+                {
+                    OnPropertyChanged(this, nameof(DeviceList));// 属于是更新状态
+                }
+            }
+        }
+
+        /// <summary>
+        /// 检测到device列表发生了变化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnDeviceChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(DeviceList))
+            {
+                foreach (string device_sn in DeviceList)
+                {
+                    bool Found = false;
+                    foreach (DutDevice uut in mConnectedDut)
+                    {
+                        if (!string.IsNullOrEmpty(uut.SerialNumber) && uut.SerialNumber.Equals(device_sn))
+                        {
+                            uut.Connected = true;
+                            Found = true;
+                            break;
+                        }
+                    }
+                    if (!Found)
+                    {
+                        //NEW UUT WAS INSERT
+                        TestSpecifiedUUT(device_sn);
+                    }
+                }
+            }
+        }
+        #endregion
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            PropertyChanged += OnDeviceChanged;
+        }
+        /// <summary>
+        /// 监听USB插拔事件
+        /// </summary>
+        /// <param name="m"></param>
+        protected override void WndProc(ref Message m)
+        {
+            try
+            {
+                if (m.Msg == USB.WM_DEVICECHANGE)
+                {
+                    var value = m.WParam.ToInt32();
+                    switch (m.WParam.ToInt32())
+                    {
+                        // USB插上  
+                        case USB.DBT_DEVICEARRIVAL:
+                            Debug.WriteLine("Device arrival");
+                            //await Task.Delay(1000);
+                            Thread.Sleep(1000);
+                            OnHandleUUTInsertion();
+                            break;
+                        // USB移除  
+                        case USB.DBT_DEVICEREMOVECOMPLETE:
+                            Debug.WriteLine("Device removed");
+                            OnHandleUUTRemoval();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+            base.WndProc(ref m);
+        }
+        /// <summary>
+        /// 拔除设备响应
+        /// </summary>
+        private async void OnHandleUUTRemoval()
+        {
+            string result = await Execute(AdbCommand.Adb_devices);
+            var deviceList = common.GetDeviceList(result);
+            for (int index = 0; index < mConnectedDut.Length; index++)
+            {
+                var device = mConnectedDut[index];
+                if (deviceList.Contains(device.SerialNumber))
+                {
+                    device.Connected = true;
+                }
+                else
+                {
+                    switch (device.TestResult)
+                    {
+                        case DutDevice.DutResult.DR_PASS:
+                            device.Reset();
+                            mDuts[index].Reset();
+                            break;
+                        case DutDevice.DutResult.DR_FAIL:
+                            device.ExitRunningThread = true;
+                            device.Reset();
+                            mDuts[index].Reset();
+                            break;
+                        case DutDevice.DutResult.DR_NONE:
+                        case DutDevice.DutResult.DR_TESTING:
+                        default:
+                            device.Connected = false;
+                            break;
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// 插入设备时响应
+        /// </summary>
+        private async void OnHandleUUTInsertion()
+        {
+            string result = await Execute(AdbCommand.Adb_devices);
+            var deviceList = common.GetDeviceList(result);
+            int count = 0;
+            while (count <= 10)
+            {
+                result = await Execute(AdbCommand.Adb_devices);
+                var deviceList1 = common.GetDeviceList(result);
+                if (deviceList1.Count > deviceList.Count)
+                {
+                    deviceList = deviceList1;
+                    break;
+                }
+                await Task.Delay(500);
+                count++;
+            }
+            for (int index = 0; index < deviceList.Count; index++)
+            {
+                var device = deviceList[index];
+                if (mConnectedDut.Contains(new DutDevice() { SerialNumber = device.ToString() }, DutDevice.Default))
+                {
+                    int indey = common.IndexDevice(mConnectedDut, device.ToString());
+                    mConnectedDut[indey].Connected = true;
+                }
+                else
+                {
+                    TestSpecifiedUUT(device.ToString());
+                }
+            }
+        }
+        /// <summary>
+        /// 重新开始测试
+        /// </summary>
+        private async void DoControlTest()
+        {
+            //RESET TIME
+            foreach (DutDevice terminal in mConnectedDut)
+            {
+                terminal.BenginTime = DateTime.Now;
+            }
+            //CHECK DEVICES 
+            foreach (UserGridClassLibrary.GridItem dut in mDuts)
+            {
+                if (!string.IsNullOrEmpty(dut.GetDutSN()))
+                {
+                    int id = dut.GetDutGridID();
+                    mConnectedDut[id].ExitRunningThread = true;
+                    dut.Reset();
+                }
+            }
+            //END
+            string computer = common.GetComputerName();
+            string md5Code = string.Empty;
+            //md5Code = common.GetMD5Code("wortsin");
+            //MessageBox.Show(computer);
+            if (mLicensed)
+            {
+                md5Code = common.GetMD5Code("wortsin");
+            }
+            else
+            {
+                md5Code = common.GetMD5Code(computer);
+            }
+            mGlobalmd5Code = md5Code;
+            //MD5.txt
+            common.CreateFile("md5.txt", md5Code);
+            //Computer.txt
+            common.CreateFile("computer.txt", computer);
+
+            string result = await Execute(AdbCommand.Adb_devices);
+            var deviceList = common.GetDeviceList(result);
+            //int count = 0;
+            //while (count <= 10)
+            //{
+            //    result = await Execute(AdbCommand.Adb_devices);
+            //    var deviceList1 = common.GetDeviceList(result);
+            //    if (deviceList1.Count > deviceList.Count)
+            //    {
+            //        deviceList = deviceList1;
+            //        break;
+            //    }
+            //    await Task.Delay(500);
+            //    count++;
+            //}
+            for (int index = 0; index < deviceList.Count; index++)
+            {
+                var device = deviceList[index];
+                if (mConnectedDut.Contains(new DutDevice() { SerialNumber = device.ToString() }, DutDevice.Default))
+                {
+                    int indey = common.IndexDevice(mConnectedDut, device.ToString());
+                    mConnectedDut[indey].Connected = true;
+                }
+                else
+                {
+                    TestSpecifiedUUT(device.ToString());
+                }
+            }
+
+        }
+
+
+        #endregion
 
         public void UpdateLicenseInformation(string key, bool licensed)
         {
@@ -269,25 +479,10 @@ namespace MultiControl
             this.Controls.Add(mButtonMin);
 
             int size = mRows * mCols;
-            //mDuts = new DutClassLibrary.DutControl[mRows * mCols];
             mConnectedDut = new DutDevice[mRows * mCols];
 
             for (int i = 0; i < size; i++)
             {
-                /*
-                mDuts[i] = new DutClassLibrary.DutControl();
-                mDuts[i].SetDutGridID(i + 1);
-                //this.Controls.Add(mDuts[i]);
-                //mDuts[i].Visible = false;
-                mDuts[i].MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnDutControlMouseMove);
-                mDuts[i].ContentReset += new DutClassLibrary.DutControl.ResetControlHandle(this.OnDutContentReset);
-                mDuts[i].Click += new EventHandler(this.OnDutClicked);
-                foreach (Control c in mDuts[i].Controls)
-                {
-                    c.MouseMove += new System.Windows.Forms.MouseEventHandler(this.OnDutControlMouseMove);
-                    c.Click += new EventHandler(this.OnDutClicked);
-                }
-                 * */
                 mConnectedDut[i] = new DutDevice();
             }
 
@@ -312,37 +507,18 @@ namespace MultiControl
             int height = this.Height;
 
             mImageBackground = new Bitmap(Width, Height);
-            /*
-            int w = (width - 64) / mCols;
-            int h = (height - 120) / mRows;
-            int x = 32, y = 92;
-            for (int r = 0; r < mRows; r++)
-            {
-                x = 32;
-                for (int c = 0; c < mCols; c++)
-                {
-                    int idx = r * mCols + c;
-                    mDuts[idx].Location = new Point(x, y);
-                    mDuts[idx].Size = new Size(w - 4, h - 4);
-                    x += w;
-                    //Comment by billge @20151201 to use UserGridClassLibrary instead
-                    //this.Controls.Add(mDuts[idx]);
-                }
-                y += h;
-            }
-            **/
-
             this.button1.Location = new Point(32, this.Height - this.statusStrip1.Height - this.button1.Height - 48);
             this.checkBoxModel.Location = new Point(this.Width - this.checkBoxModel.Width - 32, this.checkBoxModel.Location.Y);
-            
+
             mButtonClose.Location = new Point(Width - 30, 4);
             mButtonAbout.Location = new Point(Width - 52, 4);
-            
+
             //UserGrid
             mDuts.Location = new Point(32, 92);
             mDuts.Width = this.Width - 64;
             mDuts.Height = this.Height - 120;
-            mDuts.Row = mRows; mDuts.Column = mCols;
+            mDuts.Row = mRows;
+            mDuts.Column = mCols;
             mDuts.InitializeGridItems();
             //mUserGrid.Invalidate();
             this.Controls.Add(mDuts);
@@ -353,105 +529,8 @@ namespace MultiControl
             mDuts.OnGridItemRightClicked += new UserGridClassLibrary.UserGrid.GridItemRightClickHandle(this.OnGridItemRightClicked);
         }
 
-        private void LoadCfg()
-        {
-            IniFile mIni = new IniFile(Application.StartupPath + "\\cfg.ini");
-            mCfgFolder = mIni.IniReadValue("config", "Folder");
-            this.label1.Text = "Load CFG from <" + mCfgFolder + ">";
-            mLogFolder = mIni.IniReadValue("config", "Logger");
 
-            mRows = mRows = 0;
-            mRows = int.Parse(mIni.IniReadValue("layout","Row").ToString());
-            mCols = int.Parse(mIni.IniReadValue("layout", "Column").ToString());
-
-            //LOAD CFG TABLE
-            mConfigPath = new DataSet("ConfigData");
-            mConfigPath.ReadXml("ConfigData.xml");
-
-            mConfigSDCard = new DataSet("ConfigPath");
-            mConfigSDCard.ReadXml("ConfigPath.xml");
-
-            int multiSupport = int.Parse(mIni.IniReadValue("mode", "MultiSupport").ToString());
-            if (multiSupport == 1)
-            {
-                bMultiModelSupport = true;
-            }
-            else
-            {
-                bMultiModelSupport = false;
-            }
-
-            if (bMultiModelSupport)
-            {
-                //this.label1.Visible = false;
-                this.label1.Text = "Auto download CFG by DUT model";
-                this.configurationToolStripMenuItem.Enabled = false;
-                this.modelMappingConfigurationToolStripMenuItem.Enabled = true;
-                this.checkBoxModel.Checked = true;
-            }
-            else
-            {
-                //this.label1.Visible = true;
-                this.label1.Text = "Load CFG from <" + mCfgFolder + ">";
-                this.configurationToolStripMenuItem.Enabled = true;
-                this.modelMappingConfigurationToolStripMenuItem.Enabled = false;
-                this.checkBoxModel.Checked = false;
-            }
-        }
-
-        public string GetComputerName()
-        {
-            try
-            {
-                string name = System.Environment.UserDomainName;
-                if (string.IsNullOrEmpty(name))
-                {
-                    name = System.Environment.MachineName;
-                }
-                //return System.Environment.GetEnvironmentVariable("ComputerName");
-                return name;
-            }
-            catch
-            {
-                return "unknown";
-            }
-        }
-
-        private string GetMD5Code(string oldStr)
-        {
-            //将输入转换为ASCII 字符编码
-            ASCIIEncoding enc = new ASCIIEncoding();
-            //将字符串转换为字节数组
-            byte[] buffer = enc.GetBytes(oldStr);
-            //创建MD5实例
-            MD5 md5 = new MD5CryptoServiceProvider();
-            //进行MD5加密
-            byte[] hash = md5.ComputeHash(buffer);
-            StringBuilder sb = new StringBuilder();
-            //拼装加密后的字符
-            for (int i = 0; i < hash.Length; i++)
-            {
-                sb.AppendFormat("{0:x2}", hash[i]);
-            }
-            //输出加密后的字符串
-            return sb.ToString();
-        }
-
-        private void CreateFile(string file, string content)
-        {
-            FileStream fs = new FileStream(file, FileMode.OpenOrCreate);
-            StreamWriter sw = new StreamWriter(fs);
-            sw.WriteLine(content);
-            sw.Close();
-            fs.Close();
-        }
-
-        public bool IsNumeric(string value)
-        {
-            return Regex.IsMatch(value, @"^[+-]?\d*[.]?\d*$");
-        }
-
-        private void TestSpecifiedUUT(string matchedUUT)
+        private async void TestSpecifiedUUT(string matchedUUT)
         {
             if (!string.IsNullOrEmpty(matchedUUT))
             {
@@ -461,49 +540,38 @@ namespace MultiControl
                 {
                     mConnectedDut[index].BenginTime = DateTime.Now;
                     //END
-                    string computer = GetComputerName();
+                    string computer = common.GetComputerName();
                     string md5Code = string.Empty;
-                    //md5Code = GetMD5Code("wortsin");
-                    //MessageBox.Show(computer);
-                    /*
-                     * computer.Contains("wih") || computer.Contains("WIH") ||
-                        computer.Contains("wkscn") || computer.Contains("WKSCN") ||
-                        computer.Contains("whq") || computer.Contains("WHQ") ||
-                        computer.Contains("wtx") || computer.Contains("wsmx") ||
-                        computer.Contains("WTX") || computer.Contains("WSMX") ||
-                        computer.Contains("WMX") || computer.Contains("wmx") ||
-                        computer.Contains("BillGe")
-                     * */
                     if (mLicensed)
                     {
-                        md5Code = GetMD5Code("wortsin");
+                        md5Code = common.GetMD5Code("wortsin");
                     }
                     else
                     {
-                        md5Code = GetMD5Code(computer);
+                        md5Code = common.GetMD5Code(computer);
                     }
                     mGlobalmd5Code = md5Code;
                     //MD5.txt
-                    CreateFile("md5.txt", md5Code);
+                    common.CreateFile("md5.txt", md5Code);
                     //Computer.txt
-                    CreateFile("computer.txt", computer);
+                    common.CreateFile("computer.txt", computer);
                     //CHECK DUTS
                     mDuts[index].Reset();
                     mConnectedDut[index].SerialNumber = matchedUUT;
                     //get product mode ro.product.model
                     string modeCmd = "adb -s " + mConnectedDut[index].SerialNumber + " shell getprop ro.product.model";
-                    
-                    string model = Execute(modeCmd);
 
-                   
-                   
+                    string model = await Execute(modeCmd);
+                    //string model = common.FilterModelName(cmd.CMD_RunEx(modeCmd));
+
+
                     model = model.Replace("\r\n", "").Replace("\r", "");
-                    if (IsNumeric(model))
+                    if (common.IsNumeric(model))
                     {
                         modeCmd = "adb -s " + mConnectedDut[index].SerialNumber + " shell getprop ro.product.brand";
-                        model = Execute(modeCmd);
-                       
-                       
+                        //model = cmd.CMD_RunEx(modeCmd);
+                        model = await Execute(modeCmd);
+
                         model = model.Replace("\r\n", "").Replace("\r", "");
                     }
                     mConnectedDut[index].Model = model;
@@ -513,15 +581,17 @@ namespace MultiControl
                     mConnectedDut[index].Connected = true;
                     //mConnectedDut[index].ExitRunningThread = false;
                     string androidCmd = "adb -s " + mConnectedDut[index].SerialNumber + " shell getprop ro.build.version.release";
-                    string androidVersion = Execute(androidCmd);
-                   
-                   
+                    //string androidVersion = cmd.CMD_RunEx(androidCmd);
+                    string androidVersion = await Execute(androidCmd);
+
+
                     androidVersion = androidVersion.Replace("\r\n", "").Replace("\r", "");
                     mConnectedDut[index].AndroidVersion = androidVersion;
                     //ro.build.id
                     string buildCmd = "adb -s " + mConnectedDut[index].SerialNumber + " shell getprop ro.build.id";
-                    string buildId = Execute(buildCmd);
-                  
+                    //string buildId = cmd.CMD_RunEx(buildCmd);
+                    string buildId = await Execute(buildCmd);
+
                     buildId = buildId.Replace("\r\n", "").Replace("\r", "");
                     mConnectedDut[index].BuildId = buildId;
 
@@ -566,130 +636,7 @@ namespace MultiControl
             return index;
         }
 
-        private void DoControlTest()
-        {
-            //RESET TIME
-            foreach (DutDevice terminal in mConnectedDut)
-            {
-                terminal.BenginTime = DateTime.Now;
-            }
-            //CHECK DEVICES 
-            foreach (UserGridClassLibrary.GridItem dut in mDuts)
-            {
-                if(!string.IsNullOrEmpty(dut.GetDutSN()))
-                {
-                    int id = dut.GetDutGridID();
-                    mConnectedDut[id].ExitRunningThread = true;
-                    dut.Reset();
-                }
-            }
-            //END
-            string computer = GetComputerName();
-            string md5Code = string.Empty;
-            //md5Code = GetMD5Code("wortsin");
-            //MessageBox.Show(computer);
-            if (mLicensed)
-            {
-                md5Code = GetMD5Code("wortsin");
-            }
-            else
-            {
-                md5Code = GetMD5Code(computer);
-            }
-            mGlobalmd5Code = md5Code;
-            //MD5.txt
-            CreateFile("md5.txt", md5Code);
-            //Computer.txt
-            CreateFile("computer.txt", computer);
-            //CHECK DUTS
-            //mCount = 0;
-            string result = Execute("adb devices");
-           
-            while (result == "List of devices attached \r\n\r\n")
-            {
-                //adb服务重启
-              //  string resultKill = Execute("adb kill-server");
-              //  string resultStart = Execute("adb start-server");
-                result = Execute("adb devices");
-               
-            }
-           
-            //result = string.Empty;
-            string[] devices = Regex.Split(result, "\r\n", RegexOptions.IgnoreCase);
-            //MessageBox.Show(result);
-            foreach (string device in devices)
-            {
-                if (device.Contains("\tdevice"))
-                {
-                    string[] serials = Regex.Split(device, "\t", RegexOptions.IgnoreCase);
-                    //mDevice[mCount] = serials[0];
-                    mConnectedDut[mCount].SerialNumber = serials[0];
-                    //get product mode ro.product.model
-                    string modeCmd = "adb -s " + mConnectedDut[mCount].SerialNumber + " shell getprop ro.product.model";
-                    string model = Execute(modeCmd);
-            
-                    model = model.Replace("\r\n", "").Replace("\r", "");
-                    if (IsNumeric(model))
-                    {
-                        modeCmd = "adb -s " + mConnectedDut[mCount].SerialNumber + " shell getprop ro.product.brand";
-                        model = Execute(modeCmd);
-                        
-                       
-                        model = model.Replace("\r\n", "").Replace("\r", "");
-                    }
-                    mConnectedDut[mCount].Model = model;
-                    mConnectedDut[mCount].ConfigPath = QueryModelConfigPathFromDataSet(model);// Application.StartupPath + "\\" + model;
-                    mConnectedDut[mCount].Estimate = QueryModelEstimateTimeFromDataSet(model);
-                    mConnectedDut[mCount].Brand = QueryModelBrandFromDataSet(model);
-                    mConnectedDut[mCount].Connected = true;
-                    //mConnectedDut[mCount].ExitRunningThread = false;
-                    //get product mode ro.product.model
-                    string androidCmd = "adb -s " + mConnectedDut[mCount].SerialNumber + " shell getprop ro.build.version.release";
-                    string androidVersion = Execute(androidCmd);
-                  
-                   
-                    androidVersion = androidVersion.Replace("\r\n", "").Replace("\r", "");
-                    mConnectedDut[mCount].AndroidVersion = androidVersion;
-                    //ro.build.id
-                    string buildCmd = "adb -s " + mConnectedDut[mCount].SerialNumber + " shell getprop ro.build.id";
-                    string buildId = Execute(buildCmd);
-                  
-                   
-                    buildId = buildId.Replace("\r\n", "").Replace("\r", "");
-                    mConnectedDut[mCount].BuildId = buildId;
-                    //START TEST
-                    Thread th = new Thread(new ParameterizedThreadStart(ThreadMethod));
-                    th.Start(mCount); //启动线程
-
-                    mCount++;
-                }
-            }
-            /*
-            for (int i = 0; i < mCount; i++)
-            {
-                if (selected)
-                {
-                    if (mDuts[i].IsDutSelected())
-                    {
-                        Thread th = new Thread(new ParameterizedThreadStart(ThreadMethod));
-                        th.Start(i); //启动线程
-                    }
-                }
-                else
-                {
-                    Thread th = new Thread(new ParameterizedThreadStart(ThreadMethod));
-                    th.Start(i); //启动线程
-                }
-            }
-             * */
-            //
-            if (mCount == 0)
-            {
-                MessageBox.Show("No Connected DUT");
-            }
-        }
-
-        private string QueryModelConfigSDCardFromDataSet(int i)
+        private async Task<string> QueryModelConfigSDCardFromDataSet(int i)
         {
             string result = string.Empty;
             mConnectedDut[i].SDCard = string.Empty;
@@ -701,9 +648,9 @@ namespace MultiControl
                     //SD chance path @20160518
                     string verify = row[1].ToString();
                     string pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + verify + SPECIFIC_TAG_PATH;
-                    string console = Execute(pullCmd);
-                                    
-                   
+                    string console = await Execute(pullCmd);
+
+
                     if (console.Contains("remote object"))
                     {
                         continue;
@@ -734,7 +681,7 @@ namespace MultiControl
                 foreach (DataRow row in mConfigPath.Tables[0].Rows)
                 {
                     //if (row[0].ToString().CompareTo(model) == 0)//FIND
-                    if(row[0].ToString().Equals(model))
+                    if (row[0].ToString().Equals(model))
                     {
                         result = row[2].ToString();
                         break;
@@ -801,31 +748,194 @@ namespace MultiControl
             //DoControlTest();
         }
 
+
+        #region Update Devic Stattus
+        delegate void UpdateUIStatusDelegate(object index);
+
+        void SetDutStatusInvoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutStatus(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutStatus(index);
+            }
+        }
+
+        void SetDutIMEIInvoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutIMEI(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutIMEI(index);
+            }
+        }
+
+        void SetDutMD5Invoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutMD5(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutMD5(index);
+            }
+        }
+
+        void SetDutPQAAFolderInvoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutPQAAFolder(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutPQAAFolder(index);
+            }
+        }
+
+        void SetDutInstallPQAAInvoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutInstallPQAA(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutInstallPQAA(index);
+            }
+        }
+
+        void SetDutStartPQAAInvoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutStartPQAA(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutStartPQAA(index);
+            }
+        }
+
+        void SetDutTestProgressInvoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutTestProgress(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutTestProgress(index);
+            }
+        }
+
+        void SetDutTestFinishInvoke(object index)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    SetDutTestFinish(_index);
+                }), new object[] { index });
+            }
+            else
+            {
+                SetDutTestFinish(index);
+            }
+        }
+
+
         private void SetDutDisconnected(object index)
         {
-            int i = (int)index;
-            mDuts[i].BackgroundGradientColor = System.Drawing.Color.FromArgb(192,64,64,64);//System.Drawing.Color.Blue;
-            mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.None;
-            mDuts[i].SetDutStatus("Offline");
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    int i = (int)index;
+                    mDuts[i].BackgroundGradientColor = System.Drawing.Color.FromArgb(192, 64, 64, 64);//System.Drawing.Color.Blue;
+                    mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.None;
+                    mDuts[i].SetDutStatus("Offline");
+                }), new object[] { index });
+            }
+            else
+            {
+                int i = (int)index;
+                mDuts[i].BackgroundGradientColor = System.Drawing.Color.FromArgb(192, 64, 64, 64);//System.Drawing.Color.Blue;
+                mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.None;
+                mDuts[i].SetDutStatus("Offline");
+            }
         }
 
         private void SetDutConnected(object index)
         {
-            int i = (int)index;
-            mDuts[i].SetDutStatus("Online");
-            switch (mConnectedDut[i].TestResult)
+            if (this.InvokeRequired)
             {
-                case DutDevice.DutResult.DR_TESTING:
-                    break;
-                case DutDevice.DutResult.DR_PASS:
-                    mDuts[i].BackgroundGradientColor = System.Drawing.Color.Green;
-                    mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
-                    break;
-                case DutDevice.DutResult.DR_FAIL:
-                    mDuts[i].BackgroundGradientColor = System.Drawing.Color.Red;
-                    mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
-                    break;
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    int i = (int)index;
+                    mDuts[i].SetDutStatus("Online");
+                    switch (mConnectedDut[i].TestResult)
+                    {
+                        case DutDevice.DutResult.DR_TESTING:
+                            break;
+                        case DutDevice.DutResult.DR_PASS:
+                            mDuts[i].BackgroundGradientColor = System.Drawing.Color.Green;
+                            mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
+                            break;
+                        case DutDevice.DutResult.DR_FAIL:
+                            mDuts[i].BackgroundGradientColor = System.Drawing.Color.Red;
+                            mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
+                            break;
+                    }
+                }), new object[] { index });
             }
+            else
+            {
+                int i = (int)index;
+                mDuts[i].SetDutStatus("Online");
+                switch (mConnectedDut[i].TestResult)
+                {
+                    case DutDevice.DutResult.DR_TESTING:
+                        break;
+                    case DutDevice.DutResult.DR_PASS:
+                        mDuts[i].BackgroundGradientColor = System.Drawing.Color.Green;
+                        mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
+                        break;
+                    case DutDevice.DutResult.DR_FAIL:
+                        mDuts[i].BackgroundGradientColor = System.Drawing.Color.Red;
+                        mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
+                        break;
+                }
+            }
+
         }
 
         private void SetDutStatus(object index)
@@ -843,10 +953,24 @@ namespace MultiControl
 
         private void SetDutModel(object index)
         {
-            int i = (int)index;
-            mDuts[i].SetDutModel(mConnectedDut[i].Model);
-            mDuts[i].BackgroundGradientColor = System.Drawing.Color.Yellow;
-            mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
+            //this.Dispacher
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new UpdateUIStatusDelegate((_index) =>
+                {
+                    int i = (int)index;
+                    mDuts[i].SetDutModel(mConnectedDut[i].Model);
+                    mDuts[i].BackgroundGradientColor = System.Drawing.Color.Yellow;
+                    mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
+                }), new object[] { index });
+            }
+            else
+            {
+                int i = (int)index;
+                mDuts[i].SetDutModel(mConnectedDut[i].Model);
+                mDuts[i].BackgroundGradientColor = System.Drawing.Color.Yellow;
+                mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
+            }
         }
 
         private void SetDutIMEI(object index)
@@ -859,19 +983,19 @@ namespace MultiControl
             QRCodeEncoder qrCodeEncoder = new QRCodeEncoder();
             qrCodeEncoder.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;
             qrCodeEncoder.QRCodeScale = 1;
-            qrCodeEncoder.QRCodeVersion =9;
+            qrCodeEncoder.QRCodeVersion = 9;
             qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.M;
 
             Image image;
             string BN = mConnectedDut[i].BuildNumber;
-            string  data = "Model:" + mConnectedDut[i].Model + System.Environment.NewLine +
+            string data = "Model:" + mConnectedDut[i].Model + System.Environment.NewLine +
                 "OS Version:" + mConnectedDut[i].BuildId + System.Environment.NewLine +
                 "SN:" + mConnectedDut[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "IMEI:" + mConnectedDut[i].IMEI.ToUpper() + System.Environment.NewLine +
                 "Memory:" + mConnectedDut[i].RAM + System.Environment.NewLine +
-                "Flash:" + mConnectedDut[i].FLASH + System.Environment.NewLine +"BuildNumber:" ;//bonnie20160805
-           
-            image = qrCodeEncoder.Encode(data+BN );
+                "Flash:" + mConnectedDut[i].FLASH + System.Environment.NewLine + "BuildNumber:";//bonnie20160805
+
+            image = qrCodeEncoder.Encode(data + BN);
             mDuts[i].SetQRCode_IMEI(image);
         }
 
@@ -929,7 +1053,7 @@ namespace MultiControl
         }
 
         private void SetDutTestProgress(object progress)
-       {
+        {
             string value = progress.ToString();
             string[] sArray = value.Split('/');
             int i = int.Parse(sArray[0].ToString());
@@ -950,7 +1074,7 @@ namespace MultiControl
             {
                 string resultName = mConnectedDut[i].SerialNumber + "_result.txt";
                 int index = i;
-                ResultEventArgs args = new ResultEventArgs(index,resultName);
+                ResultEventArgs args = new ResultEventArgs(index, resultName);
                 args.Current = current;
                 args.Total = total;
                 args.Item = item;
@@ -1006,7 +1130,7 @@ namespace MultiControl
                 name.Contains("HDMI") || name.Contains("NFC")
               )
             {
-                mDuts[i].SetDutItem(e.Item,false);
+                mDuts[i].SetDutItem(e.Item, false);
             }
             else
             {
@@ -1025,7 +1149,7 @@ namespace MultiControl
             {
                 mOpaqueLayer.DictionaryWorkingStatus[key] = OpaqueForm.MyResult.WORKING;
             }
-            switch(e.Total)
+            switch (e.Total)
             {
                 case -2:
                     mOpaqueLayer.AddResult(key, e.Model, e.Item, OpaqueForm.MyResult.WORKING, 0.0f);
@@ -1053,7 +1177,7 @@ namespace MultiControl
                 {
                     string[] combinedResult = result.Split('=');
                     string _name = combinedResult[0].ToString();
-                    
+
                     int _result = int.Parse(combinedResult[1].ToString());
                     float _cost = float.Parse(combinedResult[2].ToString());
                     if (_result == 1)
@@ -1075,7 +1199,7 @@ namespace MultiControl
             }
             //UPDATE PROGRESS BAR NUMBER
             int passCount = mOpaqueLayer.GetTotalPassItemCount(key);
-            mDuts[key].SetDutProgress(passCount,mPseudoTotal);
+            mDuts[key].SetDutProgress(passCount, mPseudoTotal);
         }
 
         private void SetDutTestFinish(object progress)
@@ -1096,12 +1220,17 @@ namespace MultiControl
                 FinishUpdate(this, args);
             }
         }
-
-        private void ThreadMethod(object index)
+        #endregion
+        /// <summary>
+        /// device 测试线程
+        /// </summary>
+        /// <param name="index"></param>
+        private async void ThreadMethod(object index)
         {
             int i = (int)index;
             mDuts[i].Result = UserGridClassLibrary.ItemResult.IR_TESTING;
-            _syncContext.Post(SetDutStatus, i);
+            //_syncContext.Post(SetDutStatus, i);
+            SetDutStatusInvoke(i);
             /*
             //get product mode ro.product.model
             string modeCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell getprop ro.product.model";
@@ -1110,7 +1239,8 @@ namespace MultiControl
             mConnectedDut[i].Model = model;
             mConnectedDut[i].ConfigPath = Application.StartupPath + "\\" + model;
             * */
-            _syncContext.Post(SetDutModel, i);
+            //_syncContext.Post(SetDutModel, i);
+            SetDutModel(i);
             mDuts[i].EstimateTime = mConnectedDut[i].Estimate;
             //DateTime dtStart = DateTime.Now;
             //push md5 file
@@ -1123,23 +1253,24 @@ namespace MultiControl
             //mOpaqueLayer.AddResult(i, mConnectedDut[i].Model, "Install PQAA", OpaqueForm.MyResult.WORKING, 0.0f);
             //DateTime dtStart = DateTime.Now;
             pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " install -r Generic_PQAA.apk";
-            Execute(pushCmd);
-           
-          
-           
+            await Execute(pushCmd, true);
+
+
+
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
-            _syncContext.Post(SetDutInstallPQAA, i);
+            //_syncContext.Post(SetDutInstallPQAA, i);
+            SetDutInstallPQAAInvoke(i);
 
             pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
-            Execute(pushCmd);
-           
-          
-           
+            await Execute(pushCmd, true);
+
+
+
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
-            string sdcard = QueryModelConfigSDCardFromDataSet(i);
-            _syncContext.Post(SetDutInstallPQAA, i);
+            string sdcard = await QueryModelConfigSDCardFromDataSet(i);
+            //_syncContext.Post(SetDutInstallPQAA, i);
 
             if (string.IsNullOrEmpty(sdcard))
             {
@@ -1157,12 +1288,11 @@ namespace MultiControl
             */
 
             pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push md5.txt " + mConnectedDut[i].SDCard + CFG_FILE_ROOT; // /mnt/sdcard/";
-            Execute(pushCmd);
-           
-          
-           
-            _syncContext.Post(SetDutMD5, i);
+            await Execute(pushCmd, true);
 
+
+            //_syncContext.Post(SetDutMD5, i);
+            SetDutMD5Invoke(i);
             /*
             pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             Execute(pushCmd);
@@ -1171,107 +1301,103 @@ namespace MultiControl
             //------START-------------------------------------------
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mConnectedDut[i].ConfigPath +
-                    "\\" + "audio_loopback.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
+                    "\\" + "audio_loopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
                 //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push audio_loopback.cfg /mnt/sdcard/pqaa_config";
-                    pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mCfgFolder +
-                    "\\" + "audio_loopback.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
+                "\\" + "audio_loopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
-            Execute(pushCmd);
-           
-          
-           
+            await Execute(pushCmd, true);
+            //cmd.CMD_Run(pushCmd);
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mConnectedDut[i].ConfigPath +
-                    "\\" + "monipower.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
+                    "\\" + "monipower.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mCfgFolder +
-                    "\\" + "monipower.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "monipower.cfg \"" + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
-            Execute(pushCmd);
-           
-    
+            await Execute(pushCmd, true);
+
+
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mConnectedDut[i].ConfigPath +
-                    "\\" + "sysinfo.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
+                    "\\" + "sysinfo.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push "+ mCfgFolder +
-                    "\\" + "sysinfo.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "sysinfo.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
-            Execute(pushCmd);
-           
-    
-           
+            await Execute(pushCmd, true);
+
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mConnectedDut[i].ConfigPath +
-                    "\\" + "wifi.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
+                    "\\" + "wifi.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mCfgFolder +
-                    "\\" + "wifi.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "wifi.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
-            Execute(pushCmd);
-           
-  
-           
-            if (bMultiModelSupport)
-            {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mConnectedDut[i].ConfigPath +
-                    "\\" + "gps.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
-            }
-            else
-            {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mCfgFolder +
-                    "\\" + "gps.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
-            }
-            Execute(pushCmd);
-           
-        
-           
+            await Execute(pushCmd, true);
+
+
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mConnectedDut[i].ConfigPath +
-                    "\\" + "headsetloopback.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
+                    "\\" + "gps.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mCfgFolder +
-                    "\\" + "headsetloopback.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "gps.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
-            Execute(pushCmd);
-           
-        
-           
+            await Execute(pushCmd, true);
+
+
+
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mConnectedDut[i].ConfigPath +
-                    "\\" + "pqaa.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
+                    "\\" + "headsetloopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push " + mCfgFolder +
-                    "\\" + "pqaa.cfg " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "headsetloopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
-            Execute(pushCmd);
-           
-          
-           
+            await Execute(pushCmd, true);
+
+
+
+
+            if (bMultiModelSupport)
+            {
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
+                    "\\" + "pqaa.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+            }
+            else
+            {
+                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "pqaa.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+            }
+            await Execute(pushCmd, true);
+
+
+
             //--------------END--------------------------------------
 
             //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " uninstall com.wistron.generic.pqaa";
@@ -1292,20 +1418,17 @@ namespace MultiControl
             //ADD END---------------------------------------------------------
             string md5String = mGlobalmd5Code;
             pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell am start -n com.wistron.generic.pqaa/.TestItemsList --ei block " + (i + 1).ToString() + " --ei autostart 1" + " --es md5code " + md5String;
-            Execute(pushCmd);
-           
-        
-           
-            _syncContext.Post(SetDutStartPQAA, i);
+            await Execute(pushCmd, true);
+
+            //_syncContext.Post(SetDutStartPQAA, i);
+            SetDutStartPQAAInvoke(i);
             //IMEI
             string wInfo = string.Empty;
             string dutInfo = mConnectedDut[i].SerialNumber + "_wInfo.txt";
             wInfo = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "wInfo.txt " + dutInfo;
             while (!File.Exists(dutInfo))
             {
-                Execute(wInfo);
-               
-               
+                await Execute(wInfo);
             }
             string imei = string.Empty;
             string ram = string.Empty;
@@ -1328,7 +1451,8 @@ namespace MultiControl
                 mConnectedDut[i].FLASH = flash;
                 mConnectedDut[i].BuildNumber = buildNO;//bonnie20160805
 
-                _syncContext.Post(SetDutIMEI, i);
+                //_syncContext.Post(SetDutIMEI, i);
+                SetDutIMEIInvoke(i);
 
                 File.Delete(dutInfo);
             }
@@ -1340,14 +1464,14 @@ namespace MultiControl
 
             //while(!bTerminateThread)
             int walkedIndex = -1;
-            while(!mConnectedDut[i].ExitRunningThread)
+            while (!mConnectedDut[i].ExitRunningThread)
             {
                 //check this DUT connect or disconnect to quit!
-                //i
                 if (!mConnectedDut[i].Connected)
                 {
                     Thread.Sleep(300);
-                    _syncContext.Post(SetDutDisconnected, i);
+                    //_syncContext.Post(SetDutDisconnected, i);
+                    SetDutDisconnected(i);
                     walkedIndex = -1;
                     continue;
                 }
@@ -1356,8 +1480,8 @@ namespace MultiControl
                     _syncContext.Post(SetDutConnected, i);
                 }
                 pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "progress.txt " + progName;
-                Execute(pullCmd);
-               
+                await Execute(pullCmd);
+
                 string prog = string.Empty;
                 string item = string.Empty;
                 if (File.Exists(progName))
@@ -1386,10 +1510,10 @@ namespace MultiControl
                     //PULL test result
                     string resultName = mConnectedDut[i].SerialNumber + "_result.txt";
                     pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "result.txt " + resultName;
-                    Execute(pullCmd);
-                   
-                  
-                   
+                    await Execute(pullCmd);
+
+
+
                     //UPDATE TEST PROGRESS
                     string value = i + "/" + prog + "/" + item;
                     //_syncContext.Post(SetDutTestProgress, value);
@@ -1402,26 +1526,28 @@ namespace MultiControl
 
                         if (walkedIndex != cur)
                         {
-                            _syncContext.Post(SetDutTestProgress, value);
+                            //_syncContext.Post(SetDutTestProgress, value);
+                            SetDutTestProgressInvoke(value);
                             walkedIndex = cur;
                         }
 
                         if (cur == total)
                         {
-                            _syncContext.Post(SetDutTestFinish, value);
+                            //_syncContext.Post(SetDutTestFinish, value);
+                            SetDutTestFinishInvoke(value);
                             string delCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell rm " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "progress.txt";
-                            Execute(delCmd);
-                         
-                                                  
+                            await Execute(delCmd);
+
+
                             if (File.Exists(progName))
                             {
                                 File.Delete(progName);
                             }
                             delCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell rm " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "result.txt";
-                            Execute(delCmd);
-                         
-                         
-                           
+                            await Execute(delCmd);
+
+
+
                             if (File.Exists(resultName))
                             {
                                 //Create MODEL FOLDER and DATE
@@ -1498,7 +1624,7 @@ namespace MultiControl
             string AndroidVersion = mConnectedDut[index].AndroidVersion;
             string IMEI = mConnectedDut[index].IMEI;
             string logDateTime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
-           // string BuildNumber = mConnectedDut[index].BuildNumber;//bonnie20160805
+            // string BuildNumber = mConnectedDut[index].BuildNumber;//bonnie20160805
             //MAKE FILE
             string date = DateTime.Now.ToString("yyyyMMdd");
             //Tiger\\20160428\\
@@ -1545,7 +1671,7 @@ namespace MultiControl
                 {
                     LocalExcel.SetItemText(1, i, footer);
                     i++;
-                }   
+                }
             }
             //"PQAA SW", "S/N", "Brand", "Model Name", "Android Version",
             //"IMEI", "Date/Time", "Test Time(s)", "AudioLoopback",
@@ -1682,7 +1808,7 @@ namespace MultiControl
             }
             LocalExcel.Exit();
             ExcelOperaNamespace.MyExcel.DeleteExcelExe();
-            
+
             return result;
         }
 
@@ -1705,68 +1831,20 @@ namespace MultiControl
             if (id >= 0)
             {
                 string pushCmd = "adb -s " + mConnectedDut[id].SerialNumber + " uninstall com.wistron.generic.pqaa";
-                Execute(pushCmd);
-               
-            
-               
+                Execute(pushCmd, true);
+
+
+
                 //since move folder to package, no need remove config folder @20160222 BillGe
                 //pushCmd = "adb -s " + mConnectedDut[id].SerialNumber + " shell rm -rf " + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
                 //Execute(pushCmd);
             }
         }
 
-        public string Execute(string dosCommand)
+        public async Task<string> Execute(string dosCommand, bool NeedResponseResult = true)
         {
-            return Execute(dosCommand, 0);
+            return await cmd.CMD_RunAsync(dosCommand, 0, NeedResponseResult);
         }
-
-        public static string Execute(string command, int seconds)
-        {
-            string output = string.Empty; //输出字符串  
-            if (command != null && !command.Equals(""))
-            {
-                Process process = new Process();//创建进程对象  
-                ProcessStartInfo startInfo = new ProcessStartInfo();
-                startInfo.FileName = "cmd.exe";//设定需要执行的命令  
-                startInfo.Arguments = "/C " + command;//“/C”表示执行完命令后马上退出  
-                startInfo.UseShellExecute = false;//不使用系统外壳程序启动  
-                startInfo.RedirectStandardInput = false;//不重定向输入  
-                startInfo.RedirectStandardOutput = true; //重定向输出
-                startInfo.RedirectStandardError = true;
-                startInfo.CreateNoWindow = true;//不创建窗口  
-                process.StartInfo = startInfo;
-                try
-                {
-                    if (process.Start())//开始进程  
-                    {
-                        //output = process.StandardOutput.ReadToEnd();//读取进程的输出  
-                        if (seconds == 0)
-                        {
-                            process.WaitForExit();//这里无限等待进程结束  
-                        }
-                        else
-                        {
-                            process.WaitForExit(seconds); //等待进程结束，等待时间为指定的毫秒  
-                        }
-                        output = process.StandardOutput.ReadToEnd();//读取进程的输出
-                        if (string.IsNullOrEmpty(output))
-                        {
-                            output = process.StandardError.ReadToEnd();
-                        }
-                    }
-                }
-                catch
-                {
-                }
-                finally
-                {
-                    if (process != null)
-                        process.Close();
-                }
-            }
-            return output;
-        }
-
         private void configurationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FormConfiguration cfg = new FormConfiguration();
@@ -1792,7 +1870,7 @@ namespace MultiControl
 
         private void startTestToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mCount = 0;                             
+            mCount = 0;
             DoControlTest();
         }
 
@@ -1808,7 +1886,7 @@ namespace MultiControl
             int count = 0, i = 0;
             foreach (UserGridClassLibrary.GridItem ctrl in mDuts)
             {
-                if (ctrl.IsDutSelected() && 
+                if (ctrl.IsDutSelected() &&
                     !string.IsNullOrEmpty(mConnectedDut[i].SerialNumber) &&
                     mConnectedDut[i].Connected)
                 {
@@ -1843,23 +1921,23 @@ namespace MultiControl
                 }
                 //CHECK DEVICES 
                 //END
-                string computer = GetComputerName();
+                string computer = common.GetComputerName();
                 string md5Code = string.Empty;
-                //md5Code = GetMD5Code("wortsin");
+                //md5Code = common.GetMD5Code("wortsin");
                 //MessageBox.Show(computer);
                 if (mLicensed)
                 {
-                    md5Code = GetMD5Code("wortsin");
+                    md5Code = common.GetMD5Code("wortsin");
                 }
                 else
                 {
-                    md5Code = GetMD5Code(computer);
+                    md5Code = common.GetMD5Code(computer);
                 }
                 mGlobalmd5Code = md5Code;
                 //MD5.txt
-                CreateFile("md5.txt", md5Code);
+                common.CreateFile("md5.txt", md5Code);
                 //Computer.txt
-                CreateFile("computer.txt", computer);
+                common.CreateFile("computer.txt", computer);
 
                 //BEGIN LOOP
                 int i = 0;
@@ -1868,7 +1946,7 @@ namespace MultiControl
                     if (ctrl.IsDutSelected())
                     {
                         i = ctrl.GetDutGridID();
-                        if (!string.IsNullOrEmpty(mConnectedDut[i].SerialNumber) && 
+                        if (!string.IsNullOrEmpty(mConnectedDut[i].SerialNumber) &&
                             mConnectedDut[i].Connected)
                         {
                             //START TEST
@@ -2083,10 +2161,9 @@ namespace MultiControl
         private System.Drawing.Color mTitleColor;
 
         [DllImport("user32.dll", SetLastError = true)]
-　　    private extern static IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
-　　    //窗体关闭消息
-　　    private const uint WM_CLOSE = 0x0010;
- 
+        private extern static IntPtr SendMessage(IntPtr hWnd, uint Msg, int wParam, int lParam);
+        //窗体关闭消息
+        private const uint WM_CLOSE = 0x0010;
         private void OnCloseWindow(System.Object sender, System.EventArgs e)
         {
             //System.Environment.Exit(System.Environment.ExitCode);
@@ -2095,242 +2172,10 @@ namespace MultiControl
             //this.Close();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            //this.Invoke(new Action(() => { this.buttonUserControlLoad.PerformClick(); }));
-            mUSB.AddUSBEventWatcher(USBEventHandler, USBEventHandler, new TimeSpan(0, 0, 0, 0, 300));
-        }
-
-        private bool IsUUTRemoved()
-        {
-            string result = Execute("adb devices");
-           
-            string[] devices = Regex.Split(result, "\r\n", RegexOptions.IgnoreCase);
-            int count = 0;
-            foreach (string device in devices)
-            {
-                if (device.Contains("\tdevice"))
-                {
-                    count++;
-                }
-            }
-            return false;
-        }
-
-        private void OnHandleUUTRemoval()
-        {
-            ArrayList listUUT = new ArrayList();
-            string result = Execute("adb devices");
-           
-           
-            string[] devices = Regex.Split(result, "\r\n", RegexOptions.IgnoreCase);
-            foreach (string device in devices)
-            {
-                if (device.Contains("\tdevice"))
-                {
-                    string[] serials = Regex.Split(device, "\t", RegexOptions.IgnoreCase);
-                    listUUT.Add(serials[0]);
-                }
-            }
-            if (listUUT.Count == 0)
-            {
-                //ALL ANDROID UUT DEVICE WAS REMOVED
-                int index = 0;
-                foreach (DutDevice uut in mConnectedDut)
-                {
-                    if (uut.TestResult == DutDevice.DutResult.DR_PASS)
-                    {
-                        uut.Reset();
-                        mDuts[index].Reset();
-                    }
-                    else if (uut.TestResult == DutDevice.DutResult.DR_FAIL)
-                    {
-                        uut.ExitRunningThread = true;
-                        uut.Reset();
-                        mDuts[index].Reset();
-                    }
-                    else
-                    {
-                        uut.Connected = false;
-                    }
-
-                    index++;
-                }
-            }
-            else
-            {
-                //REMOVE number of UUT
-                int index = 0;
-                foreach (DutDevice uut in mConnectedDut)
-                {
-                    if (!string.IsNullOrEmpty(uut.SerialNumber))
-                    {
-                        bool Found = false;
-                        foreach (string sn in listUUT)
-                        {
-                            if (uut.SerialNumber.Equals(sn))
-                            {
-                                uut.Connected = true;
-                                Found = true;
-                                break;
-                            }
-                        }
-                        if (!Found)
-                        {
-                            if (uut.TestResult == DutDevice.DutResult.DR_PASS)
-                            {
-                                uut.Reset();
-                                mDuts[index].Reset();
-                            }
-                            else if (uut.TestResult == DutDevice.DutResult.DR_FAIL)
-                            {
-                                uut.ExitRunningThread = true;
-                                uut.Reset();
-                                mDuts[index].Reset();
-                            }
-                            else
-                            {
-                                uut.Connected = false;
-                            }
-                        }
-                    }
-                    index++;
-                }
-            }
-        }
-
-        private bool IsUUTConnected()
-        {
-            string result = Execute("adb devices");
-            
-           
-            string[] devices = Regex.Split(result, "\r\n", RegexOptions.IgnoreCase);
-            foreach (string device in devices)
-            {
-                if (device.Contains("\tdevice"))
-                {
-                    return true ;
-                }
-            }
-            return false;
-        }
-
-        private void OnHandleUUTInsertion() 
-        {
-            //5s timeout
-            int count = 20;
-            while (count > 0)
-            {
-                if (IsUUTConnected())
-                {
-                    break;
-                }
-                Thread.Sleep(200);
-                count--;
-            }
-
-            ArrayList listUUT = new ArrayList();
-
-            string resultKill = Execute("adb kill-server");
-            Thread.Sleep(1000);
-            string resultStart = Execute("adb start-server");
-           Thread.Sleep(1000);
-            string result = Execute("adb devices");
-           
-           
-            string[] devices = Regex.Split(result, "\r\n", RegexOptions.IgnoreCase);
-            foreach (string device in devices)
-            {
-                if (device.Contains("\tdevice"))
-                {
-                    string[] serials = Regex.Split(device, "\t", RegexOptions.IgnoreCase);
-                    listUUT.Add(serials[0]);
-                }
-            }
-
-            if(listUUT.Count > 0)
-            {
-                //insert number of UUT
-                foreach (string sn in listUUT)
-                {
-                    bool Found = false;
-                    foreach (DutDevice uut in mConnectedDut)
-                    {
-                        if (!string.IsNullOrEmpty(uut.SerialNumber))
-                        {
-                            if (uut.SerialNumber.Equals(sn))
-                            {
-                                uut.Connected = true;
-                                Found = true;
-                                break;
-                            }
-                        }
-                    }
-                    if (!Found)
-                    {
-                        //NEW UUT WAS INSERT
-                        TestSpecifiedUUT(sn);
-                    }
-                }
-            }
-        }
-
-        private int UpdateConnectedDut(USB.Action action)
-        {
-
-            int index = -1;
-
-            switch (action)
-            {
-                case USB.Action.Insert:
-                    OnHandleUUTInsertion();
-                    break;
-                case USB.Action.Remove:
-                    OnHandleUUTRemoval();
-                    break;
-            }
-
-            return index;
-        }
-
-        private void USBEventHandler(Object sender, EventArrivedEventArgs e)
-        {
-           
-            //MessageBox.Show(e.NewEvent.ClassPath.ClassName);
-            //Thread.Sleep(1000);
-            if (e.NewEvent.ClassPath.ClassName == "__InstanceCreationEvent")
-            {
-                //this.SetText("USB插入时间：" + DateTime.Now + "\r\n");
-                //mConnectedDut[0].Connected = true;
-                this.startTestToolStripMenuItem.Enabled = false;
-               
-                //this.startSelectedAndroidDeviceToolStripMenuItem.Enabled = false;
-                UpdateConnectedDut(USB.Action.Insert);
-                this.startTestToolStripMenuItem.Enabled = true;
-                //this.startSelectedAndroidDeviceToolStripMenuItem.Enabled = true;
-            }
-            else if (e.NewEvent.ClassPath.ClassName == "__InstanceDeletionEvent")
-            {
-                //this.SetText("USB拔出时间：" + DateTime.Now + "\r\n");
-                //mDuts[0]
-                //this.startTestToolStripMenuItem.Enabled = false;
-                //this.startSelectedAndroidDeviceToolStripMenuItem.Enabled = false;
-                UpdateConnectedDut(USB.Action.Remove);
-                //this.startTestToolStripMenuItem.Enabled = true;
-                //this.startSelectedAndroidDeviceToolStripMenuItem.Enabled = true;
-            }
-
-            foreach (USBControllerDevice Device in USB.WhoUSBControllerDevice(e))
-            {
-                //this.label1.Text = "TEST";
-                //this.SetText("\tAntecedent：" + Device.Antecedent + "\r\n");
-                //this.SetText("\tDependent：" + Device.Dependent + "\r\n");
-            }
-        }
 
         private void buttonUserControlLoad_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void Form1_MouseEnter(object sender, EventArgs e)
@@ -2407,13 +2252,13 @@ namespace MultiControl
             mConfigSDCard.ReadXml("ConfigPath.xml");
         }
 
-        private void configuratToSysToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void configuratToSysToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int count=0;
-            string result = Execute("adb devices");
-            
+            int count = 0;
+            string result = await Execute("adb devices");
+
             if (result == "List of devices attached \r\n\r\n")
-            {}
+            { }
             string[] devices = Regex.Split(result, "\r\n", RegexOptions.IgnoreCase);
             //MessageBox.Show(result);
             foreach (string device in devices)
@@ -2442,16 +2287,16 @@ namespace MultiControl
                         //SD chance path @20160518
                         string verify = row[1].ToString();
                         string pullCmd = "adb -s " + mConnectedDut[0].SerialNumber + " pull " + verify + SPECIFIC_TAG_PATH;
-                        string console = Execute(pullCmd);
-                     
-                       
+                        string console = await Execute(pullCmd);
+
+
                         if (console.Contains("remote object"))
                         {
                             continue;
                         }
                         else
                         {
-                            saveMSD.SD= verify;
+                            saveMSD.SD = verify;
                             // mConnectedDut[i].SDCard = verify;
                             // result = mConnectedDut[i].SDCard;
                             //delete path.verify.pass file before break
@@ -2464,20 +2309,20 @@ namespace MultiControl
                     }
                 }
                 string pushCmd = "adb -s " + mConnectedDut[0].SerialNumber + " install -r configcheck.apk";
-                string x2 = Execute(pushCmd);
+                string x2 = await Execute(pushCmd);
                 string startCmd = "adb -s " + mConnectedDut[0].SerialNumber + " shell am start -n com.wistron.get.config.information/.MainActivity";
-                string x = Execute(startCmd);
-               
-              
-              
-               
+                string x = await Execute(startCmd);
+
+
+
+
                 FormConfigurateSysinfoLocation cfg = new FormConfigurateSysinfoLocation();
                 cfg.ShowDialog();
                 mLogFolder = cfg.mLogFolder;
             }
-           
-               // MessageBox.Show("No Connected DUT");          
-            
-        }      
+
+            // MessageBox.Show("No Connected DUT");          
+
+        }
     }
 }
