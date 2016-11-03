@@ -35,6 +35,25 @@ namespace MultiControl.Common
         public const string CFG_FILE_PQAA = CFG_FILE_ROOT + "pqaa_config";
 
         public const string SPECIFIC_TAG_PATH = CFG_FILE_ROOT + "path.verify.pass";
+
+
+        public static readonly string[] mFileHeader = {
+                                           "PQAA SW", "S/N", "Brand", "Model Name", "Android Version",
+                                           "IMEI", "Log Time", "Test Time(s)"
+                                       };
+
+        public static readonly string[] mFileTestItem = {
+                                            "AudioLoopback","BlueTooth","Camera","ConfigChk","Display",
+                                            "MoniPower","SDCard","TouchPanel","HeadsetLoopback","Vibration",
+                                            "Wifi","RAM","OTG","GPS","NFC","SIM","Button","ReceiverLoopback",
+                                            "LED","Audio","Brightness","ECompass","GSensor","GyroSensor",
+                                            "LightSensor","ProximitySensor","Headset","MultiTouch","HallSensor",
+                                            "HDMI","BarometerSensor","ReceiverLoopback","LTE","IrDA","WirelessCharging"
+                                         };
+
+        public static readonly string[] mFileFooter = {
+                                           "Result"
+                                       };
     }
 
     public enum TEST_RESULT{

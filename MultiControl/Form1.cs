@@ -31,8 +31,6 @@ namespace MultiControl
     {
         #region 全局变量
         StringBuilder TestLog = new StringBuilder();
-
-        private int mCount = 0;
         private DutDevice[] mConnectedDut;
         private int mRows, mCols;
 
@@ -43,7 +41,6 @@ namespace MultiControl
         private DataSet mConfigPath;
         private DataSet mConfigSDCard;
         private bool bMultiModelSupport = true;
-        //private bool bTerminateThread = false;
 
         private UserButton mButtonClose = null;
         private UserButton mButtonAbout = null;
@@ -54,30 +51,8 @@ namespace MultiControl
         private bool mLicensed = false;
 
         private USB mUSB = new USB();
-
-        private int mExcelStartRow = 2;
-
-        private string[] mFileHeader = {
-                                           "PQAA SW", "S/N", "Brand", "Model Name", "Android Version",
-                                           "IMEI", "Log Time", "Test Time(s)"
-                                       };
-
-        private string[] mFileTestItem = {
-                                            "AudioLoopback","BlueTooth","Camera","ConfigChk","Display",
-                                            "MoniPower","SDCard","TouchPanel","HeadsetLoopback","Vibration",
-                                            "Wifi","RAM","OTG","GPS","NFC","SIM","Button","ReceiverLoopback",
-                                            "LED","Audio","Brightness","ECompass","GSensor","GyroSensor",
-                                            "LightSensor","ProximitySensor","Headset","MultiTouch","HallSensor",
-                                            "HDMI","BarometerSensor","ReceiverLoopback","LTE","IrDA","WirelessCharging"
-                                         };
-
-        private string[] mFileFooter = {
-                                           "Result"
-                                       };
         private OpaqueForm mOpaqueLayer = new OpaqueForm();
         private int mPseudoTotal = 0;
-
-
         //Event
         public event OnStartUpdateHandle StartUpdate;
         public event OnResultUpdateHandle ResultUpdate;
@@ -1536,12 +1511,13 @@ namespace MultiControl
                 delCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell rm " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "result.txt";
                 await Execute(delCmd);
 
-                if (testItem.Equals("PASS"))
-                {// 测试通过以后push卸载pqaa指令， 并退出测试
-                    pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " uninstall com.wistron.generic.pqaa";
-                    await Execute(pushCmd, true);
-                    break;
-                }
+                //if (testItem.Equals("PASS"))
+                //{// 测试通过以后push卸载pqaa指令， 并退出测试
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " uninstall com.wistron.generic.pqaa";
+                await Execute(pushCmd, true);
+                //break;
+                //}
+                mConnectedDut[ThreadIndex].ExitRunningThread = true;
                 Thread.Sleep(100);
                 SaveResultToFile(result_file, ThreadIndex);
             }
@@ -1572,22 +1548,22 @@ namespace MultiControl
                 return -1;
 
             string result_file = log_model_date_path.FullName + $@"\{source}";
-            File.Copy(source, result_file, false);
+            File.Copy(source, result_file, true);
             File.Delete(source);
             FileInfo result_xls_file = new FileInfo(log_model_date_path.FullName + "\\" + mConnectedDut[index].SerialNumber + ".xlsx");
 
             DataTable tbl_result = new DataTable();
-            foreach (string header in mFileHeader)
+            foreach (string header in config_inc.mFileHeader)
             {
                 if (!tbl_result.Columns.Contains(header))
                     tbl_result.Columns.Add(header);
             }
-            foreach (string item in mFileTestItem)
+            foreach (string item in config_inc.mFileTestItem)
             {
                 if (!tbl_result.Columns.Contains(item))
                     tbl_result.Columns.Add(item);
             }
-            foreach (string footer in mFileFooter)
+            foreach (string footer in config_inc.mFileFooter)
             {
                 if (!tbl_result.Columns.Contains(footer))
                     tbl_result.Columns.Add(footer);
@@ -1756,20 +1732,6 @@ namespace MultiControl
             xlsApp.Exit();
             Debug.WriteLine($"Save Result to file:{xlsFile.Name}");
         }
-        private int GetColumnMapping(string item)
-        {
-            int result = mFileHeader.Length + 1;
-            foreach (string testItem in mFileTestItem)
-            {
-                if (testItem.Equals(item))
-                {
-                    break;
-                }
-                result++;
-            }
-            return result;
-        }
-
         private async void UninstallPQAA(int id)
         {
             if (id >= 0)
@@ -1778,7 +1740,6 @@ namespace MultiControl
                 await Execute(pushCmd, true);
             }
         }
-
         public async Task<string> Execute(string dosCommand, bool NeedResponseResult = true)
         {
             return await cmd.CMD_RunAsync(dosCommand, 0, NeedResponseResult);
@@ -1808,10 +1769,8 @@ namespace MultiControl
 
         private void startTestToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            mCount = 0;
             DoControlTest();
         }
-
         private void startSelectedAndroidDeviceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //mCount = 0;
