@@ -23,6 +23,7 @@ using ThoughtWorks.QRCode.Codec.Util;
 using System.Management;
 using MultiControl.Common;
 using MultiControl.Lib;
+using ExcelOperaNamespace;
 
 namespace MultiControl
 {
@@ -73,17 +74,9 @@ namespace MultiControl
         private string[] mFileFooter = {
                                            "Result"
                                        };
-        //private int mTickCount = 5;
-        //private OpaqueCommand mTipsLayer = new OpaqueCommand();
-        //private MyOpaqueLayer mOpaqueLayer = null;
         private OpaqueForm mOpaqueLayer = new OpaqueForm();
-
         private int mPseudoTotal = 0;
 
-        private string SPECIFIC_TAG_PATH = "/Android/data/com.wistron.generic.pqaa/files/path.verify.pass";
-        //private string CFG_FILE_PACKAGE = "/mnt/sdcard/Android/data/com.wistron.generic.pqaa/";
-        private string CFG_FILE_ROOT = "/Android/data/com.wistron.generic.pqaa/files/";
-        private string CFG_FILE_PQAA = "/Android/data/com.wistron.generic.pqaa/files/pqaa_config";
 
         //Event
         public event OnStartUpdateHandle StartUpdate;
@@ -353,6 +346,8 @@ namespace MultiControl
                 await Task.Delay(500);
                 count++;
             }
+            if (deviceList.Count <= 0)
+                Debug.WriteLine("find no devices");
             for (int index = 0; index < deviceList.Count; index++)
             {
                 var device = deviceList[index];
@@ -647,7 +642,7 @@ namespace MultiControl
                 {
                     //SD chance path @20160518
                     string verify = row[1].ToString();
-                    string pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + verify + SPECIFIC_TAG_PATH;
+                    string pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + verify + config_inc.SPECIFIC_TAG_PATH;
                     string console = await Execute(pullCmd);
 
 
@@ -668,7 +663,6 @@ namespace MultiControl
                     }
                 }
             }
-
             return result;
         }
 
@@ -747,7 +741,6 @@ namespace MultiControl
         {
             //DoControlTest();
         }
-
 
         #region Update Devic Stattus
         delegate void UpdateUIStatusDelegate(object index);
@@ -1227,10 +1220,12 @@ namespace MultiControl
         /// <param name="index"></param>
         private async void ThreadMethod(object index)
         {
-            int i = (int)index;
-            mDuts[i].Result = UserGridClassLibrary.ItemResult.IR_TESTING;
+            int ThreadIndex = (int)index;
+
+            #region push测试指令及相关文件Testing
+            mDuts[ThreadIndex].Result = UserGridClassLibrary.ItemResult.IR_TESTING;
             //_syncContext.Post(SetDutStatus, i);
-            SetDutStatusInvoke(i);
+            SetDutStatusInvoke(ThreadIndex);
             /*
             //get product mode ro.product.model
             string modeCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell getprop ro.product.model";
@@ -1240,8 +1235,8 @@ namespace MultiControl
             mConnectedDut[i].ConfigPath = Application.StartupPath + "\\" + model;
             * */
             //_syncContext.Post(SetDutModel, i);
-            SetDutModel(i);
-            mDuts[i].EstimateTime = mConnectedDut[i].Estimate;
+            SetDutModel(ThreadIndex);
+            mDuts[ThreadIndex].EstimateTime = mConnectedDut[ThreadIndex].Estimate;
             //DateTime dtStart = DateTime.Now;
             //push md5 file
             string pushCmd = string.Empty;
@@ -1252,7 +1247,7 @@ namespace MultiControl
             //ADD PQAA INSTALL TIME---------------------------------------------
             //mOpaqueLayer.AddResult(i, mConnectedDut[i].Model, "Install PQAA", OpaqueForm.MyResult.WORKING, 0.0f);
             //DateTime dtStart = DateTime.Now;
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " install -r Generic_PQAA.apk";
+            pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " install -r Generic_PQAA.apk";
             await Execute(pushCmd, true);
 
 
@@ -1260,21 +1255,24 @@ namespace MultiControl
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
             //_syncContext.Post(SetDutInstallPQAA, i);
-            SetDutInstallPQAAInvoke(i);
+            SetDutInstallPQAAInvoke(ThreadIndex);
 
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
+            pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
             await Execute(pushCmd, true);
 
 
 
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
-            string sdcard = await QueryModelConfigSDCardFromDataSet(i);
+
+
+            // SD card issue found!!!
+            string sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex);
             //_syncContext.Post(SetDutInstallPQAA, i);
 
             if (string.IsNullOrEmpty(sdcard))
             {
-                MessageBox.Show("No avaiable SD card for testing...");
+                MessageBox.Show("No available SD card for testing...");
                 return;
             }
             /*
@@ -1282,46 +1280,46 @@ namespace MultiControl
             Execute(pushCmd);
             _syncContext.Post(SetDutMD5, i);
 
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + CFG_FILE_ROOT; // /mnt/sdcard/pqaa_config";
+            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + config_inc.CFG_FILE_ROOT; // /mnt/sdcard/pqaa_config";
             Execute(pushCmd);
             _syncContext.Post(SetDutMD5, i);
             */
 
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push md5.txt " + mConnectedDut[i].SDCard + CFG_FILE_ROOT; // /mnt/sdcard/";
+            pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push md5.txt " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT; // /mnt/sdcard/";
             await Execute(pushCmd, true);
 
 
             //_syncContext.Post(SetDutMD5, i);
-            SetDutMD5Invoke(i);
+            SetDutMD5Invoke(ThreadIndex);
             /*
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             Execute(pushCmd);
             _syncContext.Post(SetDutPQAAFolder, i);
             */
             //------START-------------------------------------------
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
-                    "\\" + "audio_loopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mConnectedDut[ThreadIndex].ConfigPath +
+                    "\\" + "audio_loopback.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
                 //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push audio_loopback.cfg /mnt/sdcard/pqaa_config";
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
-                "\\" + "audio_loopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
+                "\\" + "audio_loopback.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             await Execute(pushCmd, true);
             //cmd.CMD_Run(pushCmd);
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
-                    "\\" + "monipower.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mConnectedDut[ThreadIndex].ConfigPath +
+                    "\\" + "monipower.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
-                    "\\" + "monipower.cfg \"" + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "monipower.cfg \"" + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             await Execute(pushCmd, true);
 
@@ -1329,75 +1327,61 @@ namespace MultiControl
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
-                    "\\" + "sysinfo.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mConnectedDut[ThreadIndex].ConfigPath +
+                    "\\" + "sysinfo.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
-                    "\\" + "sysinfo.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "sysinfo.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             await Execute(pushCmd, true);
 
 
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
-                    "\\" + "wifi.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mConnectedDut[ThreadIndex].ConfigPath +
+                    "\\" + "wifi.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
-                    "\\" + "wifi.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "wifi.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             await Execute(pushCmd, true);
-
-
-
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
-                    "\\" + "gps.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mConnectedDut[ThreadIndex].ConfigPath +
+                    "\\" + "gps.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
-                    "\\" + "gps.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "gps.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             await Execute(pushCmd, true);
-
-
-
-
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
-                    "\\" + "headsetloopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mConnectedDut[ThreadIndex].ConfigPath +
+                    "\\" + "headsetloopback.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
-                    "\\" + "headsetloopback.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "headsetloopback.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             await Execute(pushCmd, true);
-
-
-
-
             if (bMultiModelSupport)
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mConnectedDut[i].ConfigPath +
-                    "\\" + "pqaa.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mConnectedDut[ThreadIndex].ConfigPath +
+                    "\\" + "pqaa.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             else
             {
-                pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push \"" + mCfgFolder +
-                    "\\" + "pqaa.cfg\" " + mConnectedDut[i].SDCard + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
+                    "\\" + "pqaa.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
             await Execute(pushCmd, true);
-
-
-
             //--------------END--------------------------------------
 
             //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " uninstall com.wistron.generic.pqaa";
@@ -1410,22 +1394,24 @@ namespace MultiControl
             //Execute(pushCmd);
 
             DateTime dtEnd = DateTime.Now;
-            TimeSpan ts = dtEnd - mConnectedDut[i].BenginTime;// dtStart;
+            TimeSpan ts = dtEnd - mConnectedDut[ThreadIndex].BenginTime;// dtStart;
             float _cost = 0.0f;
             _cost = (float)ts.TotalMilliseconds / 1000;
             //mConnectedDut[i].InstallTime = _cost;
-            mDuts[i].InstallTime = _cost;
+            mDuts[ThreadIndex].InstallTime = _cost;
             //ADD END---------------------------------------------------------
             string md5String = mGlobalmd5Code;
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell am start -n com.wistron.generic.pqaa/.TestItemsList --ei block " + (i + 1).ToString() + " --ei autostart 1" + " --es md5code " + md5String;
+            pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell am start -n com.wistron.generic.pqaa/.TestItemsList --ei block " + (ThreadIndex + 1).ToString() + " --ei autostart 1" + " --es md5code " + md5String;
             await Execute(pushCmd, true);
 
-            //_syncContext.Post(SetDutStartPQAA, i);
-            SetDutStartPQAAInvoke(i);
+            SetDutStartPQAAInvoke(ThreadIndex);
+            #endregion
+
+            #region pull wInfo文件并更新界面设备相关信息
             //IMEI
             string wInfo = string.Empty;
-            string dutInfo = mConnectedDut[i].SerialNumber + "_wInfo.txt";
-            wInfo = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "wInfo.txt " + dutInfo;
+            string dutInfo = mConnectedDut[ThreadIndex].SerialNumber + "_wInfo.txt";
+            wInfo = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "wInfo.txt " + dutInfo;
             while (!File.Exists(dutInfo))
             {
                 await Execute(wInfo);
@@ -1445,46 +1431,43 @@ namespace MultiControl
                 buildNO = sr.ReadLine();//bonnie20160805
                 sr.Close();
                 fs.Close();
+                mConnectedDut[ThreadIndex].IMEI = imei;
+                mConnectedDut[ThreadIndex].RAM = ram;
+                mConnectedDut[ThreadIndex].FLASH = flash;
+                mConnectedDut[ThreadIndex].BuildNumber = buildNO;//bonnie20160805
 
-                mConnectedDut[i].IMEI = imei;
-                mConnectedDut[i].RAM = ram;
-                mConnectedDut[i].FLASH = flash;
-                mConnectedDut[i].BuildNumber = buildNO;//bonnie20160805
-
-                //_syncContext.Post(SetDutIMEI, i);
-                SetDutIMEIInvoke(i);
-
+                SetDutIMEIInvoke(ThreadIndex);
                 File.Delete(dutInfo);
             }
-            //END
-            string pullCmd = string.Empty;
-            string progName = mConnectedDut[i].SerialNumber + "_progress.txt";
-            //while (true)
-            mConnectedDut[i].ExitRunningThread = false;
+            #endregion
 
-            //while(!bTerminateThread)
+            #region 追踪测试进度信息
+            string pullCmd = string.Empty;
+            string progress_file = mConnectedDut[ThreadIndex].SerialNumber + "_progress.txt";
+            mConnectedDut[ThreadIndex].ExitRunningThread = false;
             int walkedIndex = -1;
-            while (!mConnectedDut[i].ExitRunningThread)
+            while (!mConnectedDut[ThreadIndex].ExitRunningThread)
             {
+                #region 实时追踪测试进度信息
                 //check this DUT connect or disconnect to quit!
-                if (!mConnectedDut[i].Connected)
+                // 追踪device连接状态
+                if (!mConnectedDut[ThreadIndex].Connected)
                 {
                     Thread.Sleep(300);
-                    //_syncContext.Post(SetDutDisconnected, i);
-                    SetDutDisconnected(i);
+                    SetDutDisconnected(ThreadIndex);
                     walkedIndex = -1;
                     continue;
                 }
-                else
-                {
-                    _syncContext.Post(SetDutConnected, i);
-                }
-                pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "progress.txt " + progName;
+
+                SetDutConnected(ThreadIndex);
+
+                // pull progress文件
+                pullCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "progress.txt " + progress_file;
                 await Execute(pullCmd);
 
-                string prog = string.Empty;
-                string item = string.Empty;
-                if (File.Exists(progName))
+                string progressStr = string.Empty;
+                string testItem = string.Empty;
+                if (File.Exists(progress_file))
                 {
                     //1. FILE read exception BUG found @20151204 ->delay to fix
                     //2. ADB server kill BUG found @20151204
@@ -1492,326 +1475,287 @@ namespace MultiControl
                     Thread.Sleep(100);
                     try
                     {
-                        FileStream fs = new FileStream(progName, FileMode.Open);
-                        StreamReader sr = new StreamReader(fs);
-                        prog = sr.ReadLine();
-                        item = sr.ReadLine();
-                        sr.Close();
-                        fs.Close();
+                        string[] progress_context = File.ReadAllLines(progress_file);
+                        if (progress_context.Length >= 1)
+                            progressStr = progress_context[0].Trim();
+                        if (progress_context.Length >= 2)
+                            testItem = progress_context[1].Trim();
                     }
                     catch (IOException ex)
                     {
-                        Console.WriteLine("Exception = " + ex.Message);
-                        //MessageBox.Show(ex.Message);
+                        Console.WriteLine($"read progress file error: {ex.Message}");
                     }
                 }
-                if (!string.IsNullOrEmpty(prog))// && !string.IsNullOrEmpty(item))
+                if (String.IsNullOrEmpty(progressStr))
                 {
-                    //PULL test result
-                    string resultName = mConnectedDut[i].SerialNumber + "_result.txt";
-                    pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "result.txt " + resultName;
+                    Thread.Sleep(300);
+                    continue;
+                }
+                //UPDATE TEST PROGRESS
+                string value = ThreadIndex + "/" + progressStr + "/" + testItem;
+                string[] progress_arr = progressStr.Split('/');
+                int progress_current = int.Parse(progress_arr[0].ToString());
+                int progress_total = int.Parse(progress_arr[1].ToString());
+
+                if (walkedIndex != progress_current)
+                {
+                    SetDutTestProgressInvoke(value);// 更新界面进度
+                    walkedIndex = progress_current;
+                }
+                if (progress_current < progress_total)
+                {
+                    Thread.Sleep(300);
+                    continue;
+                }
+                #endregion
+                // 测试结束, 处理测试结果
+                SetDutTestFinishInvoke(value);
+
+                //下达删除progress.txt命令， 同时删除本地文件
+                string delCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell rm " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "progress.txt";
+                await Execute(delCmd);
+                if (File.Exists(progress_file))
+                {
+                    File.Delete(progress_file);
+                }
+
+                //PULL test result
+                string result_file = mConnectedDut[ThreadIndex].SerialNumber + "_result.txt";
+                pullCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "result.txt " + result_file;
+                await Execute(pullCmd);
+
+                int count = 5;// 循环执行五次， 如果还是抓不到result文件， 则路过处理result文件步骤
+                while (!File.Exists(result_file) && count <= 5)
+                {
+                    Thread.Sleep(300);
                     await Execute(pullCmd);
-
-
-
-                    //UPDATE TEST PROGRESS
-                    string value = i + "/" + prog + "/" + item;
-                    //_syncContext.Post(SetDutTestProgress, value);
-                    //break this loop
-                    string[] sArray = prog.Split('/');
-                    try
-                    {
-                        int cur = int.Parse(sArray[0].ToString());
-                        int total = int.Parse(sArray[1].ToString());
-
-                        if (walkedIndex != cur)
-                        {
-                            //_syncContext.Post(SetDutTestProgress, value);
-                            SetDutTestProgressInvoke(value);
-                            walkedIndex = cur;
-                        }
-
-                        if (cur == total)
-                        {
-                            //_syncContext.Post(SetDutTestFinish, value);
-                            SetDutTestFinishInvoke(value);
-                            string delCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell rm " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "progress.txt";
-                            await Execute(delCmd);
-
-
-                            if (File.Exists(progName))
-                            {
-                                File.Delete(progName);
-                            }
-                            delCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell rm " + mConnectedDut[i].SDCard + CFG_FILE_ROOT + "result.txt";
-                            await Execute(delCmd);
-
-
-
-                            if (File.Exists(resultName))
-                            {
-                                //Create MODEL FOLDER and DATE
-                                string date = DateTime.Now.ToString("yyyyMMdd");
-                                string modelFolder = mLogFolder + "\\" + mConnectedDut[i].Model;
-                                string logFolder = modelFolder + "\\" + date;
-                                try
-                                {
-                                    if (!Directory.Exists(modelFolder))
-                                    {
-                                        Directory.CreateDirectory(modelFolder);
-                                    }
-                                    if (!Directory.Exists(logFolder))
-                                    {
-                                        Directory.CreateDirectory(logFolder);
-                                    }
-                                    File.Copy(resultName, logFolder + "\\" + resultName, true);
-                                }
-                                catch (Exception ex)
-                                {
-                                    MessageBox.Show(ex.Message);
-                                }
-
-                                if (File.Exists(resultName))
-                                {
-                                    try
-                                    {
-
-                                        File.Delete(resultName);
-                                        //
-                                        string source = logFolder + "\\" + resultName;
-                                        SaveResultToFile(source, 0);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        //EXCEPTION MESSAGE
-                                        MessageBox.Show(ex.Message);
-                                    }
-                                }
-                            }
-                            if (item.Equals("PASS"))
-                            {
-                                UninstallPQAA(i);
-                                break;
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        ;
-                    }
+                    count++;
                 }
-                else
-                {
-                    //disconnect
-                    //_syncContext.Post(SetDutStartPQAA, i);
+
+                //下达删除result.txt命令， 本地保存log
+                delCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell rm " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "result.txt";
+                await Execute(delCmd);
+
+                if (testItem.Equals("PASS"))
+                {// 测试通过以后push卸载pqaa指令， 并退出测试
+                    pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " uninstall com.wistron.generic.pqaa";
+                    await Execute(pushCmd, true);
+                    break;
                 }
                 Thread.Sleep(100);
+                SaveResultToFile(result_file, ThreadIndex);
             }
-            //UNINSTALL GENERIC PQAA
-            //UninstallPQAA(i);
-            //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " uninstall com.wistron.generic.pqaa";
-            //Execute(pushCmd);
+            #endregion
         }
 
         private int SaveResultToFile(string source, int index)
         {
-            int result = 0;
-            //HARD VALUE
-            string Version = "V1.4.0";
-            string SN = mConnectedDut[index].SerialNumber;
-            string Brand = mConnectedDut[index].Brand;
-            string Model = mConnectedDut[index].Model;
-            string AndroidVersion = mConnectedDut[index].AndroidVersion;
-            string IMEI = mConnectedDut[index].IMEI;
+            string log_date = DateTime.Now.ToString("yyyyMMdd");
             string logDateTime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
-            // string BuildNumber = mConnectedDut[index].BuildNumber;//bonnie20160805
-            //MAKE FILE
-            string date = DateTime.Now.ToString("yyyyMMdd");
-            //Tiger\\20160428\\
-            string subFolder = mConnectedDut[index].Model + "\\" + date + "\\";
-            string csvFile = mLogFolder + "\\" + subFolder + date + "_" + SN + ".xlsx";
-            ExcelOperaNamespace.MyExcel LocalExcel = new ExcelOperaNamespace.MyExcel();
-            bool existed = false;
-            if (File.Exists(csvFile))
-            {
-                //DATA
-                LocalExcel.Open(csvFile);
-                LocalExcel.OpenSheet("LOG");
-                LocalExcel.AddRow(2);
-                LocalExcel.AutoRange();
-                existed = true;
-                //Set TO N/A
-                int column = mFileHeader.Length + 1;
-                foreach (string item in mFileTestItem)
-                {
-                    LocalExcel.SetItemText(2, column, "N/A");
-                    column++;
-                }
-            }
-            else
-            {
-                LocalExcel.NewExcel();
-                LocalExcel.AddSheet("LOG");
-                LocalExcel.AutoRange();
-                //ADD
-                //mGlobalExcel.SetItemText(1, 1, "PQAA SW");
-                int i = 1;
-                foreach (string header in mFileHeader)
-                {
-                    LocalExcel.SetItemText(1, i, header);
-                    i++;
-                }
-                foreach (string item in mFileTestItem)
-                {
-                    LocalExcel.SetItemText(1, i, item);
-                    LocalExcel.SetItemText(2, i, "N/A");
-                    i++;
-                }
-                foreach (string footer in mFileFooter)
-                {
-                    LocalExcel.SetItemText(1, i, footer);
-                    i++;
-                }
-            }
-            //"PQAA SW", "S/N", "Brand", "Model Name", "Android Version",
-            //"IMEI", "Date/Time", "Test Time(s)", "AudioLoopback",
-            //"BlueTooth","Camera","ConfigChk","Display","MoniPower",
-            //"SDCard","TouchPanel","HeadsetLoopback","Vibration","Wifi",
-            //"RAM","OTG","GPS","NFC","SIM","Button","ReceiverLoopback",
-            //"LED","SensorTest","Result"
-            LocalExcel.SetItemText(mExcelStartRow + index, 1, Version);
-            LocalExcel.SetItemText(mExcelStartRow + index, 2, "'" + SN);
-            LocalExcel.SetItemText(mExcelStartRow + index, 3, Brand);
-            LocalExcel.SetItemText(mExcelStartRow + index, 4, Model);
-            LocalExcel.SetItemText(mExcelStartRow + index, 5, AndroidVersion);
-            LocalExcel.SetItemText(mExcelStartRow + index, 6, "'" + IMEI);
-            LocalExcel.SetItemText(mExcelStartRow + index, 7, "'" + logDateTime);
-            float totalTimes = 0.0f;
-            int failCount = 0;
-            //BEGIN TO PARSE LOG FILE
-            try
-            {
-                FileStream fs = new FileStream(source, FileMode.Open);
-                StreamReader sr = new StreamReader(fs);
-                string line = string.Empty;
-                while (!string.IsNullOrEmpty(line = sr.ReadLine()))
-                {
-                    string[] itemResult = line.Split('=');
-                    string name = itemResult[0].ToString();
-                    int res = int.Parse(itemResult[1].ToString());
-                    float time = float.Parse(itemResult[2].ToString());
-                    totalTimes += time;
-                    if (name.Contains("SensorTest"))
-                    {
-                        string[] sensorResult = name.Split(':');
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("LightSensor"), "PASS");
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("GSensor"), "PASS");
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("ProximitySensor"), "PASS");
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("ECompass"), "PASS");
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("GyroSensor"), "PASS");
-                        //LS,GS,PS,EC,GyS
-                        foreach (string sensor in sensorResult)
-                        {
-                            if (sensor.Equals("LS"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("LightSensor"), "FAIL");
-                                failCount++;
-                            }
-                            else if (sensor.Equals("GS"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("GSensor"), "FAIL");
-                                failCount++;
-                            }
-                            else if (sensor.Equals("PS"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("ProximitySensor"), "FAIL");
-                                failCount++;
-                            }
-                            else if (sensor.Equals("EC"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("ECompass"), "FAIL");
-                                failCount++;
-                            }
-                            else if (sensor.Equals("GyS"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("GyroSensor"), "FAIL");
-                                failCount++;
-                            }
-                        }
-                    }
-                    else if (name.Contains("MultiTest"))
-                    {
-                        string[] sensorResult = name.Split(':');
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("BlueTooth"), "PASS");
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("Wifi"), "PASS");
-                        LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("GPS"), "PASS");
-                        //LS,GS,PS,EC,GyS
-                        foreach (string sensor in sensorResult)
-                        {
-                            if (sensor.Equals("BT"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("BlueTooth"), "FAIL");
-                                failCount++;
-                            }
-                            else if (sensor.Equals("WF"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("Wifi"), "FAIL");
-                                failCount++;
-                            }
-                            else if (sensor.Equals("GPS"))
-                            {
-                                LocalExcel.SetItemText(mExcelStartRow + index, GetColumnMapping("GPS"), "FAIL");
-                                failCount++;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        int column = GetColumnMapping(name);
-                        switch (res)
-                        {
-                            case 1:
-                                LocalExcel.SetItemText(mExcelStartRow + index, column, "PASS");
-                                break;
-                            case 2:
-                                LocalExcel.SetItemText(mExcelStartRow + index, column, "FAIL");
-                                failCount++;
-                                break;
-                        }
-                    }
-                }
-                sr.Close();
-                fs.Close();
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine("Exception = " + ex.Message);
-            }
-            int integerTimes = Convert.ToInt32(totalTimes);
-            LocalExcel.SetItemText(mExcelStartRow + index, 8, integerTimes.ToString());
-            int lastColumn = mFileHeader.Length + mFileTestItem.Length + mFileFooter.Length;
-            if (failCount > 0)
-            {
-                LocalExcel.SetItemText(mExcelStartRow + index, lastColumn, "FAIL");
-            }
-            else
-            {
-                LocalExcel.SetItemText(mExcelStartRow + index, lastColumn, "PASS");
-            }
-            if (existed)
-            {
-                LocalExcel.Save();//.SaveAs(csvFile);
-            }
-            else
-            {
-                LocalExcel.SaveAs(csvFile);
-            }
-            LocalExcel.Exit();
-            ExcelOperaNamespace.MyExcel.DeleteExcelExe();
 
-            return result;
+            DirectoryInfo log_folder = new DirectoryInfo(mLogFolder);
+            if (!Directory.Exists(mLogFolder))
+            {
+                Debug.WriteLine($"log folder can not be found:{mLogFolder}");
+                return -1;
+            }
+            DirectoryInfo log_model_path = new DirectoryInfo(log_folder.FullName + $@"\{mConnectedDut[index].Model}");
+            if (!log_model_path.Exists)
+                log_model_path.Create();
+
+            DirectoryInfo log_model_date_path = new DirectoryInfo(log_model_path.FullName + $@"\{log_date}");
+            if (!log_model_date_path.Exists)
+            {
+                log_model_date_path.Create();
+            }
+            if (!File.Exists(source))
+                return -1;
+
+            string result_file = log_model_date_path.FullName + $@"\{source}";
+            File.Copy(source, result_file, false);
+            File.Delete(source);
+            FileInfo result_xls_file = new FileInfo(log_model_date_path.FullName + "\\" + mConnectedDut[index].SerialNumber + ".xlsx");
+
+            DataTable tbl_result = new DataTable();
+            foreach (string header in mFileHeader)
+            {
+                if (!tbl_result.Columns.Contains(header))
+                    tbl_result.Columns.Add(header);
+            }
+            foreach (string item in mFileTestItem)
+            {
+                if (!tbl_result.Columns.Contains(item))
+                    tbl_result.Columns.Add(item);
+            }
+            foreach (string footer in mFileFooter)
+            {
+                if (!tbl_result.Columns.Contains(footer))
+                    tbl_result.Columns.Add(footer);
+            }
+            DataRow newrow = tbl_result.NewRow();
+
+            foreach (DataColumn col in tbl_result.Columns)
+            {
+                newrow[col.Caption] = "N/A";// 默认设为N/A
+            }
+            // 纪录设备信息
+            newrow[0] = config_inc.PQAA_SW_VERSION;
+            newrow[1] = mConnectedDut[index].SerialNumber;
+            newrow[2] = mConnectedDut[index].Brand;
+            newrow[3] = mConnectedDut[index].Model;
+            newrow[4] = mConnectedDut[index].AndroidVersion;
+            newrow[5] = mConnectedDut[index].IMEI;
+            newrow[6] = logDateTime;
+
+            string[] result_array = File.ReadAllLines(result_file);
+            double total_testtime = 0;
+            TEST_RESULT total_test_result = TEST_RESULT.PASS;
+            foreach (var item in result_array)
+            {
+                if (String.IsNullOrEmpty(item))
+                    continue;
+                #region 整理测试结果
+                string[] item_result_array = item.Split('=');
+                string test_item = item_result_array[0].Trim();
+                TEST_RESULT test_item_result = (TEST_RESULT)Enum.Parse(typeof(TEST_RESULT), item_result_array[1].Trim());
+                if (test_item_result == TEST_RESULT.FAIL)
+                    total_test_result = test_item_result;
+                double test_item_testtime = double.Parse(item_result_array[2].Trim());
+                total_testtime += test_item_testtime;
+                if (test_item.Contains("SensorTest"))
+                {
+                    string[] sensor_items = test_item.Split(':');
+                    foreach (var sensor in sensor_items)
+                    {
+                        switch (sensor.Trim())
+                        {
+                            case "LS":
+                                newrow["LightSensor"] = test_item_result.ToString();
+                                break;
+                            case "GS":
+                                newrow["GSensor"] = test_item_result.ToString();
+                                break;
+                            case "PS":
+                                newrow["ProximitySensor"] = test_item_result.ToString();
+                                break;
+                            case "EC":
+                                newrow["ECompass"] = test_item_result.ToString();
+                                break;
+                            case "GyS":
+                                newrow["GyroSensor"] = test_item_result.ToString();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                else if (test_item.Contains("MultiTest"))
+                {
+                    string[] audio_items = test_item.Split(':');
+                    foreach (var audio in audio_items)
+                    {
+                        switch (audio.Trim())
+                        {
+                            case "BT":
+                                newrow["BlueTooth"] = test_item_result.ToString();
+                                break;
+                            case "WF":
+                                newrow["Wifi"] = test_item_result.ToString();
+                                break;
+                            case "GPS":
+                                newrow["GPS"] = test_item_result.ToString();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    newrow[test_item] = test_item_result.ToString();
+                }
+                #endregion
+            }
+            newrow["Test Time(s)"] = (int)total_testtime;
+            newrow["Result"] = total_test_result.ToString();
+            output_resultToXls(newrow, result_xls_file);
+            return 0;
         }
 
+        private void output_resultToXls(DataRow newrow, FileInfo xlsFile)
+        {
+            MyExcel xlsApp = new MyExcel();
+            if (!xlsFile.Exists)
+            {
+                xlsApp.NewExcel();
+                xlsApp.SaveAs(xlsFile.FullName);
+            }
+            else
+            {
+                xlsApp.Open(xlsFile.FullName);
+            }
+            xlsApp.OpenSheetByIndex(1);
+            xlsApp.WorkSheetName = "LOG";
+            xlsApp.AutoRange();
+            int nStartRow = 1;
+            int nStartCol = 1;
+            string checkStr = xlsApp.GetItemText(nStartRow, 1);
+            xlsApp.SetRowHeight(nStartRow, 20);
+            if (String.IsNullOrEmpty(checkStr))
+            {// 第一行第一列为空， 则表示是第一次产生结果， 需要写入title
+                #region write title
+                foreach (DataColumn column in newrow.Table.Columns)
+                {
+                    xlsApp.SetItemText(nStartRow, nStartCol, column.Caption);
+                    // 标题样式
+                    xlsApp.SetCellbackgroundStyle(nStartRow, nStartCol, (ColorIndex)(4));//背景
+                    var font = xlsApp.GetCellFontStyle(nStartRow, nStartCol);
+                    font.Bold = true;
+                    font.Size = 10;// 字体
+                    font.Name = "Microsoft JhengHei UI Light";
+                    xlsApp.HorAligment(nStartRow, nStartCol, Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter);//对齐
+                    xlsApp.SetBordersLineStyle(nStartRow, nStartCol, LineStyle.连续直线);// 边框
+
+                    nStartCol++;
+                }
+                xlsApp.FreezePanes(2, 1);
+                xlsApp.AutoFitAll();
+                #endregion
+            }
+            nStartRow++;
+            checkStr = xlsApp.GetItemText(nStartRow, 1);
+            while (!String.IsNullOrEmpty(checkStr))
+            {// 定位到最后一行
+                nStartRow++;
+                checkStr = xlsApp.GetItemText(nStartRow, 1);
+            }
+            nStartCol = 1;
+            foreach (DataColumn column in newrow.Table.Columns)
+            {
+                if (column.Caption == "S/N" || column.Caption == "IMEI")
+                {
+                    xlsApp.SetItemText(nStartRow, nStartCol, "'" + newrow[column.Caption].ToString());
+                }
+                else
+                {
+                    xlsApp.SetItemText(nStartRow, nStartCol, newrow[column.Caption].ToString());
+                    string resultStr = newrow[column.Caption].ToString();
+                    if (resultStr == "PASS")
+                    {
+                        xlsApp.SetCellbackgroundStyle(nStartRow, nStartCol, ColorIndex.绿色);//背景
+                    }
+                    else if (resultStr == "FAIL")
+                    {
+                        xlsApp.SetCellbackgroundStyle(nStartRow, nStartCol, ColorIndex.红色);//背景
+                    }
+                }
+                nStartCol++;
+            }
+            xlsApp.AutoFitAll();
+            xlsApp.Save();
+            xlsApp.Exit();
+            Debug.WriteLine($"Save Result to file:{xlsFile.Name}");
+        }
         private int GetColumnMapping(string item)
         {
             int result = mFileHeader.Length + 1;
@@ -1826,18 +1770,12 @@ namespace MultiControl
             return result;
         }
 
-        private void UninstallPQAA(int id)
+        private async void UninstallPQAA(int id)
         {
             if (id >= 0)
             {
                 string pushCmd = "adb -s " + mConnectedDut[id].SerialNumber + " uninstall com.wistron.generic.pqaa";
-                Execute(pushCmd, true);
-
-
-
-                //since move folder to package, no need remove config folder @20160222 BillGe
-                //pushCmd = "adb -s " + mConnectedDut[id].SerialNumber + " shell rm -rf " + CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
-                //Execute(pushCmd);
+                await Execute(pushCmd, true);
             }
         }
 
@@ -2286,7 +2224,7 @@ namespace MultiControl
                     {
                         //SD chance path @20160518
                         string verify = row[1].ToString();
-                        string pullCmd = "adb -s " + mConnectedDut[0].SerialNumber + " pull " + verify + SPECIFIC_TAG_PATH;
+                        string pullCmd = "adb -s " + mConnectedDut[0].SerialNumber + " pull " + verify + config_inc.SPECIFIC_TAG_PATH;
                         string console = await Execute(pullCmd);
 
 

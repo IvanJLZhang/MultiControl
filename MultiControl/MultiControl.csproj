@@ -82,9 +82,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\ExcelOperaLibrary\ExcelOperation\MyExcel.cs">
+      <Link>Common\MyExcel.cs</Link>
+    </Compile>
     <Compile Include="Common\AdbCommand.cs" />
     <Compile Include="Common\CfgHelper.cs" />
     <Compile Include="Common\common.cs" />
+    <Compile Include="Common\config_inc.cs" />
     <Compile Include="Common\EventArgsLib.cs" />
     <Compile Include="Common\EventHandleLib.cs" />
     <Compile Include="ConfigData.Designer.cs">
@@ -158,7 +162,6 @@
     <Compile Include="Logger.Designer.cs">
       <DependentUpon>Logger.cs</DependentUpon>
     </Compile>
-    <Compile Include="Common\MyExcel.cs" />
     <Compile Include="MyOpaqueLayer.cs">
       <SubType>UserControl</SubType>
     </Compile>
