@@ -1,0 +1,25 @@
+<?xml version="1.0" standalone="yes"?>
+<ScriptData>
+  <product name="pad">
+    <model name="S50c">
+      <TestItem>
+        <Name>OS Info.</Name>
+        <Script>ABCD</Script>
+      </TestItem>
+      <TestItem>
+        <Name>OS Info2</Name>
+        <Script>ABCD</Script>
+      </TestItem>
+    </model>
+    <model name="Tiger2">
+      <TestItem>
+        <Name>OS Info.</Name>
+        <Script>ABCD</Script>
+      </TestItem>
+      <TestItem>
+        <Name>OS Info.</Name>
+        <Script>ABCD</Script>
+      </TestItem>
+    </model>
+  </product>
+</ScriptData>

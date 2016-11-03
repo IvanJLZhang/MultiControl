@@ -1,0 +1,38 @@
+<?xml version="1.0" standalone="yes"?>
+<ConfigData>
+  <model>
+    <Name>Tiger</Name>
+    <Brand>XBOX</Brand>
+    <Path>I:\Wistron\MultiControl\MultiControl\bin\Debug\Tiger</Path>
+    <Estimate>300</Estimate>
+  </model>
+  <model>
+    <Name>S50c</Name>
+    <Brand>Cat</Brand>
+    <Path>I:\Wistron\MultiControl\MultiControl\bin\Debug\Tiger</Path>
+    <Estimate>255</Estimate>
+  </model>
+  <model>
+    <Name>PadFone_X</Name>
+    <Brand>Asus</Brand>
+    <Path>C:\PQAA\ASUS_PadFone_X</Path>
+    <Estimate>100</Estimate>
+  </model>
+  <model>
+    <Name>HTC_M8x</Name>
+    <Brand>HTC</Brand>
+    <Path>C:\PQAA\HTC_M8x</Path>
+    <Estimate>300</Estimate>
+  </model>
+  <model>
+    <Name>SM-N900</Name>
+    <Brand>Samsung</Brand>
+    <Path>C:\Users\zjl40\Documents\Visual Studio 2015\Projects\MultiControl\MultiControl\bin\Debug\default</Path>
+    <Estimate>300</Estimate>
+  </model>
+  <model>
+    <Name>SM-J700F</Name>
+    <Path>C:\Users\zjl40\Documents\Visual Studio 2015\Projects\MultiControl\MultiControl\bin\Debug\default</Path>
+    <Estimate>300</Estimate>
+  </model>
+</ConfigData>

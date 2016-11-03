@@ -1,0 +1,4 @@
+AudioLoopback=1=2.274
+Brightness=1=4.152
+Camera=1=5.729
+ConfigChk=2=2.274
