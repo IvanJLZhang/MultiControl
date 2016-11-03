@@ -1660,7 +1660,16 @@ namespace MultiControl
 
         private void output_resultToXls(DataRow newrow, FileInfo xlsFile)
         {
-            MyExcel xlsApp = new MyExcel();
+            MyExcel xlsApp = null;
+            try
+            {
+                xlsApp = new MyExcel();
+            }
+            catch(Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return;
+            }
             if (!xlsFile.Exists)
             {
                 xlsApp.NewExcel();

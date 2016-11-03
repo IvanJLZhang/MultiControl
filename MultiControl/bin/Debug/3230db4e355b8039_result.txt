@@ -1,2 +1,0 @@
-NFC=2=20.167
-SensorTest:LS:PS:GS:=2=20.843
