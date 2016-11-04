@@ -1223,8 +1223,7 @@ namespace MultiControl
             //mOpaqueLayer.AddResult(i, mConnectedDut[i].Model, "Install PQAA", OpaqueForm.MyResult.WORKING, 0.0f);
             //DateTime dtStart = DateTime.Now;
             pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " install -r Generic_PQAA.apk";
-            await Execute(pushCmd, true);
-
+            await Execute(pushCmd, true);          
 
 
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
@@ -1234,8 +1233,7 @@ namespace MultiControl
 
             pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
             await Execute(pushCmd, true);
-
-
+         
 
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
