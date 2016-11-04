@@ -1510,8 +1510,8 @@ namespace MultiControl
 
                 //if (testItem.Equals("PASS"))
                 //{// 测试通过以后push卸载pqaa指令， 并退出测试
-                //pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " uninstall com.wistron.generic.pqaa";
-                //await Execute(pushCmd, true);
+                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " uninstall com.wistron.generic.pqaa";
+                await Execute(pushCmd, true);
                 //break;
                 //}
                 mConnectedDut[ThreadIndex].ExitRunningThread = true;
