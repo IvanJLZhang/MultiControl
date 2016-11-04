@@ -39,7 +39,10 @@ namespace MultiControl.Common
         /// </summary>
         public const string CFG_FILE_PQAA = CFG_FILE_ROOT + "pqaa_config";
 
-        public const string SPECIFIC_TAG_PATH = CFG_FILE_ROOT + "path.verify.pass";
+        public const string PATH_VERIFY_PATH = "path.verify.pass";
+
+        public const string SPECIFIC_TAG_PATH = CFG_FILE_ROOT + PATH_VERIFY_PATH;
+
 
 
         public static readonly string[] mFileHeader = {

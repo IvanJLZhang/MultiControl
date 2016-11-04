@@ -616,21 +616,23 @@ namespace MultiControl
             return index;
         }
 
-        private async Task<string> QueryModelConfigSDCardFromDataSet(int index)
+        private async Task<string> QueryModelConfigSDCardFromDataSet(int index, string destPath)
         {
             string result = string.Empty;
             mConnectedDut[index].SDCard = string.Empty;
+
+            string dstfile = $@"{destPath}\{config_inc.PATH_VERIFY_PATH}";
             foreach (DataRow sdPath in mConfigSDCard.Tables[0].Rows)
             {
                 //SD chance path @20160518
                 string verify = sdPath[1].ToString();
-                string pullCmd = "adb -s " + mConnectedDut[index].SerialNumber + " pull " + verify + config_inc.SPECIFIC_TAG_PATH;
+                string pullCmd = "adb -s " + mConnectedDut[index].SerialNumber + " pull " + verify + config_inc.SPECIFIC_TAG_PATH + " \"" + dstfile + "\"";
                 string ret = await Execute(pullCmd);
                 await Task.Delay(50);
-                if (File.Exists("path.verify.pass"))
+                if (File.Exists(dstfile))
                 {
                     result = mConnectedDut[index].SDCard = verify;
-                    File.Delete("path.verify.pass");
+                    File.Delete(dstfile);
                     break;
                 }
             }
@@ -1193,6 +1195,28 @@ namespace MultiControl
         {
             int ThreadIndex = (int)index;
 
+            #region 检测相关路径
+            string log_date = DateTime.Now.ToString("yyyyMMdd");
+            string logDateTime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+
+            DirectoryInfo log_folder = new DirectoryInfo(mLogFolder);
+            if (!Directory.Exists(mLogFolder))
+            {
+                Debug.WriteLine($"log folder can not be found:{mLogFolder}");
+                return;
+            }
+            DirectoryInfo log_model_path = new DirectoryInfo(log_folder.FullName + $@"\{mConnectedDut[ThreadIndex].Model}");
+            if (!log_model_path.Exists)
+                log_model_path.Create();
+
+            DirectoryInfo log_model_date_path = new DirectoryInfo(log_model_path.FullName + $@"\{log_date}");
+            if (!log_model_date_path.Exists)
+            {
+                log_model_date_path.Create();
+            }
+            #endregion
+
+
             #region push测试指令及相关文件Testing
             mDuts[ThreadIndex].Result = UserGridClassLibrary.ItemResult.IR_TESTING;
             //_syncContext.Post(SetDutStatus, i);
@@ -1233,10 +1257,10 @@ namespace MultiControl
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
             // SD card issue found!!!
             int count = 0;
-            string sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex);
+            string sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex, log_model_date_path.FullName);
             while (String.IsNullOrEmpty(sdcard) && count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
-                sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex);
+                sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex, log_model_date_path.FullName);
                 count++;
                 Debug.WriteLine($"{mConnectedDut[ThreadIndex].SerialNumber}: can not find sd card path, try again. {count++}");
                 await Task.Delay(300);
@@ -1383,7 +1407,8 @@ namespace MultiControl
             //IMEI
             string wInfo = string.Empty;
             string dutInfo = mConnectedDut[ThreadIndex].SerialNumber + "_wInfo.txt";
-            wInfo = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "wInfo.txt " + dutInfo;
+            dutInfo = log_model_date_path.FullName + @"\" + dutInfo;
+            wInfo = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "wInfo.txt \"" + dutInfo + "\"";
             while (!File.Exists(dutInfo))
             {
                 await Execute(wInfo);
@@ -1416,6 +1441,8 @@ namespace MultiControl
             #region 追踪测试进度信息
             string pullCmd = string.Empty;
             string progress_file = mConnectedDut[ThreadIndex].SerialNumber + "_progress.txt";
+            progress_file = log_model_date_path.FullName + @"\" + progress_file;
+
             mConnectedDut[ThreadIndex].ExitRunningThread = false;
             int walkedIndex = -1;
             while (!mConnectedDut[ThreadIndex].ExitRunningThread)
@@ -1434,7 +1461,7 @@ namespace MultiControl
                 SetDutConnected(ThreadIndex);
 
                 // pull progress文件
-                pullCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "progress.txt " + progress_file;
+                pullCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "progress.txt \"" + progress_file + "\"";
                 await Execute(pullCmd);
 
                 string progressStr = string.Empty;
@@ -1493,7 +1520,8 @@ namespace MultiControl
 
                 //PULL test result
                 string result_file = mConnectedDut[ThreadIndex].SerialNumber + "_result.txt";
-                pullCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "result.txt " + result_file;
+                result_file = log_model_date_path + @"\" + result_file;
+                pullCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "result.txt \"" + result_file + "\"";
                 await Execute(pullCmd);
 
                 count = 0;// 循环执行五次， 如果还是抓不到result文件， 则路过处理result文件步骤
@@ -1544,9 +1572,9 @@ namespace MultiControl
             if (!File.Exists(source))
                 return -1;
 
-            string result_file = log_model_date_path.FullName + $@"\{source}";
-            File.Copy(source, result_file, true);
-            File.Delete(source);
+            string result_file = source;//;log_model_date_path.FullName + $@"\{source}";
+            //File.Copy(source, result_file, true);
+            //File.Delete(source);
             FileInfo result_xls_file = new FileInfo(log_model_date_path.FullName + "\\" + mConnectedDut[index].SerialNumber + ".xlsx");
 
             DataTable tbl_result = new DataTable();
@@ -1662,7 +1690,7 @@ namespace MultiControl
             {
                 xlsApp = new MyExcel();
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 return;
@@ -1775,6 +1803,9 @@ namespace MultiControl
 
         private void startTestToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MyExcel.DeleteExcelExe();
+            common.DeleteConhostExe();
+
             DoControlTest();
         }
         private void startSelectedAndroidDeviceToolStripMenuItem_Click(object sender, EventArgs e)
