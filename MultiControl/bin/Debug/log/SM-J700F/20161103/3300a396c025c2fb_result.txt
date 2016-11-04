@@ -1,2 +1,2 @@
-NFC=2=1.096
-SensorTest:LS:GyS:EC:=2=0.785
+NFC=2=1.091
+SensorTest:LS:GyS:EC:=2=0.778

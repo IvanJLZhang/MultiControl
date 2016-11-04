@@ -24,6 +24,11 @@ namespace MultiControl.Common
 {
     public class config_inc
     {
+        /// <summary>
+        /// adb命令可重复执行最大次数
+        /// </summary>
+        public const int CMD_REPEAT_MAX_TIME = 10;
+
         public const string PQAA_SW_VERSION = "V1.4.0";
         /// <summary>
         /// 文件根目录

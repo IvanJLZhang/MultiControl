@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
@@ -47,6 +48,17 @@ namespace MultiControl
         {
             mIni.IniWriteValue("config", "Logger", mLogFolder);
             Close();
+        }
+
+        private void Logger_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!Directory.Exists(mLogFolder))
+                e.Cancel = true;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            mLogFolder = this.textBox1.Text;
         }
     }
 }

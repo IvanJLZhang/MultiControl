@@ -182,5 +182,21 @@ namespace MultiControl.Common
             }
             return -1;
         }
+        /// <summary>
+        /// 静态方法： 删除Excel进程
+        /// </summary>
+        public static void DeleteConhostExe()
+        {
+            Process[] ExcelProcess = Process.GetProcessesByName("conhost");
+            foreach (var o in ExcelProcess)
+                if (o.MainWindowTitle == "")
+                {
+                    try
+                    {
+                        o.Kill();
+                    }
+                    catch { }
+                }
+        }
     }
 }

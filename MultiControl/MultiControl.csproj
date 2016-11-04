@@ -64,6 +64,7 @@
       <HintPath>refs\Microsoft.Office.Interop.Excel.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
@@ -84,6 +85,9 @@
   <ItemGroup>
     <Compile Include="..\..\ExcelOperaLibrary\ExcelOperation\MyExcel.cs">
       <Link>Common\MyExcel.cs</Link>
+    </Compile>
+    <Compile Include="..\..\LogHelper\LogHelper\LoghelperClass.cs">
+      <Link>Common\LoghelperClass.cs</Link>
     </Compile>
     <Compile Include="Common\AdbCommand.cs" />
     <Compile Include="Common\CfgHelper.cs" />

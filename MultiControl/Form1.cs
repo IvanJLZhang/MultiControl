@@ -24,12 +24,15 @@ using System.Management;
 using MultiControl.Common;
 using MultiControl.Lib;
 using ExcelOperaNamespace;
+using LogHelper;
 
 namespace MultiControl
 {
     public partial class Form1 : Form, INotifyPropertyChanged
     {
         #region 全局变量
+        LogMsg m_log;
+
         StringBuilder TestLog = new StringBuilder();
         private DutDevice[] mConnectedDut;
         private int mRows, mCols;
@@ -76,10 +79,14 @@ namespace MultiControl
         public Form1()
         {
             InitializeComponent();
+
+            MyExcel.DeleteExcelExe();
+            common.DeleteConhostExe();
             // cmd操作类初始化
             cmd = new CMDHelper();
-            //cmd.OutputDataReceived += Cmd_OutputDataReceived;
-            //cmd.Exited += Cmd_Exited;
+            m_log = new LogMsg(Application.StartupPath);
+            Boolean.TryParse(ConfigurationHelper.ReadConfig("DebugLogEnabled"), out m_log.IsEnable);
+            m_log.Inititalize();
 
             _syncContext = SynchronizationContext.Current;
 
@@ -88,10 +95,10 @@ namespace MultiControl
             this.StartPosition = FormStartPosition.CenterScreen;
 
             // 加载cfg参数
-            LoadCfg();
-
-            //SaveResultToFile("I:\\Wistron\\MultiControl\\MultiControl\\bin\\Debug\\log\\Tiger\\20160427\\32dcc06f_result.txt",0);
-
+            if (!LoadCfg())
+            {
+                this.Close();
+            }
             OnDutInitialize();
 
             this.Resize += new System.EventHandler(this.LayoutDutControls);
@@ -105,17 +112,25 @@ namespace MultiControl
             mFontCaption = new Font("Microsoft YaHei", 11.0f, FontStyle.Bold);
             mFontBold = new Font("Microsoft YaHei", 12.0f);
             mTitleColor = System.Drawing.Color.Gray;
-            //this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 26);
-            //this.StartPosition = FormStartPosition.CenterScreen;
         }
-        private void LoadCfg()
+        private bool LoadCfg()
         {
-            IniFile mIni = new IniFile(Application.StartupPath + "\\cfg.ini");
+            string iniCfgFile = Application.StartupPath + @"\cfg.ini";
+            if (!File.Exists(iniCfgFile))
+            {
+                MessageBox.Show("Error: can not find cfg.ini file.");
+                m_log.Add("Error: can not find cfg.ini file.");
+                return false;
+            }
+            IniFile mIni = new IniFile(iniCfgFile);
             mCfgFolder = mIni.IniReadValue("config", "Folder");
-            this.label1.Text = "Load CFG from <" + mCfgFolder + ">";
             mLogFolder = mIni.IniReadValue("config", "Logger");
-
+            if (!Directory.Exists(mLogFolder))
+            {
+                MessageBox.Show("Error: can not find log folder.");
+                logOutputConfigurationToolStripMenuItem_Click(null, null);
+            }
             mRows = int.Parse(mIni.IniReadValue("layout", "Row").ToString());
             mCols = int.Parse(mIni.IniReadValue("layout", "Column").ToString());
 
@@ -124,6 +139,13 @@ namespace MultiControl
             mConfigPath.ReadXml("ConfigData.xml");
 
             mConfigSDCard = new DataSet("ConfigPath");
+
+            if (!File.Exists("ConfigPath.xml"))
+            {
+                MessageBox.Show("Error: can not find ConfigPath.xml file.");
+                m_log.Add("Error: can not find ConfigPath.xml file.");
+                return false;
+            }
             mConfigSDCard.ReadXml("ConfigPath.xml");
 
             int multiSupport = int.Parse(mIni.IniReadValue("mode", "MultiSupport").ToString());
@@ -134,11 +156,14 @@ namespace MultiControl
             else
             {
                 bMultiModelSupport = false;
+                if (!Directory.Exists(mCfgFolder))
+                {
+                    MessageBox.Show("Error: can not find cfg folder.");
+                    configurationToolStripMenuItem_Click(null, null);
+                }
             }
-
             if (bMultiModelSupport)
             {
-                //this.label1.Visible = false;
                 this.label1.Text = "Auto download CFG by DUT model";
                 this.configurationToolStripMenuItem.Enabled = false;
                 this.modelMappingConfigurationToolStripMenuItem.Enabled = true;
@@ -146,12 +171,12 @@ namespace MultiControl
             }
             else
             {
-                //this.label1.Visible = true;
                 this.label1.Text = "Load CFG from <" + mCfgFolder + ">";
                 this.configurationToolStripMenuItem.Enabled = true;
                 this.modelMappingConfigurationToolStripMenuItem.Enabled = false;
                 this.checkBoxModel.Checked = false;
             }
+            return true;
         }
         #region .net framework 小于4.0时使用此方法
         private void Cmd_Exited(object sender, ProcessExitAgs e)
@@ -309,7 +334,7 @@ namespace MultiControl
             string result = await Execute(AdbCommand.Adb_devices);
             var deviceList = common.GetDeviceList(result);
             int count = 0;
-            while (count <= 10)
+            while (count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
                 result = await Execute(AdbCommand.Adb_devices);
                 var deviceList1 = common.GetDeviceList(result);
@@ -346,6 +371,7 @@ namespace MultiControl
             foreach (DutDevice terminal in mConnectedDut)
             {
                 terminal.BenginTime = DateTime.Now;
+                terminal.SerialNumber = String.Empty;
             }
             //CHECK DEVICES 
             foreach (UserGridClassLibrary.GridItem dut in mDuts)
@@ -360,8 +386,6 @@ namespace MultiControl
             //END
             string computer = common.GetComputerName();
             string md5Code = string.Empty;
-            //md5Code = common.GetMD5Code("wortsin");
-            //MessageBox.Show(computer);
             if (mLicensed)
             {
                 md5Code = common.GetMD5Code("wortsin");
@@ -378,19 +402,6 @@ namespace MultiControl
 
             string result = await Execute(AdbCommand.Adb_devices);
             var deviceList = common.GetDeviceList(result);
-            //int count = 0;
-            //while (count <= 10)
-            //{
-            //    result = await Execute(AdbCommand.Adb_devices);
-            //    var deviceList1 = common.GetDeviceList(result);
-            //    if (deviceList1.Count > deviceList.Count)
-            //    {
-            //        deviceList = deviceList1;
-            //        break;
-            //    }
-            //    await Task.Delay(500);
-            //    count++;
-            //}
             for (int index = 0; index < deviceList.Count; index++)
             {
                 var device = deviceList[index];
@@ -404,7 +415,6 @@ namespace MultiControl
                     TestSpecifiedUUT(device.ToString());
                 }
             }
-
         }
 
 
@@ -606,36 +616,22 @@ namespace MultiControl
             return index;
         }
 
-        private async Task<string> QueryModelConfigSDCardFromDataSet(int i)
+        private async Task<string> QueryModelConfigSDCardFromDataSet(int index)
         {
             string result = string.Empty;
-            mConnectedDut[i].SDCard = string.Empty;
-
-            if (mConfigSDCard.Tables[0].Rows.Count > 0)
+            mConnectedDut[index].SDCard = string.Empty;
+            foreach (DataRow sdPath in mConfigSDCard.Tables[0].Rows)
             {
-                foreach (DataRow row in mConfigSDCard.Tables[0].Rows)
+                //SD chance path @20160518
+                string verify = sdPath[1].ToString();
+                string pullCmd = "adb -s " + mConnectedDut[index].SerialNumber + " pull " + verify + config_inc.SPECIFIC_TAG_PATH;
+                string ret = await Execute(pullCmd);
+                await Task.Delay(50);
+                if (File.Exists("path.verify.pass"))
                 {
-                    //SD chance path @20160518
-                    string verify = row[1].ToString();
-                    string pullCmd = "adb -s " + mConnectedDut[i].SerialNumber + " pull " + verify + config_inc.SPECIFIC_TAG_PATH;
-                    string console = await Execute(pullCmd);
-
-
-                    if (console.Contains("remote object"))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        mConnectedDut[i].SDCard = verify;
-                        result = mConnectedDut[i].SDCard;
-                        //delete path.verify.pass file before break
-                        if (File.Exists("path.verify.pass"))
-                        {
-                            File.Delete("path.verify.pass");
-                        }
-                        break;
-                    }
+                    result = mConnectedDut[index].SDCard = verify;
+                    File.Delete("path.verify.pass");
+                    break;
                 }
             }
             return result;
@@ -1223,9 +1219,7 @@ namespace MultiControl
             //mOpaqueLayer.AddResult(i, mConnectedDut[i].Model, "Install PQAA", OpaqueForm.MyResult.WORKING, 0.0f);
             //DateTime dtStart = DateTime.Now;
             pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " install -r Generic_PQAA.apk";
-            await Execute(pushCmd, true);
-
-
+            var ret = await Execute(pushCmd, true);
 
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
@@ -1233,21 +1227,24 @@ namespace MultiControl
             SetDutInstallPQAAInvoke(ThreadIndex);
 
             pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
-            await Execute(pushCmd, true);
-
-
+            var result = await Execute(pushCmd, true);
 
             //adb shell am startservice -a com.wistron.generic.get.sdcard.path
             // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
-
-
             // SD card issue found!!!
+            int count = 0;
             string sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex);
-            //_syncContext.Post(SetDutInstallPQAA, i);
-
+            while (String.IsNullOrEmpty(sdcard) && count <= config_inc.CMD_REPEAT_MAX_TIME)
+            {
+                sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex);
+                count++;
+                Debug.WriteLine($"{mConnectedDut[ThreadIndex].SerialNumber}: can not find sd card path, try again. {count++}");
+                await Task.Delay(300);
+            }
             if (string.IsNullOrEmpty(sdcard))
             {
-                MessageBox.Show("No available SD card for testing...");
+                m_log.Add($"{mConnectedDut[ThreadIndex].SerialNumber}: test fail: No available SD card for testing...");
+                SetDutTestFinishInvoke($@"{ThreadIndex}/0/0/FAIL");
                 return;
             }
             /*
@@ -1499,8 +1496,8 @@ namespace MultiControl
                 pullCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " pull " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT + "result.txt " + result_file;
                 await Execute(pullCmd);
 
-                int count = 5;// 循环执行五次， 如果还是抓不到result文件， 则路过处理result文件步骤
-                while (!File.Exists(result_file) && count <= 5)
+                count = 0;// 循环执行五次， 如果还是抓不到result文件， 则路过处理result文件步骤
+                while (!File.Exists(result_file) && count <= config_inc.CMD_REPEAT_MAX_TIME)
                 {
                     Thread.Sleep(300);
                     await Execute(pullCmd);
@@ -1513,8 +1510,8 @@ namespace MultiControl
 
                 //if (testItem.Equals("PASS"))
                 //{// 测试通过以后push卸载pqaa指令， 并退出测试
-                pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " uninstall com.wistron.generic.pqaa";
-                await Execute(pushCmd, true);
+                //pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " uninstall com.wistron.generic.pqaa";
+                //await Execute(pushCmd, true);
                 //break;
                 //}
                 mConnectedDut[ThreadIndex].ExitRunningThread = true;
@@ -1837,21 +1834,20 @@ namespace MultiControl
                 common.CreateFile("computer.txt", computer);
 
                 //BEGIN LOOP
-                int i = 0;
+                int index = 0;
                 foreach (UserGridClassLibrary.GridItem ctrl in mDuts)
                 {
                     if (ctrl.IsDutSelected())
                     {
-                        i = ctrl.GetDutGridID();
-                        if (!string.IsNullOrEmpty(mConnectedDut[i].SerialNumber) &&
-                            mConnectedDut[i].Connected)
+                        index = ctrl.GetDutGridID();
+                        if (!string.IsNullOrEmpty(mConnectedDut[index].SerialNumber) &&
+                            mConnectedDut[index].Connected)
                         {
                             //START TEST
                             Thread th = new Thread(new ParameterizedThreadStart(ThreadMethod));
-                            th.Start(i); //启动线程
+                            th.Start(index); //启动线程
                         }
                     }
-                    //i++;
                 }
             }
             else
