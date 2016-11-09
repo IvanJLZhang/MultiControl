@@ -54,6 +54,10 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CustomListViewEx">
       <HintPath>..\CustomListViewEx\bin\Debug\CustomListViewEx.dll</HintPath>
@@ -95,7 +99,9 @@
     <Compile Include="Common\config_inc.cs" />
     <Compile Include="Common\EventArgsLib.cs" />
     <Compile Include="Common\EventHandleLib.cs" />
-    <Compile Include="ConfigData.Designer.cs">
+    <Compile Include="Common\UsbDeviceInfo.cs" />
+    <Compile Include="Common\XMLDocHelper.cs" />
+    <Compile Include="ConfigData\ConfigData.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>ConfigData.xsd</DependentUpon>
@@ -152,6 +158,8 @@
     <Compile Include="FormSDCard.Designer.cs">
       <DependentUpon>FormSDCard.cs</DependentUpon>
     </Compile>
+    <Compile Include="Functions\PortToIndexFactory.cs" />
+    <Compile Include="Functions\UsbDeviceFactory.cs" />
     <Compile Include="Help.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -160,6 +168,12 @@
     </Compile>
     <Compile Include="Common\IniFile.cs" />
     <Compile Include="Common\CMDHelper.cs" />
+    <Compile Include="IndexToPortTable.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="IndexToPortTable.Designer.cs">
+      <DependentUpon>IndexToPortTable.cs</DependentUpon>
+    </Compile>
     <Compile Include="Logger.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -178,6 +192,12 @@
     </Compile>
     <Compile Include="OpaqueForm.Designer.cs">
       <DependentUpon>OpaqueForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PortToIndexForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PortToIndexForm.Designer.cs">
+      <DependentUpon>PortToIndexForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -225,11 +245,17 @@
     <EmbeddedResource Include="Help.resx">
       <DependentUpon>Help.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="IndexToPortTable.resx">
+      <DependentUpon>IndexToPortTable.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Logger.resx">
       <DependentUpon>Logger.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OpaqueForm.resx">
       <DependentUpon>OpaqueForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PortToIndexForm.resx">
+      <DependentUpon>PortToIndexForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -245,15 +271,16 @@
       <DependentUpon>RegisterForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="ConfigData.xsc">
+    <None Include="app.manifest" />
+    <None Include="ConfigData\ConfigData.xsc">
       <DependentUpon>ConfigData.xsd</DependentUpon>
     </None>
-    <None Include="ConfigData.xsd">
+    <None Include="ConfigData\ConfigData.xsd">
       <SubType>Designer</SubType>
       <Generator>MSDataSetGenerator</Generator>
       <LastGenOutput>ConfigData.Designer.cs</LastGenOutput>
     </None>
-    <None Include="ConfigData.xss">
+    <None Include="ConfigData\ConfigData.xss">
       <DependentUpon>ConfigData.xsd</DependentUpon>
     </None>
     <None Include="Properties\Settings.settings">
@@ -267,7 +294,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConfigData.xml" />
+    <Content Include="ConfigData\ConfigData.xml" />
+    <Content Include="ConfigData\ConfigPath.xml" />
+    <Content Include="ConfigData\PortToIndex.xml" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Core">
@@ -288,6 +317,12 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\LibWinUsb\LibUsbDotNet.csproj">
+      <Project>{0a78f6ff-5586-4052-8104-e23ff83a7ce1}</Project>
+      <Name>LibUsbDotNet</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -22,6 +22,8 @@ namespace MultiControl
                     Application.SetCompatibleTextRenderingDefault(false);
                     //Application.Run(new Form1());
                     Application.Run(new RegisterForm());
+                    //Application.Run(new PortToIndexForm());
+
                 }
                 else
                 {

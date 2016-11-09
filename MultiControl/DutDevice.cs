@@ -28,6 +28,7 @@ namespace MultiControl
         private float mInstallTime;
         private float mEstimate;
         private DateTime mBegin;
+        public string PortNumber = String.Empty;
 
         public string MSDCard
         {

@@ -26,6 +26,9 @@ namespace MultiControl.Lib
 {
     public class CMDHelper
     {
+
+        public static bool adb_service_start = true;
+
         private string m_command = String.Empty;
         //Event
         public event DataReceivedEventHandler OutputDataReceived;
@@ -153,8 +156,12 @@ namespace MultiControl.Lib
             return output;
         }
 
-        public async Task<string> CMD_RunAsync(string command, int seconds, bool NeedResponseResult = true)
+        public async Task<string> CMD_RunAsync(string command, int seconds = 0, bool NeedResponseResult = true)
         {
+            while (!CMDHelper.adb_service_start)
+            {
+                await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
+            }
             string output = string.Empty; //输出字符串  
             if (command != null && !command.Equals(""))
             {
@@ -173,7 +180,6 @@ namespace MultiControl.Lib
                 {
                     if (process.Start())//开始进程  
                     {
-                        //output = process.StandardOutput.ReadToEnd();//读取进程的输出  
                         if (seconds == 0)
                         {
                             process.WaitForExit();//这里无限等待进程结束  
@@ -203,12 +209,79 @@ namespace MultiControl.Lib
                 }
                 #endregion
             }
-            if (!String.IsNullOrEmpty(output))
-            {
-                //Debug.WriteLine(output.Trim());
-            }
             return output;
         }
+
+
+        public static string Adb_StartServer()
+        {
+            Process process = new Process();//创建进程对象  
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.FileName = "cmd.exe";//设定需要执行的命令  
+            startInfo.Arguments = "/C " + AdbCommand.Adb_start_server;//“/C”表示执行完命令后马上退出  
+            startInfo.UseShellExecute = false;//不使用系统外壳程序启动  
+            startInfo.RedirectStandardInput = true;//不重定向输入  
+            startInfo.RedirectStandardOutput = true; //重定向输出
+            startInfo.RedirectStandardError = true;
+            startInfo.CreateNoWindow = true;//不创建窗口  
+            process.StartInfo = startInfo;
+            process.Start();
+
+            process.WaitForExit();
+            //string output = await process.StandardOutput.ReadToEndAsync();
+            process.Close();
+            adb_service_start = true;
+            return "";
+        }
+
+        public static async Task<string> Adb_KillServer()
+        {
+            Process process = new Process();//创建进程对象  
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.FileName = "cmd.exe";//设定需要执行的命令  
+            startInfo.Arguments = "/C " + AdbCommand.Adb_kill_server;//“/C”表示执行完命令后马上退出  
+            startInfo.UseShellExecute = false;//不使用系统外壳程序启动  
+            startInfo.RedirectStandardInput = true;//不重定向输入  
+            startInfo.RedirectStandardOutput = true; //重定向输出
+            startInfo.RedirectStandardError = true;
+            startInfo.CreateNoWindow = true;//不创建窗口  
+            process.StartInfo = startInfo;
+            process.Start();
+
+            process.WaitForExit();
+            string output = await process.StandardOutput.ReadToEndAsync();
+            process.Close();
+            adb_service_start = false;
+            return output;
+        }
+        /// <summary>
+        /// 通过adb下达获取设备型号的命令检测设备是否连接
+        /// </summary>
+        /// <param name="device"></param>
+        /// <returns></returns>
+        public async Task<bool> CheckDeviceConnection(UsbDeviceInfo device)
+        {
+            string command = $"adb -s {device.SerialNumber} shell getprop ro.product.model";
+            int count = 0;
+            string response = String.Empty;
+
+            while ((String.IsNullOrEmpty(response) || response.Contains("error: device not found"))
+                && count <= config_inc.CMD_REPEAT_MAX_TIME)
+            {
+                response = await CMD_RunAsync(command);
+                Debug.WriteLine(response);
+                await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
+                count++;
+            }
+            if (String.IsNullOrEmpty(response) || response.Contains("error: device not found"))
+            {
+                return false;
+            }
+            device.ModelName = response.Trim();
+            return true;
+        }
+
+
         private void CmdProcess_Exited(object sender, EventArgs e)
         {
             Exited?.Invoke(sender, new ProcessExitAgs() { Command = m_command });

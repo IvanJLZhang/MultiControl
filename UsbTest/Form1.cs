@@ -8,71 +8,104 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-
+using LibUsbDotNet;
+using LibUsbDotNet.DeviceNotify;
+using LibUsbDotNet.Main;
+using LibUsbDotNet.WinUsb;
+using Microsoft.Win32;
 namespace UsbTest
 {
     public partial class Form1 : Form
     {
-        #region properties
-        public const int WM_DEVICECHANGE = 0x219;
-        public const int DBT_DEVICEARRIVAL = 0x8000;
-        public const int DBT_DEVICEREMOVECOMPLETE = 0x8004;
-        #endregion
+        IDeviceNotifier UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
         public Form1()
         {
             InitializeComponent();
-            this.Load += Form1_Load;
+            ShowConnectedDevices();
+            UsbDeviceNotifier.OnDeviceNotify += UsbDeviceNotifier_OnDeviceNotify;
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        void ShowConnectedDevices()
         {
-            //usb.EventArrived += Usb_EventArrived;
-            ////usb.EventDeletion += Usb_EventDeletion;
-            //usb.StartUsbInsertWatcher(TimeSpan.FromSeconds(1));
-        }
-        override protected void WndProc(ref Message m)
-        {
-            try
+            UsbRegDeviceList allDevices = UsbDevice.AllDevices;
+            for (int index = 0; index < allDevices.Count; index++)
             {
-                if (m.Msg == WM_DEVICECHANGE)
-                {
-                    var value = m.WParam.ToInt32();
-                    switch (m.WParam.ToInt32())
-                    {
-                        // USB插上  
-                        case DBT_DEVICEARRIVAL:
-                            Debug.WriteLine("Device arrival");
-                            break;
-                        // USB移除  
-                        case DBT_DEVICEREMOVECOMPLETE:
-                            Debug.WriteLine("Device removed");
+                var device = (WinUsbRegistry)allDevices[index];
 
-                            //IsCopy = false;
-                            break;
-                        default:
-                            break;
+                UsbDevice usbDevice;
+                if (device.Open(out usbDevice))
+                {
+                    //lbl_deviceInfo.Text += device.DeviceID + "\r\n";
+                    lbl_deviceInfo.Text += usbDevice.Info.SerialString + "\r\n";
+                    string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
+                    lbl_deviceInfo.Text += filterUsbPort(locationPaths[0]) + "\r\n";
+                    lbl_deviceInfo.Text += "\r\n";
+                }
+            }
+        }
+
+        private async void UsbDeviceNotifier_OnDeviceNotify(object sender, DeviceNotifyEventArgs e)
+        {
+            if (e.EventType == EventType.DeviceArrival && e.Device != null)
+            {
+                string locationInfo = String.Empty;
+                int count = 0;
+                while (String.IsNullOrEmpty(locationInfo) && count <= 10)
+                {
+                    await Task.Delay(500);
+                    locationInfo = findArrivaledDevice(e.Device.SerialNumber);
+                    count++;
+                }
+                if (locationInfo != string.Empty)
+                    lbl_deviceInfo.Text += e.Device.SerialNumber + "\r\n" + locationInfo + "\r\n\r\n";
+            }
+        }
+
+        string findArrivaledDevice(string serialNumber)
+        {
+            string returnStr = String.Empty;
+            UsbRegDeviceList allDevices = UsbDevice.AllDevices;
+            Debug.WriteLine($"find devices {allDevices.Count}");
+            for (int index = 0; index < allDevices.Count; index++)
+            {
+                var device = allDevices[index];
+                UsbDevice usbDevice;
+                bool result = device.Open(out usbDevice);
+                if (result)
+                {
+                    if (serialNumber == usbDevice.Info.SerialString)
+                    {
+                        string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
+
+                        return filterUsbPort(locationPaths[0]);
                     }
                 }
             }
-            catch (Exception ex)
+            UsbDevice.Exit();
+            return returnStr;
+        }
+
+        string filterUsbPort(string locationPath)
+        {
+            string usb_port = String.Empty;
+            string[] arr = locationPath.Split('#');
+            int count = 0;
+            foreach (var node in arr)
             {
-                Debug.WriteLine(ex.Message);
+                if (node.Contains("USB("))
+                {
+                    int port = -1;
+                    Int32.TryParse(node.Substring(4, 1), out port);
+                    if (port > -1)
+                    {
+                        count++;
+                        usb_port += "#" + port.ToString("D4");
+                    }
+                    if (count >= 2)
+                        break;
+                }
             }
-            base.WndProc(ref m);
-        }
-        private void Usb_EventDeletion(object sender, System.Management.EventArrivedEventArgs e)
-        {
-            Debug.WriteLine(e.NewEvent.ClassPath);
-        }
-        int cnt = 0;
-        private void Usb_EventArrived(object sender, System.Management.EventArrivedEventArgs e)
-        {
-            Debug.WriteLine(e.NewEvent.ClassPath + "" + (++cnt));
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
+            return usb_port;
         }
     }
 }
