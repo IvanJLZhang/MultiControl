@@ -55,7 +55,7 @@ namespace MultiControl
         {
             factory.IsEnabled = this.chb_isEnabled.Checked;// 更新到xml文件中
 
-            this.cb_Index.Enabled = this.cb_usb_port_no.Enabled = this.btn_ViewTable.Enabled = this.chb_isEnabled.Checked;
+            this.cb_Index.Enabled = this.cb_usb_port_no.Enabled = this.chb_isEnabled.Checked;//= this.btn_ViewTable.Enabled
         }
 
         private void cb_usb_port_no_SelectedIndexChanged(object sender, EventArgs e)
@@ -89,6 +89,7 @@ namespace MultiControl
             int index = this.cb_Index.Text != String.Empty ? Int32.Parse(this.cb_Index.Text) : -1;
             factory.ArrangePortNoToIndex(portNo, index);
             this.Index = index;
+            //btn_OK_Click(null, null);
         }
         /// <summary>
         /// 保存参数设置
@@ -97,6 +98,11 @@ namespace MultiControl
         /// <param name="e"></param>
         private void btn_OK_Click(object sender, EventArgs e)
         {
+            string portNo = this.cb_usb_port_no.SelectedIndex >= 0 ? this.cb_usb_port_no.Text : String.Empty;
+            int index = this.cb_Index.Text != String.Empty ? Int32.Parse(this.cb_Index.Text) : -1;
+            factory.ArrangePortNoToIndex(portNo, index);
+            this.Index = index;
+
             factory.Save_To_xml();
             this.DialogResult = DialogResult.OK;
             this.Close();

@@ -31,6 +31,52 @@ namespace MultiControl.Functions
     class UsbDeviceFactory
     {
         CMDHelper cmd = new CMDHelper();
+
+        public async Task<List<UsbDeviceInfo>> GetAllDevices()
+        {
+            List<UsbDeviceInfo> device_list = new List<UsbDeviceInfo>();
+            UsbRegDeviceList allDevices = UsbDevice.AllDevices;
+            await CMDHelper.Adb_KillServer();
+
+            Debug.WriteLine($"find devices {allDevices.Count}");
+
+            for (int index = 0; index < allDevices.Count; index++)
+            {
+                var device = (WinUsbRegistry)allDevices[index];
+                UsbDevice usbDevice;
+                bool result = device.Open(out usbDevice);
+                Debug.WriteLine($"open device registry info page:{result}");
+                if (result)
+                {
+                    string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
+                    usbDevice.Close();
+
+                    P_ID p_id = P_ID.NULL;
+                    V_ID v_id = V_ID.NULL;
+                    Enum.TryParse<P_ID>(device.Pid.ToString(), out p_id);
+                    Enum.TryParse<V_ID>(device.Vid.ToString(), out v_id);
+
+                    DeviceManufactory man = new DeviceManufactory();
+                    man.p_id = p_id;
+                    man.v_id = v_id;
+                    man.company_name = device.FullName;
+
+                    string portNum = filterUsbPort(locationPaths[0], man);
+
+                    UsbDeviceInfo deviceInfo = new UsbDeviceInfo();
+                    deviceInfo.Index = -1;
+                    deviceInfo.PortNumber = portNum;
+                    deviceInfo.SerialNumber = usbDevice.Info.SerialString;
+                    device_list.Add(deviceInfo);
+                }
+                if (usbDevice != null)
+                    usbDevice.Close();
+            }
+            await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
+            CMDHelper.Adb_StartServer();
+            return device_list;
+        }
+
         public async Task<string> FindArrivaledDevice(string serialNumber)
         {
             int count = 0;
@@ -52,7 +98,17 @@ namespace MultiControl.Functions
                             string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
                             usbDevice.Close();
                             CMDHelper.Adb_StartServer();
-                            return filterUsbPort(locationPaths[0]);
+
+                            P_ID p_id = P_ID.NULL;
+                            V_ID v_id = V_ID.NULL;
+                            Enum.TryParse<P_ID>(device.Pid.ToString(), out p_id);
+                            Enum.TryParse<V_ID>(device.Vid.ToString(), out v_id);
+
+                            DeviceManufactory man = new DeviceManufactory();
+                            man.p_id = p_id;
+                            man.v_id = v_id;
+                            man.company_name = device.FullName;
+                            return filterUsbPort(locationPaths[0], man);
                         }
                     }
                     if (usbDevice != null)
@@ -69,11 +125,10 @@ namespace MultiControl.Functions
         /// </summary>
         /// <param name="locationPath"></param>
         /// <returns></returns>
-        private string filterUsbPort(string locationPath)
+        private string filterUsbPort(string locationPath, DeviceManufactory manufactory)
         {
             string usb_port = String.Empty;
             string[] arr = locationPath.Split('#');
-            int count = 0;
             foreach (var node in arr)
             {
                 if (node.Contains("USB("))
@@ -82,12 +137,13 @@ namespace MultiControl.Functions
                     Int32.TryParse(node.Substring(4, 1), out port);
                     if (port > -1)
                     {
-                        count++;
                         usb_port += "#" + port.ToString("D4");
                     }
-                    if (count >= 2)
-                        break;
                 }
+            }
+            if (manufactory.p_id == P_ID.SAMSUNG && manufactory.v_id == V_ID.SAMSUNG)
+            {
+                usb_port = usb_port.Substring(0, usb_port.Length - 5);// 去掉最后一个USB位置
             }
             return usb_port;
         }

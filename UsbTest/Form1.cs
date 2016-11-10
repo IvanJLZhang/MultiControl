@@ -13,6 +13,8 @@ using LibUsbDotNet.DeviceNotify;
 using LibUsbDotNet.Main;
 using LibUsbDotNet.WinUsb;
 using Microsoft.Win32;
+
+//using MultiControl.Common;
 namespace UsbTest
 {
     public partial class Form1 : Form
@@ -36,9 +38,18 @@ namespace UsbTest
                 if (device.Open(out usbDevice))
                 {
                     //lbl_deviceInfo.Text += device.DeviceID + "\r\n";
-                    lbl_deviceInfo.Text += usbDevice.Info.SerialString + "\r\n";
+                    lbl_deviceInfo.Text += "Serial Number: " + usbDevice.Info.SerialString + "\r\n";
                     string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
-                    lbl_deviceInfo.Text += filterUsbPort(locationPaths[0]) + "\r\n";
+
+                    P_ID p_id = P_ID.NULL;
+                    V_ID v_id = V_ID.NULL;
+                    Enum.TryParse<P_ID>(device.Pid.ToString(), out p_id);
+                    Enum.TryParse<V_ID>(device.Vid.ToString(), out v_id);
+                    DeviceManufactory man = new DeviceManufactory();
+                    man.p_id = p_id;
+                    man.v_id = v_id;
+                    man.company_name = device.FullName;
+                    lbl_deviceInfo.Text += "USB Port: " + filterUsbPort(locationPaths[0], man) + "\r\n";
                     lbl_deviceInfo.Text += "\r\n";
                 }
             }
@@ -57,7 +68,7 @@ namespace UsbTest
                     count++;
                 }
                 if (locationInfo != string.Empty)
-                    lbl_deviceInfo.Text += e.Device.SerialNumber + "\r\n" + locationInfo + "\r\n\r\n";
+                    lbl_deviceInfo.Text += "Serial Number: " + e.Device.SerialNumber + "\r\n" + "USB Port: " + locationInfo + "\r\n\r\n";
             }
         }
 
@@ -76,8 +87,16 @@ namespace UsbTest
                     if (serialNumber == usbDevice.Info.SerialString)
                     {
                         string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
+                        P_ID p_id = P_ID.NULL;
+                        V_ID v_id = V_ID.NULL;
+                        Enum.TryParse<P_ID>(device.Pid.ToString(), out p_id);
+                        Enum.TryParse<V_ID>(device.Vid.ToString(), out v_id);
 
-                        return filterUsbPort(locationPaths[0]);
+                        DeviceManufactory man = new DeviceManufactory();
+                        man.p_id = p_id;
+                        man.v_id = v_id;
+                        man.company_name = device.FullName;
+                        return filterUsbPort(locationPaths[0], man);
                     }
                 }
             }
@@ -85,11 +104,10 @@ namespace UsbTest
             return returnStr;
         }
 
-        string filterUsbPort(string locationPath)
+        string filterUsbPort(string locationPath, DeviceManufactory manufactory)
         {
             string usb_port = String.Empty;
             string[] arr = locationPath.Split('#');
-            int count = 0;
             foreach (var node in arr)
             {
                 if (node.Contains("USB("))
@@ -98,14 +116,30 @@ namespace UsbTest
                     Int32.TryParse(node.Substring(4, 1), out port);
                     if (port > -1)
                     {
-                        count++;
                         usb_port += "#" + port.ToString("D4");
                     }
-                    if (count >= 2)
-                        break;
                 }
+            }
+            if (manufactory.p_id == P_ID.SAMSUNG && manufactory.v_id == V_ID.SAMSUNG)
+            {
+                usb_port = usb_port.Substring(0, usb_port.Length - 5);// 去掉最后一个USB位置
             }
             return usb_port;
         }
     }
+    public enum P_ID
+    {
+        NULL = 0, SAMSUNG = 26720
+    }
+    public enum V_ID
+    {
+        NULL = 0, SAMSUNG = 1256
+    }
+    public class DeviceManufactory
+    {
+        public P_ID p_id;
+        public V_ID v_id;
+        public string company_name = String.Empty;
+    }
+
 }

@@ -35,10 +35,9 @@
             this.btn_OK = new System.Windows.Forms.Button();
             this.btn_Cancel = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.btn_ViewTable = new System.Windows.Forms.Button();
             this.chb_isEnabled = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -95,7 +94,6 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.chb_isEnabled);
-            this.groupBox1.Controls.Add(this.btn_ViewTable);
             this.groupBox1.Controls.Add(this.btn_Cancel);
             this.groupBox1.Controls.Add(this.btn_OK);
             this.groupBox1.Controls.Add(this.groupBox2);
@@ -105,17 +103,6 @@
             this.groupBox1.TabIndex = 6;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Pick an Index to Represent USB Port No.";
-            // 
-            // btn_ViewTable
-            // 
-            this.btn_ViewTable.Location = new System.Drawing.Point(132, 122);
-            this.btn_ViewTable.Name = "btn_ViewTable";
-            this.btn_ViewTable.Size = new System.Drawing.Size(119, 23);
-            this.btn_ViewTable.TabIndex = 6;
-            this.btn_ViewTable.Text = "View Whole Table";
-            this.toolTip1.SetToolTip(this.btn_ViewTable, "See the whole arrangement table");
-            this.btn_ViewTable.UseVisualStyleBackColor = true;
-            this.btn_ViewTable.Click += new System.EventHandler(this.btn_ViewTable_Click);
             // 
             // chb_isEnabled
             // 
@@ -170,7 +157,6 @@
         private System.Windows.Forms.Button btn_Cancel;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.ToolTip toolTip1;
-        private System.Windows.Forms.Button btn_ViewTable;
         private System.Windows.Forms.CheckBox chb_isEnabled;
         private System.Windows.Forms.GroupBox groupBox2;
     }

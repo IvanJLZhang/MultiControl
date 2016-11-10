@@ -66,7 +66,22 @@ namespace MultiControl.Common
                                        };
     }
 
-    public enum TEST_RESULT{
+    public enum P_ID
+    {
+        NULL = 0, SAMSUNG = 26720
+    }
+    public enum V_ID
+    {
+        NULL = 0, SAMSUNG = 1256
+    }
+    public class DeviceManufactory
+    {
+        public P_ID p_id;
+        public V_ID v_id;
+        public string company_name = String.Empty;
+    }
+    public enum TEST_RESULT
+    {
         PASS = 1, FAIL
     }
 }

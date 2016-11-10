@@ -40,7 +40,8 @@ namespace MultiControl.Functions
             {
                 OpenFileDialog file = new OpenFileDialog();
                 file.Title = "please provide correct PortToIndex.xml file.";
-                file.Filter = "PortToIndex.xml";
+                file.Filter = "XML文件|*.xml";
+                //file.FileName = "PortToIndex.xml";
                 file.Multiselect = false;
                 if (file.ShowDialog() == DialogResult.OK)
                 {
@@ -139,6 +140,14 @@ namespace MultiControl.Functions
             if (portNo == String.Empty || index < 0)
                 return;
             for (int iindex = 0; iindex != Node_Table.Rows.Count; iindex++)
+            {// 如果端口已经被配置， 则重新置为空
+                DataRow node = Node_Table.Rows[iindex];
+                if (node["Port"].ToString() == portNo)
+                {
+                    node["Port"] = String.Empty;
+                }
+            }
+            for (int iindex = 0; iindex != Node_Table.Rows.Count; iindex++)
             {
                 DataRow node = Node_Table.Rows[iindex];
                 int iiindex = Int32.Parse(node["Index"].ToString());
@@ -148,6 +157,20 @@ namespace MultiControl.Functions
                     break;
                 }
             }
+        }
+        /// <summary>
+        /// 重置所有端口
+        /// </summary>
+        public void InittializeTable()
+        {
+            DataTable node_table = Node_Table;
+            for (int index = 0; index < node_table.Rows.Count; index++)
+            {
+                DataRow node = node_table.Rows[index];
+                node["Index"] = index + 1;
+                node["Port"] = -1;
+            }
+            Save_To_xml();
         }
         /// <summary>
         /// 获取空闲Index列表
