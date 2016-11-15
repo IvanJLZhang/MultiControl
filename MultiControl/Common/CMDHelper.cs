@@ -91,7 +91,8 @@ namespace MultiControl.Lib
             CmdProcess.Start();
 
             CmdProcess.StandardInput.WriteLine(command);
-            Debug.WriteLine($"Execute cmd: {command}");
+            common.m_log.Add_Debug(command);
+
             CmdProcess.WaitForExit(WAIT_FOR_MI);
             //CmdProcess.WaitForExit();
             CmdProcess.StandardInput.WriteLine("exit");
@@ -149,7 +150,7 @@ namespace MultiControl.Lib
                 {
                     if (process != null)
                         process.Close();
-                    Debug.WriteLine(command);
+                    common.m_log.Add_Debug(command);
                 }
                 #endregion
             }
@@ -205,7 +206,7 @@ namespace MultiControl.Lib
                 {
                     if (process != null)
                         process.Close();
-                    Debug.WriteLine(command);
+                    common.m_log.Add_Debug(command);
                 }
                 #endregion
             }
@@ -269,7 +270,8 @@ namespace MultiControl.Lib
                 && count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
                 response = await CMD_RunAsync(command);
-                Debug.WriteLine(response);
+                common.m_log.Add_Debug(response);
+
                 await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
                 count++;
             }

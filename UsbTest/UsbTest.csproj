@@ -36,6 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
     <Reference Include="System.Xml.Linq" />
@@ -84,9 +85,13 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\..\Program Files\LibUsbDotNet\Src\LibWinUsb\LibUsbDotNet.csproj">
+    <ProjectReference Include="..\..\LibWinUsb\LibUsbDotNet.csproj">
       <Project>{0a78f6ff-5586-4052-8104-e23ff83a7ce1}</Project>
       <Name>LibUsbDotNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MultiControl\MultiControl.csproj">
+      <Project>{b2b9696e-1d59-4ebb-b532-35a9f3308f3b}</Project>
+      <Name>MultiControl</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

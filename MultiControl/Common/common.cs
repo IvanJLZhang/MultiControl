@@ -23,11 +23,14 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using LogHelper;
 
 namespace MultiControl.Common
 {
     class common
     {
+        public static LogMsg m_log;
+
         /// <summary>
         /// 获取MD5字符串
         /// </summary>
@@ -148,22 +151,6 @@ namespace MultiControl.Common
                 }
             }
             return model;
-        }
-
-        public static ArrayList GetDeviceList(String result)
-        {
-            Debug.WriteLine(result);
-            ArrayList deviceList = new ArrayList();
-            string[] devices = Regex.Split(result, "\r\n", RegexOptions.IgnoreCase);
-            foreach (string device in devices)
-            {
-                if (device.Contains("\tdevice"))
-                {
-                    string[] serials = Regex.Split(device, "\t", RegexOptions.IgnoreCase);
-                    deviceList.Add(serials[0]);
-                }
-            }
-            return deviceList;
         }
 
         /// <summary>

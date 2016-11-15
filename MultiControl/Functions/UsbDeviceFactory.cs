@@ -38,14 +38,13 @@ namespace MultiControl.Functions
             UsbRegDeviceList allDevices = UsbDevice.AllDevices;
             await CMDHelper.Adb_KillServer();
 
-            Debug.WriteLine($"find devices {allDevices.Count}");
-
+            common.m_log.Add_Debug($"find devices {allDevices.Count}");
             for (int index = 0; index < allDevices.Count; index++)
             {
                 var device = (WinUsbRegistry)allDevices[index];
                 UsbDevice usbDevice;
                 bool result = device.Open(out usbDevice);
-                Debug.WriteLine($"open device registry info page:{result}");
+                common.m_log.Add_Debug($"open device registry info page:{result}");
                 if (result)
                 {
                     string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
@@ -83,14 +82,14 @@ namespace MultiControl.Functions
             while (count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
                 UsbRegDeviceList allDevices = UsbDevice.AllDevices;
-                Debug.WriteLine($"find devices {allDevices.Count}");
+                common.m_log.Add_Debug($"find devices {allDevices.Count}");
                 await CMDHelper.Adb_KillServer();
                 for (int index = 0; index < allDevices.Count; index++)
                 {
                     var device = (WinUsbRegistry)allDevices[index];
                     UsbDevice usbDevice;
                     bool result = device.Open(out usbDevice);
-                    Debug.WriteLine($"open device registry info page:{result}");
+                    common.m_log.Add_Debug($"open device registry info page:{result}");
                     if (result)
                     {
                         if (serialNumber == usbDevice.Info.SerialString)

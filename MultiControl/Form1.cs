@@ -34,7 +34,6 @@ namespace MultiControl
     public partial class Form1 : Form, INotifyPropertyChanged
     {
         #region 全局变量
-        LogMsg m_log;
 
         StringBuilder TestLog = new StringBuilder();
         private DutDevice[] mConnectedDut;
@@ -111,15 +110,13 @@ namespace MultiControl
             common.DeleteConhostExe();
             // cmd操作类初始化
             cmd = new CMDHelper();
-            m_log = new LogMsg(Application.StartupPath);
-            Boolean.TryParse(ConfigurationHelper.ReadConfig("DebugLogEnabled"), out m_log.IsEnable);
-            m_log.Inititalize();
+            common.m_log = new LogMsg(Application.StartupPath);
+            Boolean.TryParse(ConfigurationHelper.ReadConfig("DebugLogEnabled"), out common.m_log.IsEnable);
 
             // 注册USB设备插入/拔出事件
             UsbDeviceNotifier.OnDeviceNotify += UsbDeviceNotifier_OnDeviceNotify;
 
             m_PortToIndexFactory = new PortToIndexFactory();
-            //_syncContext = SynchronizationContext.Current;
 
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
@@ -171,7 +168,7 @@ namespace MultiControl
                         {
                             if (device.PortNumber == String.Empty)
                             {
-                                m_log.Add("can not read port number.");
+                                common.m_log.Add("can not read port number.");
                                 break;
                             }
                             // 检查端口配置情况
@@ -215,7 +212,7 @@ namespace MultiControl
             if (!File.Exists(iniCfgFile))
             {
                 MessageBox.Show("Error: can not find cfg.ini file.");
-                m_log.Add("Error: can not find cfg.ini file.");
+                common.m_log.Add("Error: can not find cfg.ini file.");
                 return false;
             }
             IniFile mIni = new IniFile(iniCfgFile);
@@ -238,7 +235,7 @@ namespace MultiControl
             if (!File.Exists("ConfigPath.xml"))
             {
                 MessageBox.Show("Error: can not find ConfigPath.xml file.");
-                m_log.Add("Error: can not find ConfigPath.xml file.");
+                common.m_log.Add("Error: can not find ConfigPath.xml file.");
                 return false;
             }
             mConfigSDCard.ReadXml("ConfigPath.xml");
@@ -254,7 +251,7 @@ namespace MultiControl
                 if (!Directory.Exists(mCfgFolder))
                 {
                     MessageBox.Show("Error: can not find cfg folder.");
-                    m_log.Add("Error: can not find ConfigPath.xml file.");
+                    common.m_log.Add("Error: can not find ConfigPath.xml file.");
                     configurationToolStripMenuItem_Click(null, null);
                 }
             }
@@ -277,79 +274,10 @@ namespace MultiControl
         #region .net framework 小于4.0时使用此方法
         private void Cmd_Exited(object sender, ProcessExitAgs e)
         {
-            Debug.WriteLine($"{e.Command} exited");
+            common.m_log.Add_Debug($"{e.Command} exited");
         }
 
-        List<string> _deviceList = new List<string>();
-        List<string> DeviceList
-        {
-            get
-            {
-                return _deviceList;
-            }
-            set
-            {
-                _deviceList = value;
-                if (_deviceList != null && _deviceList.Count > 0)
-                {
-                    OnPropertyChanged(this, nameof(DeviceList));
-                }
-            }
-        }
-        private void Cmd_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            //Debug.WriteLine(e.Data);
-            if (e.Data != null && e.Data.Contains("\tdevice"))
-            {
-                Debug.WriteLine(e.Data);
-                string device = Regex.Split(e.Data, "\t", RegexOptions.IgnoreCase)[0];
-                if (!_deviceList.Contains(device))
-                {
-                    List<string> dvicelist = new List<string>(_deviceList.ToArray());
-                    dvicelist.Add(device);
-                    DeviceList = dvicelist;
-                }
-                else
-                {
-                    OnPropertyChanged(this, nameof(DeviceList));// 属于是更新状态
-                }
-            }
-        }
-
-        /// <summary>
-        /// 检测到device列表发生了变化
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnDeviceChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName == nameof(DeviceList))
-            {
-                foreach (string device_sn in DeviceList)
-                {
-                    bool Found = false;
-                    foreach (DutDevice uut in mConnectedDut)
-                    {
-                        if (!string.IsNullOrEmpty(uut.SerialNumber) && uut.SerialNumber.Equals(device_sn))
-                        {
-                            uut.Connected = true;
-                            Found = true;
-                            break;
-                        }
-                    }
-                    if (!Found)
-                    {
-                        //NEW UUT WAS INSERT
-                        //TestSpecifiedUUT(device_sn);
-                    }
-                }
-            }
-        }
         #endregion
-        private void Form1_Load(object sender, EventArgs e)
-        {
-            PropertyChanged += OnDeviceChanged;
-        }
         private void DeviceArrival(UsbDeviceInfo device)
         {
             if (IsEnabledIndexRegister)
@@ -417,13 +345,13 @@ namespace MultiControl
             int index = FindAvaiableDUTIndex();
             if (index == -1)
             {
-                m_log.Add("No extra room for a new test.", MessageType.ERROR);
+                common.m_log.Add("No extra room for a new test.", MessageType.ERROR);
                 return;
             }
             bool adb_avaiable = await cmd.CheckDeviceConnection(device);
             if (!adb_avaiable)
             {
-                m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.PortNumber}", MessageType.ERROR);
+                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.PortNumber}", MessageType.ERROR);
                 return;
             }
             mConnectedDut[index].BenginTime = DateTime.Now;
@@ -492,13 +420,13 @@ namespace MultiControl
         {
             if (device.Index <= -1)
             {
-                m_log.Add("No extra room for a new test.", MessageType.ERROR);
+                common.m_log.Add("No extra room for a new test.", MessageType.ERROR);
                 return;
             }
             bool adb_avaiable = await cmd.CheckDeviceConnection(device);
             if (!adb_avaiable)
             {
-                m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.PortNumber}", MessageType.ERROR);
+                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.PortNumber}", MessageType.ERROR);
                 return;
             }
             int index = device.Index;
@@ -608,7 +536,7 @@ namespace MultiControl
                 {
                     if (device.PortNumber == String.Empty)
                     {
-                        m_log.Add("can not read port number.");
+                        common.m_log.Add("can not read port number.");
                         continue;
                     }
                     // 检查端口配置情况
@@ -1338,7 +1266,8 @@ namespace MultiControl
             DirectoryInfo log_folder = new DirectoryInfo(mLogFolder);
             if (!Directory.Exists(mLogFolder))
             {
-                Debug.WriteLine($"log folder can not be found:{mLogFolder}");
+                common.m_log.Add($"log folder can not be found:{mLogFolder}", MessageType.ERROR);
+
                 return;
             }
             DirectoryInfo log_model_path = new DirectoryInfo(log_folder.FullName + $@"\{mConnectedDut[ThreadIndex].Model}");
@@ -1398,12 +1327,13 @@ namespace MultiControl
             {
                 sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex, log_model_date_path.FullName);
                 count++;
-                Debug.WriteLine($"{mConnectedDut[ThreadIndex].SerialNumber}: can not find sd card path, try again. {count++}");
+                common.m_log.Add_Debug($"{mConnectedDut[ThreadIndex].SerialNumber}: can not find sd card path, try again. {count++}", MessageType.ERROR);
+
                 await Task.Delay(300);
             }
             if (string.IsNullOrEmpty(sdcard))
             {
-                m_log.Add($"{mConnectedDut[ThreadIndex].SerialNumber}: test fail: No available SD card for testing...");
+                common.m_log.Add($"{mConnectedDut[ThreadIndex].SerialNumber}: test fail: No available SD card for testing...");
                 SetDutTestFinishInvoke($@"{ThreadIndex}/0/0/FAIL");
                 return;
             }
@@ -1613,6 +1543,8 @@ namespace MultiControl
                     try
                     {
                         string[] progress_context = File.ReadAllLines(progress_file);
+
+                        await Task.Delay(300);
                         File.Delete(progress_file);
                         if (progress_context.Length >= 1)
                             progressStr = progress_context[0].Trim();
@@ -1638,7 +1570,7 @@ namespace MultiControl
 
                 //UPDATE TEST PROGRESS
                 string value = ThreadIndex + "/" + progressStr + "/" + testItem;
-                Debug.WriteLine(value);
+                common.m_log.Add_Debug(value);
                 string[] progress_arr = progressStr.Split('/');
                 int progress_current = int.Parse(progress_arr[0].ToString());
                 int progress_total = int.Parse(progress_arr[1].ToString());
@@ -1704,7 +1636,7 @@ namespace MultiControl
             DirectoryInfo log_folder = new DirectoryInfo(mLogFolder);
             if (!Directory.Exists(mLogFolder))
             {
-                Debug.WriteLine($"log folder can not be found:{mLogFolder}");
+                common.m_log.Add($"log folder can not be found:{mLogFolder}");
                 return -1;
             }
             DirectoryInfo log_model_path = new DirectoryInfo(log_folder.FullName + $@"\{mConnectedDut[index].Model}");
@@ -1841,7 +1773,7 @@ namespace MultiControl
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                common.m_log.Add(ex.Message);
                 return;
             }
             if (!xlsFile.Exists)
@@ -1913,7 +1845,7 @@ namespace MultiControl
             xlsApp.AutoFitAll();
             xlsApp.Save();
             xlsApp.Exit();
-            Debug.WriteLine($"Save Result to file:{xlsFile.Name}");
+            common.m_log.Add($"Save Result to file:{xlsFile.Name}");
         }
         private async void UninstallPQAA(int id)
         {
@@ -1950,11 +1882,11 @@ namespace MultiControl
             this.WindowState = FormWindowState.Minimized;
         }
 
-        private void startTestToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void startTestToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MyExcel.DeleteExcelExe();
             common.DeleteConhostExe();
-
+            await CMDHelper.Adb_KillServer();
             btn_StartTest();
         }
         private void startSelectedAndroidDeviceToolStripMenuItem_Click(object sender, EventArgs e)

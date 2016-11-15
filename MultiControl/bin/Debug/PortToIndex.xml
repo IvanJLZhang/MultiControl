@@ -5,15 +5,15 @@
   </IsEnabled>
   <Node>
     <Index>1</Index>
-    <Port>#0001#0001</Port>
+    <Port>#0001</Port>
   </Node>
   <Node>
     <Index>2</Index>
-    <Port>#0001#0002</Port>
+    <Port>-1</Port>
   </Node>
   <Node>
     <Index>3</Index>
-    <Port>#0001#0003</Port>
+    <Port>-1</Port>
   </Node>
   <Node>
     <Index>4</Index>
