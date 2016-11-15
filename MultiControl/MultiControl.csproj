@@ -109,152 +109,152 @@
     <Compile Include="CustomCheckedListBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="DutDevice.cs" />
+    <Compile Include="Functions\DutDevice.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormConfigurateSysinfoLocation.cs">
+    <Compile Include="Views\Config_EditForms\FormConfigurateSysinfoLocation.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormConfigurateSysinfoLocation.Designer.cs">
+    <Compile Include="Views\Config_EditForms\FormConfigurateSysinfoLocation.Designer.cs">
       <DependentUpon>FormConfigurateSysinfoLocation.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormConfiguration.cs">
+    <Compile Include="Views\Config_EditForms\FormConfiguration.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormConfiguration.Designer.cs">
+    <Compile Include="Views\Config_EditForms\FormConfiguration.Designer.cs">
       <DependentUpon>FormConfiguration.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormEditCfg.cs">
+    <Compile Include="Views\Config_EditForms\FormEditCfg.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormEditCfg.Designer.cs">
+    <Compile Include="Views\Config_EditForms\FormEditCfg.Designer.cs">
       <DependentUpon>FormEditCfg.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormEditItems.cs">
+    <Compile Include="Views\FormEditItems.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormEditItems.Designer.cs">
+    <Compile Include="Views\FormEditItems.Designer.cs">
       <DependentUpon>FormEditItems.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormMapping.cs">
+    <Compile Include="Views\FormMapping.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormMapping.Designer.cs">
+    <Compile Include="Views\FormMapping.Designer.cs">
       <DependentUpon>FormMapping.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormScriptSupport.cs">
+    <Compile Include="Views\FormScriptSupport.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormScriptSupport.Designer.cs">
+    <Compile Include="Views\FormScriptSupport.Designer.cs">
       <DependentUpon>FormScriptSupport.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormSDCard.cs">
+    <Compile Include="Views\FormSDCard.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="FormSDCard.Designer.cs">
+    <Compile Include="Views\FormSDCard.Designer.cs">
       <DependentUpon>FormSDCard.cs</DependentUpon>
     </Compile>
     <Compile Include="Functions\PortToIndexFactory.cs" />
     <Compile Include="Functions\UsbDeviceFactory.cs" />
-    <Compile Include="Help.cs">
+    <Compile Include="Views\Help.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Help.Designer.cs">
+    <Compile Include="Views\Help.Designer.cs">
       <DependentUpon>Help.cs</DependentUpon>
     </Compile>
     <Compile Include="Common\IniFile.cs" />
     <Compile Include="Common\CMDHelper.cs" />
-    <Compile Include="IndexToPortTable.cs">
+    <Compile Include="Views\Config_EditForms\IndexToPortTable.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="IndexToPortTable.Designer.cs">
+    <Compile Include="Views\Config_EditForms\IndexToPortTable.Designer.cs">
       <DependentUpon>IndexToPortTable.cs</DependentUpon>
     </Compile>
-    <Compile Include="Logger.cs">
+    <Compile Include="Views\Config_EditForms\Logger.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Logger.Designer.cs">
+    <Compile Include="Views\Config_EditForms\Logger.Designer.cs">
       <DependentUpon>Logger.cs</DependentUpon>
     </Compile>
-    <Compile Include="MyOpaqueLayer.cs">
+    <Compile Include="Views\UserControls\MyOpaqueLayer.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="MyOpaqueLayer.Designer.cs">
+    <Compile Include="Views\UserControls\MyOpaqueLayer.Designer.cs">
       <DependentUpon>MyOpaqueLayer.cs</DependentUpon>
     </Compile>
-    <Compile Include="OpaqueCommand.cs" />
-    <Compile Include="OpaqueForm.cs">
+    <Compile Include="Functions\OpaqueCommand.cs" />
+    <Compile Include="Views\OpaqueForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="OpaqueForm.Designer.cs">
+    <Compile Include="Views\OpaqueForm.Designer.cs">
       <DependentUpon>OpaqueForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PortToIndexForm.cs">
+    <Compile Include="Views\Config_EditForms\PortToIndexForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PortToIndexForm.Designer.cs">
+    <Compile Include="Views\Config_EditForms\PortToIndexForm.Designer.cs">
       <DependentUpon>PortToIndexForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RegisterForm.cs">
+    <Compile Include="Views\RegisterForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="RegisterForm.Designer.cs">
+    <Compile Include="Views\RegisterForm.Designer.cs">
       <DependentUpon>RegisterForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="saveMSD.cs" />
-    <Compile Include="USBWatcher.cs" />
-    <Compile Include="UserButton.cs">
+    <Compile Include="Functions\saveMSD.cs" />
+    <Compile Include="Functions\USBWatcher.cs" />
+    <Compile Include="Views\UserControls\UserButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="UserButton.Designer.cs">
+    <Compile Include="Views\UserControls\UserButton.Designer.cs">
       <DependentUpon>UserButton.cs</DependentUpon>
     </Compile>
-    <Compile Include="VSTreeView.cs">
+    <Compile Include="Views\VSTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormConfigurateSysinfoLocation.resx">
+    <EmbeddedResource Include="Views\Config_EditForms\FormConfigurateSysinfoLocation.resx">
       <DependentUpon>FormConfigurateSysinfoLocation.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormConfiguration.resx">
+    <EmbeddedResource Include="Views\Config_EditForms\FormConfiguration.resx">
       <DependentUpon>FormConfiguration.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormEditCfg.resx">
+    <EmbeddedResource Include="Views\Config_EditForms\FormEditCfg.resx">
       <DependentUpon>FormEditCfg.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormEditItems.resx">
+    <EmbeddedResource Include="Views\FormEditItems.resx">
       <DependentUpon>FormEditItems.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormMapping.resx">
+    <EmbeddedResource Include="Views\FormMapping.resx">
       <DependentUpon>FormMapping.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormScriptSupport.resx">
+    <EmbeddedResource Include="Views\FormScriptSupport.resx">
       <DependentUpon>FormScriptSupport.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="FormSDCard.resx">
+    <EmbeddedResource Include="Views\FormSDCard.resx">
       <DependentUpon>FormSDCard.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Help.resx">
+    <EmbeddedResource Include="Views\Help.resx">
       <DependentUpon>Help.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="IndexToPortTable.resx">
+    <EmbeddedResource Include="Views\Config_EditForms\IndexToPortTable.resx">
       <DependentUpon>IndexToPortTable.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Logger.resx">
+    <EmbeddedResource Include="Views\Config_EditForms\Logger.resx">
       <DependentUpon>Logger.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OpaqueForm.resx">
+    <EmbeddedResource Include="Views\OpaqueForm.resx">
       <DependentUpon>OpaqueForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PortToIndexForm.resx">
+    <EmbeddedResource Include="Views\Config_EditForms\PortToIndexForm.resx">
       <DependentUpon>PortToIndexForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -267,7 +267,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="RegisterForm.resx">
+    <EmbeddedResource Include="Views\RegisterForm.resx">
       <DependentUpon>RegisterForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
