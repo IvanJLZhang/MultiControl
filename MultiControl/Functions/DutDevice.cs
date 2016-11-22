@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace MultiControl
 {
@@ -28,8 +29,18 @@ namespace MultiControl
         private float mInstallTime;
         private float mEstimate;
         private DateTime mBegin;
-        public string PortNumber = String.Empty;
-
+        public Int32 Port_Index = -1;
+        public string Port_Path = String.Empty;
+        /// <summary>
+        /// 由Port path和port index组成的port值
+        /// </summary>
+        public string Port
+        {
+            get
+            {
+                return $"#{Port_Index}--{Port_Path}";
+            }
+        }
         public string MSDCard
         {
             get { return mmSDCard; }
@@ -172,6 +183,12 @@ namespace MultiControl
             ConfigPath = string.Empty;
             InstallTime = 0.0f;
             Estimate = 0.0f;
+            ExitRunningThread = true;
+            if (test_thread != null)
+            {
+                test_thread.Abort();
+                test_thread = null;
+            }
         }
 
         public bool Equals(DutDevice x, DutDevice y)
@@ -184,5 +201,10 @@ namespace MultiControl
             return obj.GetHashCode();
         }
         public static DutDevice Default = new DutDevice();
+
+        /// <summary>
+        /// 测试线程
+        /// </summary>
+        public Thread test_thread = null;
     }
 }

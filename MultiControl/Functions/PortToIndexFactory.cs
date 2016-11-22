@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,56 +27,40 @@ using MultiControl.Common;
 
 namespace MultiControl.Functions
 {
-    class PortToIndexFactory
+    public class PortToIndexFactory
     {
-        public string FileName { get; set; } = ConfigurationHelper.ReadConfig("PortToIndex_File");
-        public PortToIndexFactory()
+        private static string data_path = String.Empty;
+
+        private static DataSet ds_client = new DataSet("Port_Arrangement");
+
+        public PortToIndexFactory(string config_path)
         {
-            try
+            data_path = config_path;
+            if (File.Exists(data_path))
             {
-                ds_client = new DataSet("Port_Arrangement");
-                ds_client.ReadXml(FileName);
+                LoadData();
             }
-            catch (Exception ex)
+            else
             {
-                OpenFileDialog file = new OpenFileDialog();
-                file.Title = "please provide correct PortToIndex.xml file.";
-                file.Filter = "XML文件|*.xml";
-                //file.FileName = "PortToIndex.xml";
-                file.Multiselect = false;
-                if (file.ShowDialog() == DialogResult.OK)
-                {
-                    FileName = file.FileName;
-                    ConfigurationHelper.WriteConfig("PortToIndex_File", file.FileName);
-                    ds_client = new DataSet("Port_Arrangement");
-                    ds_client.ReadXml(FileName);
-                }
-                else
-                {
-                    throw ex;
-                }
+                inittialize();
             }
         }
-        public DataTable Node_Table
+        public static DataTable Node_Table
         {
             get
             {
-                get_node_table();
-                return _node_table;
-            }
-
-            set
-            {
-                _node_table = value;
+                return ds_client.Tables["Node"];
             }
         }
 
-        public bool IsEnabled
+        public static bool IsEnabled
         {
             get
             {
-                get_isenabled();
-                return _isEnabled;
+                var IsEnabled_Table = ds_client.Tables["IsEnabled"];
+                bool isenabled = true;
+                Boolean.TryParse(IsEnabled_Table.Rows[0]["Value"].ToString(), out isenabled);
+                return isenabled;
             }
             set
             {
@@ -83,22 +68,18 @@ namespace MultiControl.Functions
                 {
                     var IsEnabled_Table = ds_client.Tables["IsEnabled"];
                     IsEnabled_Table.Rows[0]["Value"] = value;
-                    _isEnabled = value;
+                    Save();
                 }
             }
         }
 
-        private DataSet ds_client;
-        private Boolean _isEnabled = true;
-
-        private DataTable _node_table;
 
         /// <summary>
         /// 根据Port No获取Index
         /// </summary>
         /// <param name="portNo"></param>
         /// <returns></returns>
-        public int GetIndex(string portNo)
+        public static int GetIndex(string portNo)
         {
             DataTable node_table = Node_Table;
             if (node_table == null)
@@ -118,14 +99,15 @@ namespace MultiControl.Functions
         /// </summary>
         /// <param name="index"></param>
         /// <returns></returns>
-        public string GetPortNo(int index)
+        public string GetPortNo(int Index)
         {
+            DataTable node_table = Node_Table;
             if (Node_Table == null)
                 return "-1";
-            foreach (DataRow node in Node_Table.Rows)
+            foreach (DataRow node in node_table.Rows)
             {
                 int iindex = Int32.Parse(node["Index"].ToString());
-                if (iindex == index)
+                if (iindex == Index)
                     return node["Port"].ToString();
             }
             return "-1";
@@ -135,11 +117,12 @@ namespace MultiControl.Functions
         /// </summary>
         /// <param name="portNo"></param>
         /// <param name="index"></param>
-        public void ArrangePortNoToIndex(string portNo, int index)
+        public static void ArrangePortNoToIndex(string portNo, int index)
         {
             if (portNo == String.Empty || index < 0)
                 return;
-            for (int iindex = 0; iindex != Node_Table.Rows.Count; iindex++)
+            DataTable node_table = Node_Table;
+            for (int iindex = 0; iindex != node_table.Rows.Count; iindex++)
             {// 如果端口已经被配置， 则重新置为空
                 DataRow node = Node_Table.Rows[iindex];
                 if (node["Port"].ToString() == portNo)
@@ -147,7 +130,7 @@ namespace MultiControl.Functions
                     node["Port"] = String.Empty;
                 }
             }
-            for (int iindex = 0; iindex != Node_Table.Rows.Count; iindex++)
+            for (int iindex = 0; iindex != node_table.Rows.Count; iindex++)
             {
                 DataRow node = Node_Table.Rows[iindex];
                 int iiindex = Int32.Parse(node["Index"].ToString());
@@ -157,36 +140,79 @@ namespace MultiControl.Functions
                     break;
                 }
             }
+            Save();
         }
+
         /// <summary>
         /// 重置所有端口
         /// </summary>
-        public void InittializeTable()
+        public static void inittialize()
         {
-            DataTable node_table = Node_Table;
-            for (int index = 0; index < node_table.Rows.Count; index++)
+            common.m_log.Add($"initialize {data_path} data.");
+            DataTable isenabled_table = new DataTable();
+            isenabled_table.TableName = "IsEnabled";
+            isenabled_table.Columns.Add("Value");
+
+            DataRow row = isenabled_table.NewRow();
+            row["Value"] = true.ToString();
+            isenabled_table.Rows.Add(row.ItemArray);
+
+            DataTable node_table = new DataTable();
+            node_table.TableName = "Node";
+
+            node_table.Columns.Add("Index");
+            node_table.Columns.Add("Port");
+            int rowCount = MainWindow.m_Rows * MainWindow.m_Cols;
+
+            DataRow newRow = node_table.NewRow();
+            for (int index = 0; index < rowCount; index++)
             {
-                DataRow node = node_table.Rows[index];
-                node["Index"] = index + 1;
-                node["Port"] = -1;
+                newRow["Index"] = index + 1;
+                newRow["Port"] = String.Empty;
+                node_table.Rows.Add(newRow.ItemArray);
             }
-            Save_To_xml();
+            ds_client.Tables.Clear();
+            ds_client.Tables.Add(isenabled_table);
+            ds_client.Tables.Add(node_table);
+
+            Save();
         }
+
+        private void LoadData()
+        {
+            common.m_log.Add($"load {data_path} data.");
+
+            ds_client.ReadXml(data_path);
+        }
+
         /// <summary>
         /// 获取空闲Index列表
         /// </summary>
         /// <returns></returns>
-        public List<Int32> GetIdleIndexList()
+        public static List<Int32> GetIdleIndexList()
         {
+            DataTable node_table = Node_Table;
             List<Int32> index_list = new List<int>();
-            foreach (DataRow node in Node_Table.Rows)
+            foreach (DataRow node in node_table.Rows)
             {
-                int iindex = Int32.Parse(node["Index"].ToString());
-                if (node["Port"].ToString() == "-1" && !index_list.Contains(iindex))
-                    index_list.Add(iindex);
-
+                int index = Int32.Parse(node["Index"].ToString());
+                if (node["Port"].ToString() == "" && !index_list.Contains(index))
+                    index_list.Add(index);
             }
-            index_list.Sort();
+            //index_list.Sort();
+            return index_list;
+        }
+        public static List<String> GetIdleIndexStringList()
+        {
+            DataTable node_table = Node_Table;
+            List<String> index_list = new List<String>();
+            foreach (DataRow node in node_table.Rows)
+            {
+                int index = Int32.Parse(node["Index"].ToString());
+                if (node["Port"].ToString() == "" && !index_list.Contains(index.ToString()))
+                    index_list.Add(index.ToString());
+            }
+            //index_list.Sort();
             return index_list;
         }
         /// <summary>
@@ -208,26 +234,9 @@ namespace MultiControl.Functions
         /// <summary>
         /// 将改动更新到xml文件中
         /// </summary>
-        public void Save_To_xml()
+        public static void Save()
         {
-            if (ds_client != null)
-            {
-                ds_client.WriteXml(FileName);
-            }
-        }
-        void get_node_table()
-        {
-            if (ds_client != null)
-                _node_table = ds_client.Tables["Node"];
-        }
-
-        void get_isenabled()
-        {
-            if (ds_client != null)
-            {
-                var IsEnabled_Table = ds_client.Tables["IsEnabled"];
-                Boolean.TryParse(IsEnabled_Table.Rows[0]["Value"].ToString(), out _isEnabled);
-            }
+            ds_client.WriteXml(data_path);
         }
     }
 }

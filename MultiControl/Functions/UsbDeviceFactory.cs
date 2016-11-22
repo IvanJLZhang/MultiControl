@@ -32,9 +32,9 @@ namespace MultiControl.Functions
     {
         CMDHelper cmd = new CMDHelper();
 
-        public async Task<List<UsbDeviceInfo>> GetAllDevices()
+        public async Task<List<UsbDeviceInfoEx>> GetAllDevices()
         {
-            List<UsbDeviceInfo> device_list = new List<UsbDeviceInfo>();
+            List<UsbDeviceInfoEx> device_list = new List<UsbDeviceInfoEx>();
             UsbRegDeviceList allDevices = UsbDevice.AllDevices;
             await CMDHelper.Adb_KillServer();
 
@@ -62,9 +62,9 @@ namespace MultiControl.Functions
 
                     string portNum = filterUsbPort(locationPaths[0], man);
 
-                    UsbDeviceInfo deviceInfo = new UsbDeviceInfo();
+                    UsbDeviceInfoEx deviceInfo = new UsbDeviceInfoEx();
                     deviceInfo.Index = -1;
-                    deviceInfo.PortNumber = portNum;
+                    deviceInfo.Port_Path = portNum;
                     deviceInfo.SerialNumber = usbDevice.Info.SerialString;
                     device_list.Add(deviceInfo);
                 }

@@ -6,14 +6,15 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using MultiControl.Functions;
 
 namespace MultiControl
 {
     public partial class FormMapping : Form
     {
-        private DataSet mDataSet;
+        //private DataSet mDataSet;
         //private DataTable mDataTable; 
-        
+
         public FormMapping()
         {
             InitializeComponent();
@@ -27,21 +28,19 @@ namespace MultiControl
 
         private void LoadConfig()
         {
-            mDataSet = new DataSet("ConfigData");
-            //mDataSet.ReadXmlSchema("../../" + "ConfigData.xsd");
-            mDataSet.ReadXml("ConfigData.xml");
-
-            dataGridViewPath.DataSource = mDataSet.Tables[0];
-            /*
-            mDataTable = mDataSet.Tables["Config"];
-            
-            for (int index = 0; index != mDataTable.Columns.Count; index++)
+            DataTable model_table = SpecifiedConfigPathFactory.Model_Table;
+            if (model_table == null || model_table.Rows.Count <= 0)
             {
-                this.dataGridViewPath.Columns[index].HeaderText = mDataTable.Columns[index].Caption;
+                model_table = new DataTable();
+                model_table.TableName = "model";
+                model_table.Columns.Add("Name");
+                model_table.Columns.Add("Brand");
+                model_table.Columns.Add("Path");
+                model_table.Columns.Add("Estimate");
+
             }
-            this.dataGridViewPath.Columns["Index"].ReadOnly = true;
-            this.dataGridViewPath.Columns["Name"].ReadOnly = true;
-            */
+            dataGridViewPath.DataSource = model_table;
+
             if (this.dataGridViewPath.Columns["Path"] != null)
             {
                 this.dataGridViewPath.Columns["Path"].Width = 320;
@@ -50,25 +49,11 @@ namespace MultiControl
             {
                 this.dataGridViewPath.Columns["Estimate"].Width = 64;
             }
-            else
-            {
-                /*
-                DataGridViewTextBoxColumn colEstimate = new DataGridViewTextBoxColumn();
-                colEstimate.Name = "Estimate";
-                colEstimate.ToolTipText = "Estimate Time";
-                colEstimate.Width = 64;
-                this.dataGridViewPath.Columns.Add(colEstimate);
-                 * */
-                //DATA SET NEED ADD ONE Column
-                mDataSet.Tables[0].Columns.Add(new DataColumn("Estimate"));
-                this.dataGridViewPath.Columns["Estimate"].Width = 64;
-            }
-
             DataGridViewButtonColumn col = new DataGridViewButtonColumn();
             col.Name = "Choose";
             col.Text = "...";
             col.ToolTipText = "Config Path";
-            col.Width = 20;
+            col.Width = 25;
             col.UseColumnTextForButtonValue = true;
             col.HeaderText = "";
             this.dataGridViewPath.Columns.Add(col);
@@ -76,12 +61,11 @@ namespace MultiControl
 
         private void dataGridViewPath_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
         {
-
         }
 
         private void dataGridViewPath_CellEndEdit(object sender, DataGridViewCellEventArgs e)
         {
-
+            SpecifiedConfigPathFactory.Model_Table.Rows[e.RowIndex][e.ColumnIndex] = dataGridViewPath.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
         }
 
         private void dataGridViewPath_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -92,18 +76,40 @@ namespace MultiControl
                 {
                     DataGridViewTextBoxCell cell = (DataGridViewTextBoxCell)this.dataGridViewPath.Rows[e.RowIndex].Cells["Path"];
                     cell.Value = folderBrowserDialog1.SelectedPath;
+
+                    SpecifiedConfigPathFactory.Model_Table.Rows[e.RowIndex]["Path"] = cell.Value;
                 }
             }
         }
 
         private void dataGridViewPath_UserAddedRow(object sender, DataGridViewRowEventArgs e)
         {
+            DataTable model_table = SpecifiedConfigPathFactory.Model_Table;
+            if (model_table == null || model_table.Rows.Count <= 0)
+            {
+                model_table = new DataTable();
+                model_table.TableName = "model";
+                model_table.Columns.Add("Name");
+                model_table.Columns.Add("Brand");
+                model_table.Columns.Add("Path");
+                model_table.Columns.Add("Estimate");
 
+                DataRow newRow = model_table.NewRow();
+                newRow["Name"] = e.Row.Cells["Name"].ToString();
+                newRow["Brand"] = e.Row.Cells["Brand"].ToString();
+                newRow["Path"] = e.Row.Cells["Path"].ToString();
+                int est = 0;
+                Int32.TryParse(e.Row.Cells["Estimate"].ToString(), out est);
+                newRow["Estimate"] = est;
+                model_table.Rows.Add(newRow);
+
+                SpecifiedConfigPathFactory.Model_Table = model_table;
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            mDataSet.WriteXml("ConfigData.xml");
+            SpecifiedConfigPathFactory.Save();
             Close();
         }
 

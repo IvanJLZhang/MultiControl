@@ -39,7 +39,6 @@ namespace MultiControl
         private DutDevice[] mConnectedDut;
         private int mRows, mCols;
 
-        //SynchronizationContext _syncContext = null;
 
         public string mCfgFolder = string.Empty;
         public string mLogFolder = string.Empty;
@@ -55,7 +54,6 @@ namespace MultiControl
         private string mLicenseKey = string.Empty;
         private bool mLicensed = false;
 
-        private USB mUSB = new USB();
         private OpaqueForm mOpaqueLayer = new OpaqueForm();
         private int mPseudoTotal = 0;
         //Event
@@ -88,17 +86,17 @@ namespace MultiControl
         {
             get
             {
-                return m_PortToIndexFactory.IsEnabled;
+                return PortToIndexFactory.IsEnabled;
             }
             set
             {
-                m_PortToIndexFactory.IsEnabled = value;
+                PortToIndexFactory.IsEnabled = value;
             }
         }
         /// <summary>
         /// 端口注册表操作对象
         /// </summary>
-        PortToIndexFactory m_PortToIndexFactory;
+        //PortToIndexFactory m_PortToIndexFactory;
         #endregion
 
         #region Initilize/Navigation methods
@@ -116,7 +114,7 @@ namespace MultiControl
             // 注册USB设备插入/拔出事件
             UsbDeviceNotifier.OnDeviceNotify += UsbDeviceNotifier_OnDeviceNotify;
 
-            m_PortToIndexFactory = new PortToIndexFactory();
+            //m_PortToIndexFactory = new PortToIndexFactory();
 
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
@@ -152,7 +150,7 @@ namespace MultiControl
                 case EventType.DeviceArrival:
                     if (e.Device != null)
                     {
-                        UsbDeviceInfo device = new UsbDeviceInfo();
+                        UsbDeviceInfoEx device = new UsbDeviceInfoEx();
                         device.SerialNumber = e.Device.SerialNumber;
 
                         if (mConnectedDut.Contains(new DutDevice() { SerialNumber = device.SerialNumber }, DutDevice.Default))
@@ -163,24 +161,24 @@ namespace MultiControl
                         }
                         UsbDeviceFactory usb = new UsbDeviceFactory();
                         string usb_port = await usb.FindArrivaledDevice(e.Device.SerialNumber);
-                        device.PortNumber = usb_port;
-                        if (IsEnabledIndexRegister)
-                        {
-                            if (device.PortNumber == String.Empty)
-                            {
-                                common.m_log.Add("can not read port number.");
-                                break;
-                            }
-                            // 检查端口配置情况
-                            int index = m_PortToIndexFactory.GetIndex(device.PortNumber);
-                            if (index <= -1)
-                            {
-                                PortToIndexForm portForm = new PortToIndexForm(device.PortNumber);
-                                if (portForm.ShowDialog() == DialogResult.OK)
-                                    index = portForm.Index;
-                            }
-                            device.Index = index - 1;
-                        }
+                        device.Port_Path = usb_port;
+                        //if (IsEnabledIndexRegister)
+                        //{
+                        //    if (device.Port_Path == String.Empty)
+                        //    {
+                        //        common.m_log.Add("can not read port number.");
+                        //        break;
+                        //    }
+                        //    // 检查端口配置情况
+                        //    int index = m_PortToIndexFactory.GetIndex(device.Port_Path);
+                        //    if (index <= -1)
+                        //    {
+                        //        PortToIndexForm portForm = new PortToIndexForm(device.Port_Path);
+                        //        if (portForm.ShowDialog() == DialogResult.OK)
+                        //            index = portForm.Index;
+                        //    }
+                        //    device.Index = index - 1;
+                        //}
                         DeviceArrival(device);
                     }
                     break;
@@ -192,7 +190,7 @@ namespace MultiControl
                     {
                         if (e.Device != null)
                         {
-                            UsbDeviceInfo device = new UsbDeviceInfo();
+                            UsbDeviceInfoEx device = new UsbDeviceInfoEx();
                             device.SerialNumber = e.Device.SerialNumber;
                             DeviceRemoved(device);
                         }
@@ -278,7 +276,7 @@ namespace MultiControl
         }
 
         #endregion
-        private void DeviceArrival(UsbDeviceInfo device)
+        private void DeviceArrival(UsbDeviceInfoEx device)
         {
             if (IsEnabledIndexRegister)
             {
@@ -307,7 +305,7 @@ namespace MultiControl
                 }
             }
         }
-        private void DeviceRemoved(UsbDeviceInfo device)
+        private void DeviceRemoved(UsbDeviceInfoEx device)
         {
             for (int index = 0; index < mConnectedDut.Length; index++)
             {
@@ -339,7 +337,7 @@ namespace MultiControl
         /// 不需要注册端口的测试
         /// </summary>
         /// <param name="device"></param>
-        async void TestNewDevice_UnRegisterIndex(UsbDeviceInfo device)
+        async void TestNewDevice_UnRegisterIndex(UsbDeviceInfoEx device)
         {
             //CHECK DEVICES
             int index = FindAvaiableDUTIndex();
@@ -351,7 +349,7 @@ namespace MultiControl
             bool adb_avaiable = await cmd.CheckDeviceConnection(device);
             if (!adb_avaiable)
             {
-                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.PortNumber}", MessageType.ERROR);
+                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.Port_Path}", MessageType.ERROR);
                 return;
             }
             mConnectedDut[index].BenginTime = DateTime.Now;
@@ -416,7 +414,7 @@ namespace MultiControl
 
         }
 
-        async void TestNewDevice_RegisterIndex(UsbDeviceInfo device)
+        async void TestNewDevice_RegisterIndex(UsbDeviceInfoEx device)
         {
             if (device.Index <= -1)
             {
@@ -426,7 +424,7 @@ namespace MultiControl
             bool adb_avaiable = await cmd.CheckDeviceConnection(device);
             if (!adb_avaiable)
             {
-                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.PortNumber}", MessageType.ERROR);
+                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.Port_Path}", MessageType.ERROR);
                 return;
             }
             int index = device.Index;
@@ -527,30 +525,30 @@ namespace MultiControl
             await CMDHelper.Adb_KillServer();
             await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
             // 开始测试
-            m_PortToIndexFactory = new PortToIndexFactory();
-            UsbDeviceFactory device_factory = new UsbDeviceFactory();
-            var device_list = await device_factory.GetAllDevices();
-            foreach (var device in device_list)
-            {
-                if (IsEnabledIndexRegister)
-                {
-                    if (device.PortNumber == String.Empty)
-                    {
-                        common.m_log.Add("can not read port number.");
-                        continue;
-                    }
-                    // 检查端口配置情况
-                    int index = m_PortToIndexFactory.GetIndex(device.PortNumber);
-                    if (index <= -1)
-                    {
-                        PortToIndexForm portForm = new PortToIndexForm(device.PortNumber);
-                        if (portForm.ShowDialog() == DialogResult.OK)
-                            index = portForm.Index;
-                    }
-                    device.Index = index - 1;
-                }
-                DeviceArrival(device);
-            }
+            //m_PortToIndexFactory = new PortToIndexFactory();
+            //UsbDeviceFactory device_factory = new UsbDeviceFactory();
+            //var device_list = await device_factory.GetAllDevices();
+            //foreach (var device in device_list)
+            //{
+            //    if (IsEnabledIndexRegister)
+            //    {
+            //        if (device.Port_Path == String.Empty)
+            //        {
+            //            common.m_log.Add("can not read port number.");
+            //            continue;
+            //        }
+            //        // 检查端口配置情况
+            //        int index = m_PortToIndexFactory.GetIndex(device.Port_Path);
+            //        if (index <= -1)
+            //        {
+            //            PortToIndexForm portForm = new PortToIndexForm(device.Port_Path);
+            //            if (portForm.ShowDialog() == DialogResult.OK)
+            //                index = portForm.Index;
+            //        }
+            //        device.Index = index - 1;
+            //    }
+            //    DeviceArrival(device);
+            //}
         }
         #endregion
 
@@ -1065,7 +1063,6 @@ namespace MultiControl
         {
             int i = (int)index;
             mDuts[i].SetDutItem("Start Testing...");
-            //mDuts[i].SetDutPercentage("");
             mDuts[i].BackgroundGradientColor = System.Drawing.Color.Orange;
             mDuts[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
             if (this.StartUpdate != null)
@@ -1282,45 +1279,22 @@ namespace MultiControl
             #endregion
 
             string response = String.Empty;
-            #region push测试项config文件
             mDuts[ThreadIndex].Result = UserGridClassLibrary.ItemResult.IR_TESTING;
-            //_syncContext.Post(SetDutStatus, i);
             SetDutStatusInvoke(ThreadIndex);
-            /*
-            //get product mode ro.product.model
-            string modeCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell getprop ro.product.model";
-            string model = Execute(modeCmd);
-            model = model.Replace("\r\n", "").Replace("\r", "");
-            mConnectedDut[i].Model = model;
-            mConnectedDut[i].ConfigPath = Application.StartupPath + "\\" + model;
-            * */
-            //_syncContext.Post(SetDutModel, i);
             SetDutModel(ThreadIndex);
             mDuts[ThreadIndex].EstimateTime = mConnectedDut[ThreadIndex].Estimate;
-            //DateTime dtStart = DateTime.Now;
-            //push md5 file
+
             string pushCmd = string.Empty;
-
-            //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " uninstall com.wistron.generic.pqaa";
-            //Execute(pushCmd);
-            //_syncContext.Post(SetDutInstallPQAA, i);
-            //ADD PQAA INSTALL TIME---------------------------------------------
-            //mOpaqueLayer.AddResult(i, mConnectedDut[i].Model, "Install PQAA", OpaqueForm.MyResult.WORKING, 0.0f);
-            //DateTime dtStart = DateTime.Now;
             pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " install -r Generic_PQAA.apk";
-            var ret = await Execute(pushCmd, true);
+            response = await Execute(pushCmd, true);
 
-            //adb shell am startservice -a com.wistron.generic.get.sdcard.path
-            // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
-            //_syncContext.Post(SetDutInstallPQAA, i);
+
+
             SetDutInstallPQAAInvoke(ThreadIndex);
 
             pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
             var result = await Execute(pushCmd, true);
 
-            //adb shell am startservice -a com.wistron.generic.get.sdcard.path
-            // /storage/sdcard1/Android/data/com.wistron.generic.pqaa/files/path.verify.pass
-            // SD card issue found!!!
             int count = 0;
             string sdcard = await QueryModelConfigSDCardFromDataSet(ThreadIndex, log_model_date_path.FullName);
             while (String.IsNullOrEmpty(sdcard) && count <= config_inc.CMD_REPEAT_MAX_TIME)
@@ -1333,31 +1307,16 @@ namespace MultiControl
             }
             if (string.IsNullOrEmpty(sdcard))
             {
-                common.m_log.Add($"{mConnectedDut[ThreadIndex].SerialNumber}: test fail: No available SD card for testing...");
+                common.m_log.Add($"{mConnectedDut[ThreadIndex].SerialNumber}: Test fail: No available SD card for testing...");
                 SetDutTestFinishInvoke($@"{ThreadIndex}/0/0/FAIL");
                 return;
             }
-            /*
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + CFG_FILE_PACKAGE; // /mnt/sdcard/pqaa_config";
-            Execute(pushCmd);
-            _syncContext.Post(SetDutMD5, i);
 
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + config_inc.CFG_FILE_ROOT; // /mnt/sdcard/pqaa_config";
-            Execute(pushCmd);
-            _syncContext.Post(SetDutMD5, i);
-            */
-
+            #region push测试项config文件
             pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push md5.txt " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_ROOT; // /mnt/sdcard/";
             await Execute(pushCmd, true);
 
-
-            //_syncContext.Post(SetDutMD5, i);
             SetDutMD5Invoke(ThreadIndex);
-            /*
-            pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " shell mkdir " + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
-            Execute(pushCmd);
-            _syncContext.Post(SetDutPQAAFolder, i);
-            */
             //------START-------------------------------------------
             if (bMultiModelSupport)
             {
@@ -1366,7 +1325,6 @@ namespace MultiControl
             }
             else
             {
-                //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " push audio_loopback.cfg /mnt/sdcard/pqaa_config";
                 pushCmd = "adb -s " + mConnectedDut[ThreadIndex].SerialNumber + " push \"" + mCfgFolder +
                 "\\" + "audio_loopback.cfg\" " + mConnectedDut[ThreadIndex].SDCard + config_inc.CFG_FILE_PQAA; // /mnt/sdcard/pqaa_config";
             }
@@ -1445,15 +1403,6 @@ namespace MultiControl
             }
             await Execute(pushCmd, true);
             //--------------END--------------------------------------
-
-            //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " uninstall com.wistron.generic.pqaa";
-            //Execute(pushCmd);
-            //_syncContext.Post(SetDutInstallPQAA, i);
-            ////ADD PQAA INSTALL TIME---------------------------------------------
-            ////mOpaqueLayer.AddResult(i, mConnectedDut[i].Model, "Install PQAA", OpaqueForm.MyResult.WORKING, 0.0f);
-            ////DateTime dtStart = DateTime.Now;
-            //pushCmd = "adb -s " + mConnectedDut[i].SerialNumber + " install Generic_PQAA.apk";
-            //Execute(pushCmd);
 
             DateTime dtEnd = DateTime.Now;
             TimeSpan ts = dtEnd - mConnectedDut[ThreadIndex].BenginTime;// dtStart;
@@ -1870,10 +1819,10 @@ namespace MultiControl
         private void helpToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Help about = new Help();
-            if (mLicensed)
-            {
-                about.setLicensedKey(mLicenseKey);
-            }
+            //if (mLicensed)
+            //{
+            //    about.setLicensedKey(mLicenseKey);
+            //}
             about.ShowDialog();
         }
 
@@ -1982,8 +1931,6 @@ namespace MultiControl
         {
             FormMapping mapping = new FormMapping();
             mapping.ShowDialog();
-            mConfigPath = new DataSet("ConfigData");
-            mConfigPath.ReadXml("ConfigData.xml");
         }
 
         private void checkBoxModel_CheckedChanged(object sender, EventArgs e)
@@ -2007,7 +1954,7 @@ namespace MultiControl
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mUSB.RemoveUSBEventWatcher();
+            //mUSB.RemoveUSBEventWatcher();
             IniFile mIni = new IniFile(Application.StartupPath + "\\cfg.ini");
             if (bMultiModelSupport)
             {
@@ -2270,17 +2217,17 @@ namespace MultiControl
 
         private void viewPortIndexTableToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            m_PortToIndexFactory = new PortToIndexFactory();
-            IndexToPortTable table_form = new IndexToPortTable(m_PortToIndexFactory.Node_Table);
-            table_form.ShowDialog();
+            //m_PortToIndexFactory = new PortToIndexFactory();
+            //IndexToPortTable table_form = new IndexToPortTable(m_PortToIndexFactory.Node_Table);
+            //table_form.ShowDialog();
         }
 
         private void initializeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("the registered port to index data will be wiped out, are you sure to continue?", "Warning", MessageBoxButtons.OKCancel) == DialogResult.OK)
             {
-                m_PortToIndexFactory = new PortToIndexFactory();
-                m_PortToIndexFactory.InittializeTable();
+                //m_PortToIndexFactory = new PortToIndexFactory();
+                //m_PortToIndexFactory.InittializeTable();
             }
         }
 

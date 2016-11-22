@@ -1,0 +1,85 @@
+﻿<Window x:Class="WPFUsbView.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:usb="clr-namespace:WPFUsbView"
+        xmlns:resx="clr-namespace:WPFUsbView.Properties" 
+        Title="USB Device Viewer" Height="600" Width="800" Icon="/WPFUsbView;component/images/usb.ico" WindowStyle="ThreeDBorderWindow" WindowStartupLocation="CenterScreen" Loaded="Window_Loaded" WindowState="Maximized">
+    <Window.Resources>
+        <Style TargetType="TreeViewItem">
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}}" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="Auto"></RowDefinition>            
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Background="CadetBlue">
+            <ToolBar Height="40" Width="Auto" HorizontalAlignment="Left" Background="CadetBlue">
+                <Button Margin="4,0" Name="buttonRefresh" Click="buttonRefresh_Click">
+                    <Image Source="/WPFUsbView;component/images/refresh.png"></Image>
+                </Button>
+                <Button Margin="4,0" Name="buttonOpenXML" Click="buttonOpenXML_Click">
+                    <Image Source="/WPFUsbView;component/images/XML.png"></Image>
+                </Button>
+                <Button Margin="4,0" Name="buttonInfo" Click="buttonInfo_Click">
+                    <Image Source="/WPFUsbView;component/images/Info.png"></Image>
+                </Button>
+            </ToolBar>
+        </Grid>   
+        
+        <Grid Grid.Row="1" Name="gridDetail">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="6*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <TreeView Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Top" Name="treeView1" FontSize="16" SelectedItemChanged="treeView1_SelectedItemChanged">
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType="{x:Type usb:TreeViewUsbItem}" ItemsSource="{Binding Path=Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image VerticalAlignment="Center" Source="{Binding Icon}" Width="16" Height="16" Margin="0,0,2,2"></Image>
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Name}"></TextBlock>
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <GridSplitter Grid.Column="1" Width="13" HorizontalAlignment="Center" VerticalAlignment="Stretch" LayoutUpdated="GridSplitter_LayoutUpdated">
+                <GridSplitter.Background>
+                    <ImageBrush ImageSource="/WPFUsbView;component/images/SplitLine.png" Stretch="UniformToFill" TileMode="Tile" Viewport="0,0,15,500" ViewportUnits="Absolute" />
+                </GridSplitter.Background>
+            </GridSplitter>
+            
+            <ListView Grid.Column="2" Name="listView1" FontSize="16">
+                <ListView.ItemTemplate>
+                    <DataTemplate DataType="{x:Type usb:ListViewUsbItem}">
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                            <TextBlock Width="250" Text="{Binding Name}"></TextBlock>
+                            <TextBlock Width="Auto" Text="{Binding Value}" Foreground="Blue"></TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+        <StatusBar Grid.Row="2" Height="32" Background="SteelBlue">
+            <StatusBarItem>
+                <Image Source="/WPFUsbView;component/images/usbdevice.png"></Image>
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock FontSize="16" Foreground="Brown" Name="textBlockUsbDevice">0</TextBlock>
+            </StatusBarItem>            
+            <StatusBarItem>
+                <Image Source="/WPFUsbView;component/images/usb-hub.png"></Image>
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock FontSize="16" Foreground="Brown" Name="textBlockUsbHub">0</TextBlock>
+            </StatusBarItem>
+        </StatusBar>        
+    </Grid>
+</Window>

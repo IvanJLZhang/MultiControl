@@ -65,7 +65,7 @@ namespace UserGridClassLibrary
             {
                 g.DrawRectangle(Pens.Green, bar);
                 int tWidth = bar.Width - 3;
-                float pValue = (float)Value / (float)(Max + 1);
+                float pValue = (float)Value / (float)(Max);
                 float pWidth = pValue * tWidth;
                 RectangleF progress = new RectangleF(bar.Left + 2, bar.Top + 2, pWidth, bar.Height - 3);
                 g.FillRectangle(Brushes.DarkOrange, progress);
@@ -84,7 +84,7 @@ namespace UserGridClassLibrary
                 bar = new Rectangle(bar.Right, Rect.Top, 46, Rect.Height);
                 font = new Font("Arial", 10.25F);
                 alignFormat.Alignment = StringAlignment.Far;
-                int Total = Max + 1; // +1 = PQAA INSTALL
+                int Total = Max; // +1 = PQAA INSTALL
                 g.DrawString(Value + "/" + Total, font, Brushes.Black, bar, alignFormat);
             }
         }
@@ -99,11 +99,11 @@ namespace UserGridClassLibrary
     }
 
     public enum TestWay
-	{
-	    TW_NONE,
+    {
+        TW_NONE,
         TW_AUTO,
         TW_MANUAL
-	}
+    }
 
     public enum ItemResult
     {
@@ -688,7 +688,7 @@ namespace UserGridClassLibrary
             ElapsedTime = 0.0f;
             BackgroundGradientMode = DutBoxGradientMode.Vertical;
             BackgroundGradientColor = Color.FromArgb(192, Color.Gray);
-
+            Active = false;
             if (OnContentReset != null)
             {
                 OnContentReset(this, new ResetEventArgs(ID, string.Empty));
@@ -782,10 +782,7 @@ namespace UserGridClassLibrary
         public void SetDutProgress(int value, int max)
         {
             ProgressBar.Value = value;
-            if (max > ProgressBar.Max)
-            {
-                ProgressBar.Max = max;
-            }
+            ProgressBar.Max = max;
             if (OnGridItemInvalidate != null)
             {
                 GridItemInvalidateEventArgs args = new GridItemInvalidateEventArgs(ID, string.Empty);
@@ -971,9 +968,9 @@ namespace UserGridClassLibrary
             _itemHeight = (Height - SidePadding * 2 - (Row - 1) * GridPadding) / Row;
 
             int id = 0;
-            for (int i = 0; i < Row; i++)
+            for (int index = 0; index < Row; index++)
             {
-                for (int j = 0; j < Column; j++)
+                for (int indey = 0; indey < Column; indey++)
                 {
                     //GridItem item = new GridItem();
                     //item.ID = id;
@@ -1038,7 +1035,7 @@ namespace UserGridClassLibrary
             //g.DrawString("Intelligent/Realtime/Visualization/Multiple terminals/Script Supported", new Font("Arial", 24.0F, FontStyle.Bold), Brushes.Blue, 100, 100);
             Font infoFont = new Font("Arial", 24.0F, FontStyle.Bold);
             float y = 176;
-            foreach(string info in mInfo)
+            foreach (string info in mInfo)
             {
                 SizeF sz = g.MeasureString(info, infoFont);
                 var location = new PointF(Width / 2 - sz.Width / 2, y);
@@ -1123,7 +1120,7 @@ namespace UserGridClassLibrary
                         OnGridItemChecked(this, new CheckedEventArgs(index, item.Checked, string.Empty));
                     }
                 }
-                index ++;
+                index++;
             }
 
             return false;
@@ -1192,23 +1189,25 @@ namespace UserGridClassLibrary
 
         public GridItem this[int index]
         {
-            get {
-                    if (index < 0 || index >= GridItems.Count)
-                    {
-                        return null;
-                    }
-                    else
-                    {
-                        return GridItems[index];
-                    }
+            get
+            {
+                if (index < 0 || index >= GridItems.Count)
+                {
+                    return null;
                 }
+                else
+                {
+                    return GridItems[index];
+                }
+            }
 
-            set {
-                    if (index >= 0 || index < GridItems.Count)
-                    {
-                        GridItems[index] = value;
-                    }
+            set
+            {
+                if (index >= 0 || index < GridItems.Count)
+                {
+                    GridItems[index] = value;
                 }
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -6,13 +6,12 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using MultiControl.Functions;
 
 namespace MultiControl
 {
     public partial class FormSDCard : Form
     {
-        private DataSet mDataSet;
-
         public FormSDCard()
         {
             InitializeComponent();
@@ -26,10 +25,7 @@ namespace MultiControl
 
         private void LoadConfig()
         {
-            mDataSet = new DataSet("ConfigPath");
-            mDataSet.ReadXml("ConfigPath.xml");
-
-            dataGridViewSDCard.DataSource = mDataSet.Tables[0];
+            dataGridViewSDCard.DataSource = SDCardPathFactory.SDCardPath_Table;
 
             if (this.dataGridViewSDCard.Columns["InternalCard"] != null)
             {
@@ -39,7 +35,7 @@ namespace MultiControl
 
         private void buttonApply_Click(object sender, EventArgs e)
         {
-            mDataSet.WriteXml("ConfigPath.xml");
+            SDCardPathFactory.Save();
             Close();
         }
     }

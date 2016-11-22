@@ -1,0 +1,251 @@
+﻿namespace MultiControl
+{
+    partial class MainWindow
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
+            this.ms_CommandBar = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startSelectedDevicesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewGlobalLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.configurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.multiModelConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.initializeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.portIndexTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.initializePortIndexTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewPortIndexTableToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sDCardPathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.initializeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.editToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.ms_CommandBar.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // ms_CommandBar
+            // 
+            this.ms_CommandBar.Dock = System.Windows.Forms.DockStyle.None;
+            this.ms_CommandBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem,
+            this.configurationToolStripMenuItem,
+            this.aboutToolStripMenuItem});
+            this.ms_CommandBar.Location = new System.Drawing.Point(0, 0);
+            this.ms_CommandBar.Name = "ms_CommandBar";
+            this.ms_CommandBar.Size = new System.Drawing.Size(201, 25);
+            this.ms_CommandBar.TabIndex = 0;
+            this.ms_CommandBar.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startToolStripMenuItem,
+            this.startSelectedDevicesToolStripMenuItem,
+            this.resetToolStripMenuItem,
+            this.viewGlobalLogToolStripMenuItem,
+            this.exitToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(39, 21);
+            this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // startToolStripMenuItem
+            // 
+            this.startToolStripMenuItem.Name = "startToolStripMenuItem";
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.startToolStripMenuItem.Text = "&Start All";
+            this.startToolStripMenuItem.Click += new System.EventHandler(this.startToolStripMenuItem_Click);
+            // 
+            // startSelectedDevicesToolStripMenuItem
+            // 
+            this.startSelectedDevicesToolStripMenuItem.Name = "startSelectedDevicesToolStripMenuItem";
+            this.startSelectedDevicesToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.startSelectedDevicesToolStripMenuItem.Text = "Start Selected Device/s";
+            this.startSelectedDevicesToolStripMenuItem.Click += new System.EventHandler(this.startSelectedDevicesToolStripMenuItem_Click);
+            // 
+            // resetToolStripMenuItem
+            // 
+            this.resetToolStripMenuItem.Name = "resetToolStripMenuItem";
+            this.resetToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.resetToolStripMenuItem.Text = "&Reset All";
+            this.resetToolStripMenuItem.Click += new System.EventHandler(this.resetToolStripMenuItem_Click);
+            // 
+            // viewGlobalLogToolStripMenuItem
+            // 
+            this.viewGlobalLogToolStripMenuItem.Name = "viewGlobalLogToolStripMenuItem";
+            this.viewGlobalLogToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.viewGlobalLogToolStripMenuItem.Text = "&View Global Log";
+            this.viewGlobalLogToolStripMenuItem.Click += new System.EventHandler(this.viewGlobalLogToolStripMenuItem_Click);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.exitToolStripMenuItem.Text = "&Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
+            // configurationToolStripMenuItem
+            // 
+            this.configurationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.multiModelConfigurationToolStripMenuItem,
+            this.portIndexTableToolStripMenuItem,
+            this.sDCardPathToolStripMenuItem});
+            this.configurationToolStripMenuItem.Name = "configurationToolStripMenuItem";
+            this.configurationToolStripMenuItem.Size = new System.Drawing.Size(99, 21);
+            this.configurationToolStripMenuItem.Text = "&Configuration";
+            // 
+            // multiModelConfigurationToolStripMenuItem
+            // 
+            this.multiModelConfigurationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.initializeToolStripMenuItem,
+            this.editToolStripMenuItem});
+            this.multiModelConfigurationToolStripMenuItem.Name = "multiModelConfigurationToolStripMenuItem";
+            this.multiModelConfigurationToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.multiModelConfigurationToolStripMenuItem.Text = "Specified config Path";
+            // 
+            // initializeToolStripMenuItem
+            // 
+            this.initializeToolStripMenuItem.Name = "initializeToolStripMenuItem";
+            this.initializeToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.initializeToolStripMenuItem.Text = "Initialize";
+            this.initializeToolStripMenuItem.Click += new System.EventHandler(this.initializeToolStripMenuItem_Click);
+            // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.editToolStripMenuItem.Text = "Edit";
+            this.editToolStripMenuItem.Click += new System.EventHandler(this.multiModelConfigurationToolStripMenuItem_Click);
+            // 
+            // portIndexTableToolStripMenuItem
+            // 
+            this.portIndexTableToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.initializePortIndexTableToolStripMenuItem,
+            this.viewPortIndexTableToolStripMenuItem});
+            this.portIndexTableToolStripMenuItem.Name = "portIndexTableToolStripMenuItem";
+            this.portIndexTableToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.portIndexTableToolStripMenuItem.Text = "Port<-->Index Table";
+            // 
+            // initializePortIndexTableToolStripMenuItem
+            // 
+            this.initializePortIndexTableToolStripMenuItem.Name = "initializePortIndexTableToolStripMenuItem";
+            this.initializePortIndexTableToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.initializePortIndexTableToolStripMenuItem.Text = "&Initialize";
+            this.initializePortIndexTableToolStripMenuItem.Click += new System.EventHandler(this.initializePortIndexTableToolStripMenuItem_Click);
+            // 
+            // viewPortIndexTableToolStripMenuItem
+            // 
+            this.viewPortIndexTableToolStripMenuItem.Name = "viewPortIndexTableToolStripMenuItem";
+            this.viewPortIndexTableToolStripMenuItem.Size = new System.Drawing.Size(123, 22);
+            this.viewPortIndexTableToolStripMenuItem.Text = "&View";
+            this.viewPortIndexTableToolStripMenuItem.Click += new System.EventHandler(this.viewPortIndexTableToolStripMenuItem_Click);
+            // 
+            // sDCardPathToolStripMenuItem
+            // 
+            this.sDCardPathToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.initializeToolStripMenuItem1,
+            this.editToolStripMenuItem1});
+            this.sDCardPathToolStripMenuItem.Name = "sDCardPathToolStripMenuItem";
+            this.sDCardPathToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.sDCardPathToolStripMenuItem.Text = "SD Card Path";
+            // 
+            // initializeToolStripMenuItem1
+            // 
+            this.initializeToolStripMenuItem1.Name = "initializeToolStripMenuItem1";
+            this.initializeToolStripMenuItem1.Size = new System.Drawing.Size(123, 22);
+            this.initializeToolStripMenuItem1.Text = "&Initialize";
+            // 
+            // editToolStripMenuItem1
+            // 
+            this.editToolStripMenuItem1.Name = "editToolStripMenuItem1";
+            this.editToolStripMenuItem1.Size = new System.Drawing.Size(123, 22);
+            this.editToolStripMenuItem1.Text = "&Edit";
+            this.editToolStripMenuItem1.Click += new System.EventHandler(this.editToolStripMenuItem1_Click);
+            // 
+            // aboutToolStripMenuItem
+            // 
+            this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(55, 21);
+            this.aboutToolStripMenuItem.Text = "&About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            this.aboutToolStripMenuItem.MouseEnter += new System.EventHandler(this.aboutToolStripMenuItem_MouseEnter);
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Location = new System.Drawing.Point(0, 481);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(886, 22);
+            this.statusStrip1.TabIndex = 1;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // MainWindow
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(886, 503);
+            this.Controls.Add(this.statusStrip1);
+            this.Controls.Add(this.ms_CommandBar);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Location = new System.Drawing.Point(20, 50);
+            this.MainMenuStrip = this.ms_CommandBar;
+            this.Name = "MainWindow";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
+            this.Text = "MultiControl Test Tool";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainWindow_FormClosing);
+            this.ms_CommandBar.ResumeLayout(false);
+            this.ms_CommandBar.PerformLayout();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
+        }
+
+        #endregion
+
+        private System.Windows.Forms.MenuStrip ms_CommandBar;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewGlobalLogToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem configurationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem multiModelConfigurationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem initializeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem portIndexTableToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewPortIndexTableToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem initializePortIndexTableToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sDCardPathToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem initializeToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startSelectedDevicesToolStripMenuItem;
+    }
+}

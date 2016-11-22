@@ -58,6 +58,9 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>www.ico.la_15506277bc7bfe8c52a1eeeb4cd31d17_32X32.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="CustomListViewEx">
       <HintPath>..\CustomListViewEx\bin\Debug\CustomListViewEx.dll</HintPath>
@@ -71,6 +74,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Management" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -101,11 +105,6 @@
     <Compile Include="Common\EventHandleLib.cs" />
     <Compile Include="Common\UsbDeviceInfo.cs" />
     <Compile Include="Common\XMLDocHelper.cs" />
-    <Compile Include="ConfigData\ConfigData.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ConfigData.xsd</DependentUpon>
-    </Compile>
     <Compile Include="CustomCheckedListBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -115,6 +114,15 @@
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Functions\SDCardPathFactory.cs" />
+    <Compile Include="Functions\SpecifiedConfigPathFactory.cs" />
+    <Compile Include="Functions\UsbPortTree.cs" />
+    <Compile Include="MainWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainWindow.Designer.cs">
+      <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Views\Config_EditForms\FormConfigurateSysinfoLocation.cs">
       <SubType>Form</SubType>
@@ -208,7 +216,6 @@
       <DependentUpon>RegisterForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Functions\saveMSD.cs" />
-    <Compile Include="Functions\USBWatcher.cs" />
     <Compile Include="Views\UserControls\UserButton.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -220,6 +227,9 @@
     </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainWindow.resx">
+      <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Views\Config_EditForms\FormConfigurateSysinfoLocation.resx">
       <DependentUpon>FormConfigurateSysinfoLocation.cs</DependentUpon>
@@ -272,17 +282,7 @@
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="app.manifest" />
-    <None Include="ConfigData\ConfigData.xsc">
-      <DependentUpon>ConfigData.xsd</DependentUpon>
-    </None>
-    <None Include="ConfigData\ConfigData.xsd">
-      <SubType>Designer</SubType>
-      <Generator>MSDataSetGenerator</Generator>
-      <LastGenOutput>ConfigData.Designer.cs</LastGenOutput>
-    </None>
-    <None Include="ConfigData\ConfigData.xss">
-      <DependentUpon>ConfigData.xsd</DependentUpon>
-    </None>
+    <None Include="ConfigData\cfg.ini" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -297,6 +297,7 @@
     <Content Include="ConfigData\ConfigData.xml" />
     <Content Include="ConfigData\ConfigPath.xml" />
     <Content Include="ConfigData\PortToIndex.xml" />
+    <Content Include="www.ico.la_15506277bc7bfe8c52a1eeeb4cd31d17_32X32.ico" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Core">
@@ -322,6 +323,10 @@
     <ProjectReference Include="..\..\LibWinUsb\LibUsbDotNet.csproj">
       <Project>{0a78f6ff-5586-4052-8104-e23ff83a7ce1}</Project>
       <Name>LibUsbDotNet</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EZUSB\EZUSB\EZUSB.csproj">
+      <Project>{ec5728d8-256f-45a7-bcee-174745b27c8a}</Project>
+      <Name>EZUSB</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

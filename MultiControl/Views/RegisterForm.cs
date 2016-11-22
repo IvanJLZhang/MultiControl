@@ -14,123 +14,53 @@ namespace MultiControl
 {
     public partial class RegisterForm : Form
     {
-        private string mUserId = string.Empty;
-        private string mLicenseKey = string.Empty;
 
+        public static bool m_bLicensed = false;
         public RegisterForm()
         {
             InitializeComponent();
         }
-
-        private bool writeData(byte[] pData, string fileName)
-        {
-            FileStream pFileStream = null;
-            try
-            {
-                pFileStream = new FileStream(fileName, FileMode.OpenOrCreate);
-                pFileStream.Write(pData, 0, pData.Length);
-            }
-            catch
-            {
-                return false;
-            }
-            finally
-            {
-                if (pFileStream != null)
-                {
-                    pFileStream.Close();
-                }
-            }
-
-            return true;
-        }
-
-        private string readData(string fileName)
-        {
-            string key = string.Empty;
-            FileStream pFileStream = null;
-            byte[] pData = new byte[0];
-            try
-            {
-                pFileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-                BinaryReader reader = new BinaryReader(pFileStream);
-                reader.BaseStream.Seek(0, SeekOrigin.Begin);
-                pData = reader.ReadBytes((int)reader.BaseStream.Length);
-                key = Encoding.Unicode.GetString(pData, 0, pData.Length);
-                if (pFileStream != null)
-                {
-                    pFileStream.Close();
-                }
-                reader.Close();
-                return key;
-            }
-            catch
-            {
-                return key;
-            }
-            
-        }
-
-        private void LoadTestingProgram()
-        {
-            this.Hide();
-            Form1 mainFrm = new Form1();
-            mainFrm.UpdateLicenseInformation(mLicenseKey, true);
-            mainFrm.ShowDialog();
-            this.Close();
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
-            mUserId = this.textBoxId.Text;
-            mLicenseKey = this.textBoxKey.Text;
-            //StringBuilder sbKey = new StringBuilder(35);
-            //sbKey.Append(mLicenseKey);
-            if (Validate(mUserId, mLicenseKey) == 0)
+            string UserId = this.textBoxId.Text;
+            string LicenseKey = this.textBoxKey.Text;
+            if (Validate(UserId, LicenseKey) == 0)
             {
                 //save key file
-                byte[] data = Encoding.Unicode.GetBytes(mLicenseKey);
-                if (writeData(data, "license.dat"))
-                {
-                    LoadTestingProgram();
-                }
+                byte[] data = Encoding.Unicode.GetBytes(LicenseKey);
+                File.WriteAllBytes("license.dat", data);
+                MainWindow.m_bLicensed = true;
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             }
             else
             {
                 MessageBox.Show("Please Input Correct Register Code!");
             }
         }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            this.Close();
-        }
-
         private void RegisterForm_Load(object sender, EventArgs e)
         {
             ManagementClass hddObject = new ManagementClass("Win32_PhysicalMedia");
             ManagementObjectCollection hddInfo = hddObject.GetInstances();
+            string user_id = String.Empty;
             foreach (ManagementObject mo in hddInfo)
             {
-                mUserId = mo.Properties["SerialNumber"].Value.ToString().Trim();
+                user_id = mo.Properties["SerialNumber"].Value.ToString().Trim();
                 break;
             }
-            this.textBoxId.Text = mUserId.Trim();//.Substring(0,8);
-            //StringBuilder sbr = new StringBuilder(35);
-            //int result = Generate(mUserId, sbr);
-            //this.textBoxKey.Text = sbr.ToString();
-            //Validate(mUserId, mLicenseKey);
-            //mLicenseKey = "V5QTU-QBLOR-RB8IQ-AMC65-1ID90-K0NUB";//readData("license.dat");
-            //WD-WXP1E51XKE48
-            //mUserId = "billge";
-            mLicenseKey = readData("license.dat");
-            if (!string.IsNullOrEmpty(mLicenseKey))
+            this.textBoxId.Text = user_id.Trim();
+            if (File.Exists("license.dat"))
             {
-                //StringBuilder sbKey = new StringBuilder(35);
-                //sbKey.Append(mLicenseKey);
-                if (Validate(mUserId, mLicenseKey) == 0)
+                string license_key = File.ReadAllText("license.dat", Encoding.Unicode).Trim();
+                this.textBoxKey.Text = license_key;
+                if (!string.IsNullOrEmpty(license_key))
                 {
-                    LoadTestingProgram();
+                    if (Validate(user_id, license_key) == 0)
+                    {
+                        MainWindow.m_bLicensed = true;
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
+                    }
                 }
             }
         }
@@ -140,5 +70,11 @@ namespace MultiControl
 
         [DllImport("KeyGenerate.dll", EntryPoint = "fnValidateKey", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern int Validate(string user, string key);
+
+        private void btn_Cancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+            this.Close();
+        }
     }
 }

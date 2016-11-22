@@ -206,7 +206,7 @@ namespace MultiControl.Lib
                 {
                     if (process != null)
                         process.Close();
-                    common.m_log.Add_Debug(command);
+                    //common.m_log.Add_Debug(command);
                 }
                 #endregion
             }
@@ -232,6 +232,7 @@ namespace MultiControl.Lib
             //string output = await process.StandardOutput.ReadToEndAsync();
             process.Close();
             adb_service_start = true;
+            common.m_log.Add("Starting adb server.");
             return "";
         }
 
@@ -260,7 +261,7 @@ namespace MultiControl.Lib
         /// </summary>
         /// <param name="device"></param>
         /// <returns></returns>
-        public async Task<bool> CheckDeviceConnection(UsbDeviceInfo device)
+        public async Task<bool> CheckDeviceConnection(UsbDeviceInfoEx device)
         {
             string command = $"adb -s {device.SerialNumber} shell getprop ro.product.model";
             int count = 0;
@@ -269,14 +270,16 @@ namespace MultiControl.Lib
             while ((String.IsNullOrEmpty(response) || response.Contains("error: device not found"))
                 && count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
+                common.m_log.Add_Debug(command);
                 response = await CMD_RunAsync(command);
                 common.m_log.Add_Debug(response);
 
                 await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
                 count++;
             }
-            if (String.IsNullOrEmpty(response) || response.Contains("error: device not found"))
+            if (String.IsNullOrEmpty(response) || response.Contains("error: device not found") || response.Contains("offline"))
             {
+                common.m_log.Add(response, LogHelper.MessageType.ERROR);
                 return false;
             }
             device.ModelName = response.Trim();
