@@ -932,10 +932,10 @@ namespace MultiControl
                 }
                 #endregion
             }
-            newrow["Test Time(s)"] = (int)total_testtime;
+            newrow["TestTime"] = (int)total_testtime;
             newrow["Result"] = total_test_result.ToString();
             output_resultToXls(newrow, result_xls_file);
-            //output_resultToXml(newrow, result_xml_file);
+            output_resultToXml(newrow, result_xml_file);
             File.Delete(result_file);
             return 0;
         }
@@ -1031,19 +1031,29 @@ namespace MultiControl
             {
                 ds.ReadXml(xmlFile.FullName);
                 result_table = ds.Tables["Result"];
+
+                DataTable table = result_table.Clone();
+
+                for (int index = 0; index < table.Columns.Count; index++)
+                {
+                    table.Columns[index].DataType = typeof(String);
+                }
+                foreach (DataRow row in result_table.Rows)
+                {
+                    table.Rows.Add(row.ItemArray);
+                }
+                result_table = table;
             }
             else
             {
                 newrow.Table.TableName = "Result";
                 result_table = newrow.Table.Clone();
             }
-            //DataRow row = result_table.NewRow();
             result_table.Rows.Add(newrow.ItemArray);
 
-            ds.Tables.Clear();
+            ds = new DataSet("PQAA_Test_Rsult");
             ds.Tables.Add(result_table);
             ds.WriteXml(xmlFile.FullName);
-            ds.Clear();
             common.m_log.Add($"Save Result to file: {xmlFile.FullName}");
         }
         #endregion
