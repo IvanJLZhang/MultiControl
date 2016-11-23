@@ -153,6 +153,7 @@ namespace MultiControl
         bool InitializeConfigData()
         {
             FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
+            folder_dialog.SelectedPath = Application.StartupPath;
             // 验证config存放路径
             string config_path = ConfigurationHelper.ReadConfig("Test_Config_Folder");
             FileInfo dir_config_path = new FileInfo(config_path + @"\cfg.ini");
@@ -162,6 +163,7 @@ namespace MultiControl
                 if (folder_dialog.ShowDialog() == DialogResult.OK)
                 {
                     dir_config_path = new FileInfo(folder_dialog.SelectedPath + @"\cfg.ini");
+                    config_path = folder_dialog.SelectedPath;
                     ConfigurationHelper.WriteConfig("Test_Config_Folder", folder_dialog.SelectedPath);
                 }
             }
@@ -207,13 +209,13 @@ namespace MultiControl
             // 加载/初始化 相关config data
             try
             {
-                FileInfo ConfigPathData_file = new FileInfo(dir_config_path + @"\ConfigData.xml");
+                FileInfo ConfigPathData_file = new FileInfo(config_path + @"\ConfigData.xml");
                 SpecifiedConfigPathFactory specified = new SpecifiedConfigPathFactory(ConfigPathData_file.FullName);
 
-                FileInfo SDCardPathData_file = new FileInfo(dir_config_path + @"\ConfigPath.xml");
+                FileInfo SDCardPathData_file = new FileInfo(config_path + @"\ConfigPath.xml");
                 SDCardPathFactory sd_card_path_factory = new SDCardPathFactory(SDCardPathData_file.FullName);
 
-                FileInfo PortToIndex_file = new FileInfo(dir_config_path + @"\PortToIndex.xml");
+                FileInfo PortToIndex_file = new FileInfo(config_path + @"\PortToIndex.xml");
                 PortToIndexFactory port_to_index_factory = new PortToIndexFactory(PortToIndex_file.FullName);
             }
             catch (Exception ex)
@@ -821,8 +823,8 @@ namespace MultiControl
             }
 
             string result_file = source;
-            FileInfo result_xls_file = new FileInfo(log_model_date_path.FullName + "\\" + dut_device.SerialNumber + ".xlsx");
-            FileInfo result_xml_file = new FileInfo(log_model_date_path.FullName + "\\" + dut_device.SerialNumber + ".xml");
+            FileInfo result_xls_file = new FileInfo(log_model_date_path.FullName + "\\" + dut_device.Model + ".xlsx");
+            FileInfo result_xml_file = new FileInfo(log_model_date_path.FullName + "\\" + dut_device.Model + ".xml");
 
             DataTable tbl_result = new DataTable();
             foreach (string header in config_inc.mFileHeader)
