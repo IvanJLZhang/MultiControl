@@ -18,6 +18,7 @@ QQ：36748897
 ------------------------------------------------------------ */
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -273,6 +274,13 @@ namespace Splash.IO.PORTS
         {
             if (String.IsNullOrEmpty(DevicePath)) return null;
 
+            int index = DevicePath.LastIndexOf('#');
+            if (index < 0 || index > DevicePath.Length)
+            {
+                Debug.WriteLine($"Error: {DevicePath}");
+                return null;
+            }
+
             // 从设备路径中提取设备ID
             String DeviceID = DevicePath.Substring(0, DevicePath.LastIndexOf('#')).Replace('#', '_');
 
@@ -327,6 +335,12 @@ namespace Splash.IO.PORTS
 
             UsbNodeInformation Node = new UsbNodeInformation();
             Node.NodeType = Buffer.NodeType;    // 节点类型
+            int index = DevicePath.LastIndexOf('#');
+            if (index < 0 || index > DevicePath.Length)
+            {
+                Debug.WriteLine($"Error: {DevicePath}");
+                return null;
+            }
             //Node.PNPDeviceID = DevicePath.Substring(0, DevicePath.LastIndexOf('#')).Replace('#', '\\'); // 设备ID
             Node.DevicePath = DevicePath;       // 设备路径
             Node.Name = GetUsbHubName(DevicePath);  // 设备名称

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using System.Windows.Forms;
+using MultiControl.Common;
 
 namespace MultiControl
 {
@@ -75,7 +76,7 @@ namespace MultiControl
             }
             catch (Exception ex)
             {
-                //MessageBox.Show(ex.Message);
+                common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
             }
         }
 

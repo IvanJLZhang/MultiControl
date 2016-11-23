@@ -1361,7 +1361,6 @@ namespace MultiControl
         {
             int index = e.ResultIndex;
             m_DeviceList_UI[index].SetDutStatus("Online");
-
             m_DeviceList_UI[index].SetDutProgress(e.Current, e.Total);
 
             string name = e.Item;

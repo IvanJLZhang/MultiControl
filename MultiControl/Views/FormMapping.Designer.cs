@@ -55,14 +55,10 @@
             // 
             this.dataGridViewPath.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewPath.ContextMenuStrip = this.contextMenuStrip1;
-            this.dataGridViewPath.Location = new System.Drawing.Point(12, 70);
+            this.dataGridViewPath.Location = new System.Drawing.Point(12, 65);
             this.dataGridViewPath.Name = "dataGridViewPath";
-            this.dataGridViewPath.Size = new System.Drawing.Size(651, 230);
+            this.dataGridViewPath.Size = new System.Drawing.Size(651, 212);
             this.dataGridViewPath.TabIndex = 0;
-            this.dataGridViewPath.CellBeginEdit += new System.Windows.Forms.DataGridViewCellCancelEventHandler(this.dataGridViewPath_CellBeginEdit);
-            this.dataGridViewPath.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewPath_CellContentClick);
-            this.dataGridViewPath.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewPath_CellEndEdit);
-            this.dataGridViewPath.UserAddedRow += new System.Windows.Forms.DataGridViewRowEventHandler(this.dataGridViewPath_UserAddedRow);
             // 
             // contextMenuStrip1
             // 
@@ -79,54 +75,54 @@
             this.helpToolStripMenuItem,
             this.toolStripMenuItem3});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(210, 236);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(226, 214);
             // 
             // editTestItemsToolStripMenuItem
             // 
             this.editTestItemsToolStripMenuItem.Name = "editTestItemsToolStripMenuItem";
-            this.editTestItemsToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.editTestItemsToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.editTestItemsToolStripMenuItem.Text = "Edit Test Items CFG";
             this.editTestItemsToolStripMenuItem.Click += new System.EventHandler(this.editTestItemsToolStripMenuItem_Click);
             // 
             // editMoniPowerCFGToolStripMenuItem
             // 
             this.editMoniPowerCFGToolStripMenuItem.Name = "editMoniPowerCFGToolStripMenuItem";
-            this.editMoniPowerCFGToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.editMoniPowerCFGToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.editMoniPowerCFGToolStripMenuItem.Text = "Edit Moni Power CFG";
             this.editMoniPowerCFGToolStripMenuItem.Click += new System.EventHandler(this.editMoniPowerCFGToolStripMenuItem_Click);
             // 
             // editSysInfoCFGToolStripMenuItem
             // 
             this.editSysInfoCFGToolStripMenuItem.Name = "editSysInfoCFGToolStripMenuItem";
-            this.editSysInfoCFGToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.editSysInfoCFGToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.editSysInfoCFGToolStripMenuItem.Text = "Edit SysInfo CFG";
             this.editSysInfoCFGToolStripMenuItem.Click += new System.EventHandler(this.editSysInfoCFGToolStripMenuItem_Click);
             // 
             // editWIFICFGToolStripMenuItem
             // 
             this.editWIFICFGToolStripMenuItem.Name = "editWIFICFGToolStripMenuItem";
-            this.editWIFICFGToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.editWIFICFGToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.editWIFICFGToolStripMenuItem.Text = "Edit WIFI CFG";
             this.editWIFICFGToolStripMenuItem.Click += new System.EventHandler(this.editWIFICFGToolStripMenuItem_Click);
             // 
             // editAudioLoopbackCFGToolStripMenuItem
             // 
             this.editAudioLoopbackCFGToolStripMenuItem.Name = "editAudioLoopbackCFGToolStripMenuItem";
-            this.editAudioLoopbackCFGToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.editAudioLoopbackCFGToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.editAudioLoopbackCFGToolStripMenuItem.Text = "Edit Audio Loopback CFG";
             this.editAudioLoopbackCFGToolStripMenuItem.Click += new System.EventHandler(this.editAudioLoopbackCFGToolStripMenuItem_Click);
             // 
             // editMultiTestGPSCFGtoolStripMenuItem
             // 
             this.editMultiTestGPSCFGtoolStripMenuItem.Name = "editMultiTestGPSCFGtoolStripMenuItem";
-            this.editMultiTestGPSCFGtoolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.editMultiTestGPSCFGtoolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.editMultiTestGPSCFGtoolStripMenuItem.Text = "Edit MultiTest GPS CFG";
             this.editMultiTestGPSCFGtoolStripMenuItem.Click += new System.EventHandler(this.editMultiTestGPSCFGtoolStripMenuItem_Click);
             // 
             // toolStripMenuItem2
             // 
             this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-            this.toolStripMenuItem2.Size = new System.Drawing.Size(206, 6);
+            this.toolStripMenuItem2.Size = new System.Drawing.Size(222, 6);
             // 
             // multiTestOptionsToolStripMenuItem
             // 
@@ -134,55 +130,55 @@
             this.wIFIToolStripMenuItem,
             this.gPSToolStripMenuItem});
             this.multiTestOptionsToolStripMenuItem.Name = "multiTestOptionsToolStripMenuItem";
-            this.multiTestOptionsToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.multiTestOptionsToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.multiTestOptionsToolStripMenuItem.Text = "Multi Test Options";
             // 
             // wIFIToolStripMenuItem
             // 
             this.wIFIToolStripMenuItem.Name = "wIFIToolStripMenuItem";
-            this.wIFIToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.wIFIToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
             this.wIFIToolStripMenuItem.Text = "WIFI";
             this.wIFIToolStripMenuItem.Click += new System.EventHandler(this.wIFIToolStripMenuItem_Click);
             // 
             // gPSToolStripMenuItem
             // 
             this.gPSToolStripMenuItem.Name = "gPSToolStripMenuItem";
-            this.gPSToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.gPSToolStripMenuItem.Size = new System.Drawing.Size(102, 22);
             this.gPSToolStripMenuItem.Text = "GPS";
             this.gPSToolStripMenuItem.Click += new System.EventHandler(this.gPSToolStripMenuItem_Click);
             // 
             // toolStripMenuItem1
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(206, 6);
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(222, 6);
             // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(225, 22);
             this.helpToolStripMenuItem.Text = "Help";
             // 
             // toolStripMenuItem3
             // 
             this.toolStripMenuItem3.Name = "toolStripMenuItem3";
-            this.toolStripMenuItem3.Size = new System.Drawing.Size(209, 22);
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(225, 22);
             this.toolStripMenuItem3.Text = "?";
             // 
             // label1
             // 
             this.label1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.Red;
-            this.label1.Location = new System.Drawing.Point(12, 9);
+            this.label1.Location = new System.Drawing.Point(12, 8);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(567, 58);
+            this.label1.Size = new System.Drawing.Size(567, 54);
             this.label1.TabIndex = 1;
             // 
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(12, 306);
+            this.button1.Location = new System.Drawing.Point(12, 282);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(260, 37);
+            this.button1.Size = new System.Drawing.Size(260, 34);
             this.button1.TabIndex = 2;
             this.button1.Text = "Apply Current Mapping Config Table";
             this.button1.UseVisualStyleBackColor = true;
@@ -190,9 +186,9 @@
             // 
             // FormMapping
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(675, 355);
+            this.ClientSize = new System.Drawing.Size(675, 328);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.dataGridViewPath);

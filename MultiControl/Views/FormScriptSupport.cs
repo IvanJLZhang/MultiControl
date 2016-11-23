@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Collections;
 using System.Xml.Linq;
 using System.Xml;
+using MultiControl.Common;
 
 namespace MultiControl
 {
@@ -157,8 +158,7 @@ namespace MultiControl
                 }
                 catch (Exception ex)
                 {
-
-                    //toolStripStatusLabel1.Text = ex.Message;
+                    common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
                 }
             }
         }
@@ -190,7 +190,7 @@ namespace MultiControl
             }
             catch (Exception ex)
             {
-                //toolStripStatusLabel1.Text = ex.Message;
+                common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
             }
         }
 
@@ -220,7 +220,7 @@ namespace MultiControl
                 }
                 catch (Exception ex)
                 {
-                    //toolStripStatusLabel1.Text = ex.Message;
+                    common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
                 }
             }
         }

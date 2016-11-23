@@ -12,8 +12,6 @@ namespace MultiControl
 {
     public partial class FormMapping : Form
     {
-        //private DataSet mDataSet;
-        //private DataTable mDataTable; 
 
         public FormMapping()
         {
@@ -28,18 +26,18 @@ namespace MultiControl
 
         private void LoadConfig()
         {
-            DataTable model_table = SpecifiedConfigPathFactory.Model_Table;
-            if (model_table == null || model_table.Rows.Count <= 0)
+            if (SpecifiedConfigPathFactory.Model_Table == null || SpecifiedConfigPathFactory.Model_Table.Rows.Count <= 0)
             {
-                model_table = new DataTable();
-                model_table.TableName = "model";
-                model_table.Columns.Add("Name");
-                model_table.Columns.Add("Brand");
-                model_table.Columns.Add("Path");
-                model_table.Columns.Add("Estimate");
+                DataTable Model_Table = new DataTable();
+                Model_Table.TableName = "model";
+                Model_Table.Columns.Add("Name");
+                Model_Table.Columns.Add("Brand");
+                Model_Table.Columns.Add("Path");
+                Model_Table.Columns.Add("Estimate");
 
+                SpecifiedConfigPathFactory.Model_Table = Model_Table;
             }
-            dataGridViewPath.DataSource = model_table;
+            dataGridViewPath.DataSource = SpecifiedConfigPathFactory.Model_Table;
 
             if (this.dataGridViewPath.Columns["Path"] != null)
             {
@@ -57,54 +55,6 @@ namespace MultiControl
             col.UseColumnTextForButtonValue = true;
             col.HeaderText = "";
             this.dataGridViewPath.Columns.Add(col);
-        }
-
-        private void dataGridViewPath_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
-        {
-        }
-
-        private void dataGridViewPath_CellEndEdit(object sender, DataGridViewCellEventArgs e)
-        {
-            SpecifiedConfigPathFactory.Model_Table.Rows[e.RowIndex][e.ColumnIndex] = dataGridViewPath.Rows[e.RowIndex].Cells[e.ColumnIndex].Value;
-        }
-
-        private void dataGridViewPath_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-            if (this.dataGridViewPath.Columns[e.ColumnIndex].Name.CompareTo("Choose") == 0)
-            {
-                if (this.folderBrowserDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    DataGridViewTextBoxCell cell = (DataGridViewTextBoxCell)this.dataGridViewPath.Rows[e.RowIndex].Cells["Path"];
-                    cell.Value = folderBrowserDialog1.SelectedPath;
-
-                    SpecifiedConfigPathFactory.Model_Table.Rows[e.RowIndex]["Path"] = cell.Value;
-                }
-            }
-        }
-
-        private void dataGridViewPath_UserAddedRow(object sender, DataGridViewRowEventArgs e)
-        {
-            DataTable model_table = SpecifiedConfigPathFactory.Model_Table;
-            if (model_table == null || model_table.Rows.Count <= 0)
-            {
-                model_table = new DataTable();
-                model_table.TableName = "model";
-                model_table.Columns.Add("Name");
-                model_table.Columns.Add("Brand");
-                model_table.Columns.Add("Path");
-                model_table.Columns.Add("Estimate");
-
-                DataRow newRow = model_table.NewRow();
-                newRow["Name"] = e.Row.Cells["Name"].ToString();
-                newRow["Brand"] = e.Row.Cells["Brand"].ToString();
-                newRow["Path"] = e.Row.Cells["Path"].ToString();
-                int est = 0;
-                Int32.TryParse(e.Row.Cells["Estimate"].ToString(), out est);
-                newRow["Estimate"] = est;
-                model_table.Rows.Add(newRow);
-
-                SpecifiedConfigPathFactory.Model_Table = model_table;
-            }
         }
 
         private void button1_Click(object sender, EventArgs e)
