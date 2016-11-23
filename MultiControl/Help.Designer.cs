@@ -41,7 +41,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(409, 25);
             this.label1.TabIndex = 0;
-            this.label1.Text = "Version 1.4.0 Build20160902";
+            this.label1.Text = "Version 1.4.2 Build20161110";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
             // button1

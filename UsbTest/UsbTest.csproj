@@ -84,7 +84,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\..\Program Files\LibUsbDotNet\Src\LibWinUsb\LibUsbDotNet.csproj">
+    <ProjectReference Include="..\..\LibWinUsb\LibUsbDotNet.csproj">
       <Project>{0a78f6ff-5586-4052-8104-e23ff83a7ce1}</Project>
       <Name>LibUsbDotNet</Name>
     </ProjectReference>

@@ -251,6 +251,9 @@
     <EmbeddedResource Include="Logger.resx">
       <DependentUpon>Logger.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MyOpaqueLayer.resx">
+      <DependentUpon>MyOpaqueLayer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="OpaqueForm.resx">
       <DependentUpon>OpaqueForm.cs</DependentUpon>
     </EmbeddedResource>
