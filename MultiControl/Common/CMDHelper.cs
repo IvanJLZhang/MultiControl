@@ -267,7 +267,7 @@ namespace MultiControl.Lib
             int count = 0;
             string response = String.Empty;
 
-            while ((String.IsNullOrEmpty(response) || response.Contains("error: device not found"))
+            while ((String.IsNullOrEmpty(response) || response.Contains("error") || response.Contains("offline"))
                 && count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
                 common.m_log.Add_Debug(command);
@@ -277,7 +277,7 @@ namespace MultiControl.Lib
                 await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
                 count++;
             }
-            if (String.IsNullOrEmpty(response) || response.Contains("error: device not found") || response.Contains("offline"))
+            if (String.IsNullOrEmpty(response) || response.Contains("error") || response.Contains("offline"))
             {
                 common.m_log.Add(response, LogHelper.MessageType.ERROR);
                 return false;

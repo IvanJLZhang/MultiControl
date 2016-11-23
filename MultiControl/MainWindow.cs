@@ -155,27 +155,19 @@ namespace MultiControl
             FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
             // 验证config存放路径
             string config_path = ConfigurationHelper.ReadConfig("Test_Config_Folder");
-            DirectoryInfo dir_config_path = new DirectoryInfo(config_path);
-            if (!dir_config_path.Exists)
+            FileInfo dir_config_path = new FileInfo(config_path + @"\cfg.ini");
+            while (!dir_config_path.Exists)
             {
-                while (true)
+                folder_dialog.Description = "can not find cfg.ini file, please specify cfg.ini folder.";
+                if (folder_dialog.ShowDialog() == DialogResult.OK)
                 {
-                    folder_dialog.Description = "please specify Test Config folder.";
-                    if (folder_dialog.ShowDialog() == DialogResult.OK)
-                    {
-                        dir_config_path = new DirectoryInfo(folder_dialog.SelectedPath);
-                        ConfigurationHelper.WriteConfig("Test_Config_Folder", dir_config_path.FullName);
-                        break;
-                    }
+                    dir_config_path = new FileInfo(folder_dialog.SelectedPath + @"\cfg.ini");
+                    ConfigurationHelper.WriteConfig("Test_Config_Folder", folder_dialog.SelectedPath);
                 }
             }
             #region 读取并验证cfg.ini文件中相关配置
-            FileInfo cfg_ini_file = new FileInfo(dir_config_path.FullName + @"\cfg.ini");
-            if (!cfg_ini_file.Exists)
-            {
-                common.m_log.Add("Can not find cfg.ini file.");
-                return false;
-            }
+            FileInfo cfg_ini_file = new FileInfo(dir_config_path.FullName);
+
             IniFile iniFile = new IniFile(cfg_ini_file.FullName);
             this.m_default_config_folder = new DirectoryInfo(iniFile.IniReadValue("config", "Folder"));
             this.m_result_folder = new DirectoryInfo(iniFile.IniReadValue("config", "Logger"));

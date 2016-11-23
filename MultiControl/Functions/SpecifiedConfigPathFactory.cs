@@ -31,7 +31,6 @@ namespace MultiControl.Functions
 
         private static DataSet Specified_Config = new DataSet("ConfigData");
 
-        private static DataTable model_table;
         public static DataTable Model_Table
         {
             get
