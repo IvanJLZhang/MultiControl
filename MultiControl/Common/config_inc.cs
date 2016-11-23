@@ -31,7 +31,9 @@ namespace MultiControl.Common
 
         public const int CMD_REPEAT_WAIT_TIME = 1000 * 1;
 
-        public const string PQAA_SW_VERSION = "V1.5.6";
+        public const string MULTICONTROL_VERSION = "V1.6.1";
+
+        public const string PQAA_SW_VERSION = "V1.4.0";
         /// <summary>
         /// 文件根目录
         /// </summary>
@@ -48,8 +50,8 @@ namespace MultiControl.Common
 
 
         public static readonly string[] mFileHeader = {
-                                           "PQAA SW", "S/N", "Brand", "Model Name", "Android Version",
-                                           "IMEI", "Log Time", "Test Time(s)"
+                                           "PQAA_Version", "SN", "Brand", "Model", "Android_Version",
+                                           "IMEI", "Log_Time", "TestTime"
                                        };
 
         public static readonly string[] mFileTestItem = {

@@ -91,7 +91,8 @@ namespace MultiControl.Lib
             CmdProcess.Start();
 
             CmdProcess.StandardInput.WriteLine(command);
-            Debug.WriteLine($"Execute cmd: {command}");
+            common.m_log.Add_Debug(command);
+
             CmdProcess.WaitForExit(WAIT_FOR_MI);
             //CmdProcess.WaitForExit();
             CmdProcess.StandardInput.WriteLine("exit");
@@ -149,7 +150,7 @@ namespace MultiControl.Lib
                 {
                     if (process != null)
                         process.Close();
-                    Debug.WriteLine(command);
+                    common.m_log.Add_Debug(command);
                 }
                 #endregion
             }
@@ -205,7 +206,7 @@ namespace MultiControl.Lib
                 {
                     if (process != null)
                         process.Close();
-                    Debug.WriteLine(command);
+                    //common.m_log.Add_Debug(command);
                 }
                 #endregion
             }
@@ -231,6 +232,7 @@ namespace MultiControl.Lib
             //string output = await process.StandardOutput.ReadToEndAsync();
             process.Close();
             adb_service_start = true;
+            common.m_log.Add("Starting adb server.");
             return "";
         }
 
@@ -259,22 +261,25 @@ namespace MultiControl.Lib
         /// </summary>
         /// <param name="device"></param>
         /// <returns></returns>
-        public async Task<bool> CheckDeviceConnection(UsbDeviceInfo device)
+        public async Task<bool> CheckDeviceConnection(UsbDeviceInfoEx device)
         {
             string command = $"adb -s {device.SerialNumber} shell getprop ro.product.model";
             int count = 0;
             string response = String.Empty;
 
-            while ((String.IsNullOrEmpty(response) || response.Contains("error: device not found"))
+            while ((String.IsNullOrEmpty(response) || response.Contains("error") || response.Contains("offline"))
                 && count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
+                common.m_log.Add_Debug(command);
                 response = await CMD_RunAsync(command);
-                Debug.WriteLine(response);
+                common.m_log.Add_Debug(response);
+
                 await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
                 count++;
             }
-            if (String.IsNullOrEmpty(response) || response.Contains("error: device not found"))
+            if (String.IsNullOrEmpty(response) || response.Contains("error") || response.Contains("offline"))
             {
+                common.m_log.Add(response, LogHelper.MessageType.ERROR);
                 return false;
             }
             device.ModelName = response.Trim();

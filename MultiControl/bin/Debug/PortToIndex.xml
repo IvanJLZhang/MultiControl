@@ -17,19 +17,19 @@
   </Node>
   <Node>
     <Index>4</Index>
-    <Port>-1</Port>
+    <Port>#0001#0004</Port>
   </Node>
   <Node>
     <Index>5</Index>
-    <Port>-1</Port>
+    <Port>#0001#0005</Port>
   </Node>
   <Node>
     <Index>6</Index>
-    <Port>-1</Port>
+    <Port>#0001#0006</Port>
   </Node>
   <Node>
     <Index>7</Index>
-    <Port>-1</Port>
+    <Port>#0001#0007</Port>
   </Node>
   <Node>
     <Index>8</Index>

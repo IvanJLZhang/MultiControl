@@ -12,7 +12,9 @@ using LibUsbDotNet;
 using LibUsbDotNet.DeviceNotify;
 using LibUsbDotNet.Main;
 using LibUsbDotNet.WinUsb;
+using LogHelper;
 using Microsoft.Win32;
+using MultiControl.Lib;
 
 //using MultiControl.Common;
 namespace UsbTest
@@ -20,16 +22,24 @@ namespace UsbTest
     public partial class Form1 : Form
     {
         IDeviceNotifier UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
+        CMDHelper cmd = new CMDHelper();
+        public static LogMsg m_log;
         public Form1()
         {
             InitializeComponent();
+            m_log = new LogMsg(Application.StartupPath);
+            //m_log.Inititalize();
             ShowConnectedDevices();
             UsbDeviceNotifier.OnDeviceNotify += UsbDeviceNotifier_OnDeviceNotify;
+
         }
 
-        void ShowConnectedDevices()
+        async void ShowConnectedDevices()
         {
+            await CMDHelper.Adb_KillServer();
+
             UsbRegDeviceList allDevices = UsbDevice.AllDevices;
+            m_log.Add($"find devices {allDevices.Count}");
             for (int index = 0; index < allDevices.Count; index++)
             {
                 var device = (WinUsbRegistry)allDevices[index];
@@ -76,12 +86,14 @@ namespace UsbTest
         {
             string returnStr = String.Empty;
             UsbRegDeviceList allDevices = UsbDevice.AllDevices;
-            Debug.WriteLine($"find devices {allDevices.Count}");
+            //Debug.WriteLine($"find devices {allDevices.Count}");
+            m_log.Add($"find devices {allDevices.Count}");
             for (int index = 0; index < allDevices.Count; index++)
             {
                 var device = allDevices[index];
                 UsbDevice usbDevice;
                 bool result = device.Open(out usbDevice);
+                m_log.Add($"open device :{serialNumber} registry info page:{result}");
                 if (result)
                 {
                     if (serialNumber == usbDevice.Info.SerialString)

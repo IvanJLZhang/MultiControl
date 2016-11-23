@@ -32,20 +32,19 @@ namespace MultiControl.Functions
     {
         CMDHelper cmd = new CMDHelper();
 
-        public async Task<List<UsbDeviceInfo>> GetAllDevices()
+        public async Task<List<UsbDeviceInfoEx>> GetAllDevices()
         {
-            List<UsbDeviceInfo> device_list = new List<UsbDeviceInfo>();
+            List<UsbDeviceInfoEx> device_list = new List<UsbDeviceInfoEx>();
             UsbRegDeviceList allDevices = UsbDevice.AllDevices;
             await CMDHelper.Adb_KillServer();
 
-            Debug.WriteLine($"find devices {allDevices.Count}");
-
+            common.m_log.Add_Debug($"find devices {allDevices.Count}");
             for (int index = 0; index < allDevices.Count; index++)
             {
                 var device = (WinUsbRegistry)allDevices[index];
                 UsbDevice usbDevice;
                 bool result = device.Open(out usbDevice);
-                Debug.WriteLine($"open device registry info page:{result}");
+                common.m_log.Add_Debug($"open device registry info page:{result}");
                 if (result)
                 {
                     string[] locationPaths = (string[])device.DeviceProperties["LocationPaths"];
@@ -63,9 +62,9 @@ namespace MultiControl.Functions
 
                     string portNum = filterUsbPort(locationPaths[0], man);
 
-                    UsbDeviceInfo deviceInfo = new UsbDeviceInfo();
+                    UsbDeviceInfoEx deviceInfo = new UsbDeviceInfoEx();
                     deviceInfo.Index = -1;
-                    deviceInfo.PortNumber = portNum;
+                    deviceInfo.Port_Path = portNum;
                     deviceInfo.SerialNumber = usbDevice.Info.SerialString;
                     device_list.Add(deviceInfo);
                 }
@@ -83,14 +82,14 @@ namespace MultiControl.Functions
             while (count <= config_inc.CMD_REPEAT_MAX_TIME)
             {
                 UsbRegDeviceList allDevices = UsbDevice.AllDevices;
-                Debug.WriteLine($"find devices {allDevices.Count}");
+                common.m_log.Add_Debug($"find devices {allDevices.Count}");
                 await CMDHelper.Adb_KillServer();
                 for (int index = 0; index < allDevices.Count; index++)
                 {
                     var device = (WinUsbRegistry)allDevices[index];
                     UsbDevice usbDevice;
                     bool result = device.Open(out usbDevice);
-                    Debug.WriteLine($"open device registry info page:{result}");
+                    common.m_log.Add_Debug($"open device registry info page:{result}");
                     if (result)
                     {
                         if (serialNumber == usbDevice.Info.SerialString)
