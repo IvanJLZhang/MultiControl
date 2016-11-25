@@ -2322,10 +2322,6 @@ namespace MultiControl
                 string x2 = await Execute(pushCmd);
                 string startCmd = "adb -s " + mConnectedDut[0].SerialNumber + " shell am start -n com.wistron.get.config.information/.MainActivity";
                 string x = await Execute(startCmd);
-
-
-
-
                 FormConfigurateSysinfoLocation cfg = new FormConfigurateSysinfoLocation();
                 cfg.ShowDialog();
                 mLogFolder = cfg.mLogFolder;

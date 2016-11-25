@@ -46,8 +46,14 @@
             this.sDCardPathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.initializeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.pQAAAPKToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addNewVersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addNewPQAAApkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.removeAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.defaultToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.configurateToSysinfocfgLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ms_CommandBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -57,10 +63,11 @@
             this.ms_CommandBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.configurationToolStripMenuItem,
+            this.pQAAAPKToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.ms_CommandBar.Location = new System.Drawing.Point(0, 0);
             this.ms_CommandBar.Name = "ms_CommandBar";
-            this.ms_CommandBar.Size = new System.Drawing.Size(201, 25);
+            this.ms_CommandBar.Size = new System.Drawing.Size(372, 25);
             this.ms_CommandBar.TabIndex = 0;
             this.ms_CommandBar.Text = "menuStrip1";
             // 
@@ -116,7 +123,8 @@
             this.configurationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.multiModelConfigurationToolStripMenuItem,
             this.portIndexTableToolStripMenuItem,
-            this.sDCardPathToolStripMenuItem});
+            this.sDCardPathToolStripMenuItem,
+            this.configurateToSysinfocfgLocationToolStripMenuItem});
             this.configurationToolStripMenuItem.Name = "configurationToolStripMenuItem";
             this.configurationToolStripMenuItem.Size = new System.Drawing.Size(99, 21);
             this.configurationToolStripMenuItem.Text = "&Configuration";
@@ -127,7 +135,7 @@
             this.initializeToolStripMenuItem,
             this.editToolStripMenuItem});
             this.multiModelConfigurationToolStripMenuItem.Name = "multiModelConfigurationToolStripMenuItem";
-            this.multiModelConfigurationToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.multiModelConfigurationToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.multiModelConfigurationToolStripMenuItem.Text = "Specified config Path";
             // 
             // initializeToolStripMenuItem
@@ -150,7 +158,7 @@
             this.initializePortIndexTableToolStripMenuItem,
             this.viewPortIndexTableToolStripMenuItem});
             this.portIndexTableToolStripMenuItem.Name = "portIndexTableToolStripMenuItem";
-            this.portIndexTableToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.portIndexTableToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.portIndexTableToolStripMenuItem.Text = "Port<-->Index Table";
             // 
             // initializePortIndexTableToolStripMenuItem
@@ -173,7 +181,7 @@
             this.initializeToolStripMenuItem1,
             this.editToolStripMenuItem1});
             this.sDCardPathToolStripMenuItem.Name = "sDCardPathToolStripMenuItem";
-            this.sDCardPathToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.sDCardPathToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
             this.sDCardPathToolStripMenuItem.Text = "SD Card Path";
             // 
             // initializeToolStripMenuItem1
@@ -188,6 +196,46 @@
             this.editToolStripMenuItem1.Size = new System.Drawing.Size(123, 22);
             this.editToolStripMenuItem1.Text = "&Edit";
             this.editToolStripMenuItem1.Click += new System.EventHandler(this.editToolStripMenuItem1_Click);
+            // 
+            // pQAAAPKToolStripMenuItem
+            // 
+            this.pQAAAPKToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addNewVersionToolStripMenuItem,
+            this.defaultToolStripMenuItem});
+            this.pQAAAPKToolStripMenuItem.Name = "pQAAAPKToolStripMenuItem";
+            this.pQAAAPKToolStripMenuItem.Size = new System.Drawing.Size(79, 21);
+            this.pQAAAPKToolStripMenuItem.Text = "PQAA apk";
+            this.pQAAAPKToolStripMenuItem.Visible = false;
+            // 
+            // addNewVersionToolStripMenuItem
+            // 
+            this.addNewVersionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addNewPQAAApkToolStripMenuItem,
+            this.removeAllToolStripMenuItem});
+            this.addNewVersionToolStripMenuItem.Name = "addNewVersionToolStripMenuItem";
+            this.addNewVersionToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.addNewVersionToolStripMenuItem.Text = "&Action";
+            // 
+            // addNewPQAAApkToolStripMenuItem
+            // 
+            this.addNewPQAAApkToolStripMenuItem.Name = "addNewPQAAApkToolStripMenuItem";
+            this.addNewPQAAApkToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.addNewPQAAApkToolStripMenuItem.Text = "&Add new PQAA apk";
+            // 
+            // removeAllToolStripMenuItem
+            // 
+            this.removeAllToolStripMenuItem.Name = "removeAllToolStripMenuItem";
+            this.removeAllToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
+            this.removeAllToolStripMenuItem.Text = "&Remove All but default";
+            // 
+            // defaultToolStripMenuItem
+            // 
+            this.defaultToolStripMenuItem.Checked = true;
+            this.defaultToolStripMenuItem.CheckOnClick = true;
+            this.defaultToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.defaultToolStripMenuItem.Name = "defaultToolStripMenuItem";
+            this.defaultToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.defaultToolStripMenuItem.Text = "&Default";
             // 
             // aboutToolStripMenuItem
             // 
@@ -204,6 +252,13 @@
             this.statusStrip1.Size = new System.Drawing.Size(886, 22);
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "statusStrip1";
+            // 
+            // configurateToSysinfocfgLocationToolStripMenuItem
+            // 
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Name = "configurateToSysinfocfgLocationToolStripMenuItem";
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Text = "Specify sysinfo.cfg file";
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Click += new System.EventHandler(this.configurateToSysinfocfgLocationToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -247,5 +302,11 @@
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startSelectedDevicesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pQAAAPKToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem defaultToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addNewVersionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addNewPQAAApkToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem removeAllToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem configurateToSysinfocfgLocationToolStripMenuItem;
     }
 }

@@ -259,14 +259,16 @@ namespace MultiControl
 
             this.viewGlobalLogToolStripMenuItem.Enabled = common.m_log.IsEnable;
 
-            this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
+            //this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
+            this.Size = new Size(1320, 700);
+            this.StartPosition = FormStartPosition.CenterScreen;
             this.Text = $"Multi-Control Test Tool——{config_inc.MULTICONTROL_VERSION}";
-
+            this.Resize += MainWindow_Resize;
 
             m_DeviceList_UI = new UserGrid();
             m_DeviceList_UI.Location = new Point(20, 30);
             m_DeviceList_UI.Width = this.Width - 64;
-            m_DeviceList_UI.Height = this.Height - 120;
+            m_DeviceList_UI.Height = this.Height - 100;
             m_DeviceList_UI.Row = m_Rows;
             m_DeviceList_UI.Column = m_Cols;
             m_DeviceList_UI.InitializeGridItems();
@@ -275,6 +277,27 @@ namespace MultiControl
             m_DeviceList_UI.OnGridItemFocus += new UserGridClassLibrary.UserGrid.GridItemFocusHandle(this.OnGridItemFocusHandle);
             m_DeviceList_UI.OnGridItemReset += new UserGridClassLibrary.UserGrid.GridItemResetHandle(this.OnGridItemResetHandle);
 
+        }
+
+        private void MainWindow_Resize(object sender, EventArgs e)
+        {
+            m_DeviceList_UI.OnGridItemFocus -= new UserGridClassLibrary.UserGrid.GridItemFocusHandle(this.OnGridItemFocusHandle);
+            m_DeviceList_UI.OnGridItemReset -= new UserGridClassLibrary.UserGrid.GridItemResetHandle(this.OnGridItemResetHandle);
+            this.Controls.Remove(m_DeviceList_UI);
+
+            m_DeviceList_UI = new UserGrid();
+            m_DeviceList_UI.Location = new Point(20, 30);
+            m_DeviceList_UI.Width = this.Width - 64;
+            m_DeviceList_UI.Height = this.Height - 100;
+            m_DeviceList_UI.Row = m_Rows;
+            m_DeviceList_UI.Column = m_Cols;
+            m_DeviceList_UI.InitializeGridItems();
+            this.Controls.Add(m_DeviceList_UI);
+
+            m_DeviceList_UI.OnGridItemFocus += new UserGridClassLibrary.UserGrid.GridItemFocusHandle(this.OnGridItemFocusHandle);
+            m_DeviceList_UI.OnGridItemReset += new UserGridClassLibrary.UserGrid.GridItemResetHandle(this.OnGridItemResetHandle);
+
+            StartBtnTest();
         }
         #endregion
         private delegate void DeviceChanged(DeviceNotifyEventArgs e);
@@ -449,6 +472,7 @@ namespace MultiControl
             }
         }
 
+
         private int GetCheckedDUT()
         {
             int count = 0, index = 0;
@@ -463,6 +487,146 @@ namespace MultiControl
                 index++;
             }
             return count;
+        }
+
+        async void SpecifySysInfocfgFile()
+        {
+            common.m_log.Add("Reset All test events by user.");
+            common.m_log.Add("specify sysinfo.cfg file.");
+            //RESET TIME
+            foreach (DutDevice terminal in m_DeviceList)
+            {
+                terminal.BenginTime = DateTime.Now;
+                terminal.Reset();
+            }
+            //CHECK DEVICES 
+            foreach (UserGridClassLibrary.GridItem dut in m_DeviceList_UI)
+            {
+                if (!string.IsNullOrEmpty(dut.GetDutSN()))
+                {
+                    int id = dut.GetDutGridID();
+                    dut.Reset();
+                }
+            }
+            common.m_log.Add("Detect All Usb Android devices.");
+            // 对新加入的设备， 获取该设备的端口号等相关信息
+            UsbPortTree.RefreshUsbPort();
+            if (UsbPortTree.ConnectedAndroidDevices.Count <= 0)
+            {
+                common.m_log.Add("none of android devices is detected, please retry!");
+                MessageBox.Show("none of android devices is detected, please retry!", "Warning");
+                return;
+            }
+            var device = UsbPortTree.ConnectedAndroidDevices[0];
+            bool adb_avaiable = await m_adb.CheckDeviceConnection(device);
+            if (!adb_avaiable)
+            {
+                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.Port}", MessageType.ERROR);
+                MessageBox.Show($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.Port}", "Warning");
+                return;
+            }
+            string cmd_str = String.Empty;
+            string response = String.Empty;
+            #region get sd card path
+            // uninstall pqaa
+            cmd_str = $"adb -s {device.SerialNumber} uninstall com.wistron.generic.pqaa";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            cmd_str = $"adb -s {device.SerialNumber} install -r Generic_PQAA.apk";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            cmd_str = $"adb -s {device.SerialNumber} shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+
+            string sd_card_path = String.Empty;
+            DataTable model_table = SDCardPathFactory.SDCardPath_Table;
+            int count = 0;
+            while (String.IsNullOrEmpty(sd_card_path) && count < config_inc.CMD_REPEAT_MAX_TIME)
+            {
+                foreach (DataRow item in model_table.Rows)
+                {
+                    string remote_file = $"{item["InternalCard"].ToString()}{config_inc.SPECIFIC_TAG_PATH}";
+                    string local_file = $".\\{config_inc.PATH_VERIFY_PATH}";
+
+                    cmd_str = $"adb -s {device.SerialNumber} pull {remote_file} \"{local_file}\"";
+                    response = await m_adb.CMD_RunAsync(cmd_str);
+                    await Task.Delay(50);
+
+                    if (File.Exists(local_file))
+                    {
+                        common.m_log.Add(cmd_str);
+                        common.m_log.Add(response);
+                        sd_card_path = item["InternalCard"].ToString();
+                        File.Delete(local_file);
+                        break;
+                    }
+                }
+                count++;
+            }
+            if (sd_card_path == String.Empty)
+            {
+                common.m_log.Add($"{device.SerialNumber}: Test fail: No available SD card for testing...", MessageType.ERROR);
+                MessageBox.Show($"{device.SerialNumber}: Test fail: No available SD card for testing...", "Warning");
+                return;
+            }
+            #endregion
+
+            #region get sysinfo.cfg
+            cmd_str = $"adb -s {device.SerialNumber} install -r configcheck.apk";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            cmd_str = $"adb -s {device.SerialNumber} shell am start -n com.wistron.get.config.information/.MainActivity";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
+            folder_dialog.SelectedPath = this.m_default_config_folder.FullName;
+            folder_dialog.Description = "please select the folder that sysinfo.cfg should be saved.";
+            folder_dialog.ShowDialog();
+
+            this.m_default_config_folder = new DirectoryInfo(folder_dialog.SelectedPath);
+            string remote_sysinfo_file = $"{sd_card_path}/Android/data/com.wistron.get.config.information/files/sysinfo.cfg";
+            string local_sysinfo_file = $"{this.m_default_config_folder.FullName}\\sysinfo.cfg";
+
+            if (File.Exists(local_sysinfo_file))
+            {
+                File.Delete(local_sysinfo_file);
+            }
+            cmd_str = $"adb -s {device.SerialNumber} pull {remote_sysinfo_file} \"{local_sysinfo_file}\"";
+
+            count = 0;
+            while (!File.Exists(local_sysinfo_file) && count < config_inc.CMD_REPEAT_MAX_TIME)
+            {
+                response = await m_adb.CMD_RunAsync(cmd_str);
+                count++;
+                common.m_log.Add(cmd_str);
+                common.m_log.Add(response);
+                await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
+            }
+            if (!File.Exists(local_sysinfo_file))
+            {
+                MessageBox.Show($"can not pull sysinfo.cfg file.error: {response.Trim()}");
+                common.m_log.Add($"can not pull sysinfo.cfg file.error: {response.Trim()}", MessageType.ERROR);
+            }
+            #endregion
+
+            // uninstall 
+            cmd_str = $"adb -s {device.SerialNumber} uninstall com.wistron.get.config.information";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            common.m_log.Add("specify sysinfo.cfg file.--done!");
         }
         #region 测试线程
 
@@ -1603,6 +1767,11 @@ namespace MultiControl
         private void startSelectedDevicesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             StartCheckedBtnTest();
+        }
+
+        private void configurateToSysinfocfgLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SpecifySysInfocfgFile();
         }
 
         private void viewGlobalLogToolStripMenuItem_Click(object sender, EventArgs e)
