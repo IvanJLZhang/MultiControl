@@ -1654,7 +1654,7 @@ namespace MultiControl
                 m_DeviceList_UI[index].UpdateElapseTime(e.Elapsed);
             }
         }
-        private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
+        private async void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (this.UsbDeviceNotifier != null)
             {
@@ -1682,6 +1682,8 @@ namespace MultiControl
                     }
                 }
             }
+
+            await CMDHelper.Adb_KillServer();
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
