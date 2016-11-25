@@ -254,6 +254,7 @@ namespace MultiControl.Lib
             string output = await process.StandardOutput.ReadToEndAsync();
             process.Close();
             adb_service_start = false;
+            common.m_log.Add("Kill adb Server.");
             return output;
         }
         /// <summary>

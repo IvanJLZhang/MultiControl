@@ -1,2 +1,9 @@
 <?xml version="1.0" standalone="yes"?>
-<ConfigData />
+<ConfigData>
+  <model>
+    <Name>H30-L02</Name>
+    <Brand>Huawei</Brand>
+    <Path>C:\Users\zjl40\Documents\Visual Studio 2015\Projects\MultiControl\MultiControl\bin\Debug\H30-C02</Path>
+    <Estimate>300</Estimate>
+  </model>
+</ConfigData>

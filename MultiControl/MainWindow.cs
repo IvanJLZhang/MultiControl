@@ -76,6 +76,8 @@ namespace MultiControl
         /// </summary>
         bool IsMultiModelTest = true;
 
+        bool save_as_excel = true;
+        bool save_as_xml = true;
         Int32 m_PseudoTotal = 0;
         //Event
         public event OnStartUpdateHandle StartUpdate;
@@ -83,6 +85,8 @@ namespace MultiControl
         public event OnProgressUpdateHandle ProgressUpdate;
         public event OnFinishUpdateHandle FinishUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public object lock_obj = new object();
         #endregion
 
         #region 全局静态变量
@@ -190,6 +194,8 @@ namespace MultiControl
             Int32.TryParse(iniFile.IniReadValue("layout", "Row"), out m_Rows);
             Int32.TryParse(iniFile.IniReadValue("layout", "Column"), out m_Cols);
             Boolean.TryParse(iniFile.IniReadValue("mode", "MultiSupport"), out this.IsMultiModelTest);
+            Boolean.TryParse(iniFile.IniReadValue("result", "save_as_excel"), out this.save_as_excel);
+            Boolean.TryParse(iniFile.IniReadValue("result", "save_as_xml"), out this.save_as_xml);
 
             if (!this.m_default_config_folder.Exists)
             {
@@ -442,7 +448,6 @@ namespace MultiControl
                 newTestDevice.test_thread.Start(device);
             }
         }
-
         void StartCheckedBtnTest()
         {
             if (GetCheckedDUT() > 0)
@@ -471,8 +476,6 @@ namespace MultiControl
                 }
             }
         }
-
-
         private int GetCheckedDUT()
         {
             int count = 0, index = 0;
@@ -627,6 +630,7 @@ namespace MultiControl
             common.m_log.Add(response);
 
             common.m_log.Add("specify sysinfo.cfg file.--done!");
+            MessageBox.Show("specify sysinfo.cfg file.--done!", "OK");
         }
         #region 测试线程
 
@@ -779,7 +783,7 @@ namespace MultiControl
             string remote_pqaa_path = dut_device.SDCard + config_inc.CFG_FILE_PQAA;
             if (IsMultiModelTest && Directory.Exists(dut_device.ConfigPath))
             {
-                config_path = this.m_default_config_folder.FullName;
+                config_path = dut_device.ConfigPath;
             }
             else
             {
@@ -951,27 +955,26 @@ namespace MultiControl
 
                 dut_device.ExitRunningThread = true;
                 await Task.Delay(300);
-                common.m_log.Add_File($"Write result to log: ", log_file.FullName);
+                common.m_log.Add_File($"Write result to log.", log_file.FullName);
                 // 保存测试结果
-                SaveResultToFile(local_result_file, ThreadIndex);
+                SaveResultToFile(local_result_file, ThreadIndex, log_file);
                 common.m_log.Add_File($"Test Over.", log_file.FullName);
                 SetDutTestFinishInvoke(value);
                 #endregion
             }
         }
-        private int SaveResultToFile(string source, int index)
+        private int SaveResultToFile(string source, int index, FileInfo log_file)
         {
             var dut_device = this.m_DeviceList[index];
             string log_date = DateTime.Now.ToString("yyyyMMdd");
             string logDateTime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
 
-            DirectoryInfo log_folder = new DirectoryInfo(this.m_result_folder.FullName);
-            if (!log_folder.Exists)
+            if (!m_result_folder.Exists)
             {
-                common.m_log.Add($"log folder can not be found:{log_folder}");
+                common.m_log.Add($"log folder can not be found:{m_result_folder}");
                 return -1;
             }
-            DirectoryInfo log_model_path = new DirectoryInfo(log_folder.FullName + $@"\{dut_device.Model}");
+            DirectoryInfo log_model_path = new DirectoryInfo(m_result_folder.FullName + $@"\{dut_device.Model}");
             if (!log_model_path.Exists)
                 log_model_path.Create();
 
@@ -982,7 +985,7 @@ namespace MultiControl
             }
             if (!File.Exists(source))
             {
-                common.m_log.Add($"can not find result file: {source}");
+                common.m_log.Add_File($"can not find result file: {source}", log_file.FullName);
                 return -1;
             }
 
@@ -1091,13 +1094,19 @@ namespace MultiControl
                 #endregion
             }
             newrow["TestTime"] = (int)total_testtime;
-            newrow["Result"] = total_test_result.ToString();
-            output_resultToXls(newrow, result_xls_file);
-            output_resultToXml(newrow, result_xml_file);
+            newrow["Test_Result"] = total_test_result.ToString();
+
+            lock (lock_obj)
+            {// 由于按照Model为result文件名， 所以需要考虑相同机型同时测试 时候访问同一个result文件出现的错误
+                if (save_as_excel)
+                    output_resultToXls(newrow, result_xls_file, log_file);
+                if (save_as_xml)
+                    output_resultToXml(newrow, result_xml_file, log_file);
+            }
             File.Delete(result_file);
             return 0;
         }
-        private void output_resultToXls(DataRow newrow, FileInfo xlsFile)
+        private void output_resultToXls(DataRow newrow, FileInfo xlsFile, FileInfo log_file)
         {
             MyExcel xlsApp = null;
             try
@@ -1178,41 +1187,49 @@ namespace MultiControl
             xlsApp.AutoFitAll();
             xlsApp.Save();
             xlsApp.Exit();
-            common.m_log.Add($"Save Result to file:{xlsFile.FullName}");
+            common.m_log.Add_File($"Save Result to file: {xlsFile.FullName}", log_file.FullName);
         }
 
-        private void output_resultToXml(DataRow newrow, FileInfo xmlFile)
+        private void output_resultToXml(DataRow newrow, FileInfo xmlFile, FileInfo log_file)
         {
-            DataSet ds = new DataSet("PQAA_Test_Rsult");
-            DataTable result_table = null;
-            if (xmlFile.Exists)
+            try
             {
-                ds.ReadXml(xmlFile.FullName);
-                result_table = ds.Tables["Result"];
-
-                DataTable table = result_table.Clone();
-
-                for (int index = 0; index < table.Columns.Count; index++)
+                DataSet ds = new DataSet("PQAA_Test_Rsult");
+                DataTable result_table = null;
+                if (xmlFile.Exists)
                 {
-                    table.Columns[index].DataType = typeof(String);
+                    ds.ReadXml(xmlFile.FullName);
+                    result_table = ds.Tables["Result"];
+
+                    DataTable table = result_table.Clone();
+
+                    for (int index = 0; index < table.Columns.Count; index++)
+                    {
+                        table.Columns[index].DataType = typeof(String);
+                    }
+                    foreach (DataRow row in result_table.Rows)
+                    {
+                        table.Rows.Add(row.ItemArray);
+                    }
+                    result_table = table;
                 }
-                foreach (DataRow row in result_table.Rows)
+                else
                 {
-                    table.Rows.Add(row.ItemArray);
+                    newrow.Table.TableName = "Result";
+                    result_table = newrow.Table.Clone();
                 }
-                result_table = table;
+                result_table.Rows.Add(newrow.ItemArray);
+
+                ds = new DataSet("PQAA_Test_Rsult");
+                ds.Tables.Add(result_table);
+                ds.WriteXml(xmlFile.FullName);
             }
-            else
+            catch (Exception ex)
             {
-                newrow.Table.TableName = "Result";
-                result_table = newrow.Table.Clone();
+                common.m_log.Add_File($"Save Result to file: {xmlFile.FullName}, Error: {ex.Message}", log_file.FullName);
+                return;
             }
-            result_table.Rows.Add(newrow.ItemArray);
-
-            ds = new DataSet("PQAA_Test_Rsult");
-            ds.Tables.Add(result_table);
-            ds.WriteXml(xmlFile.FullName);
-            common.m_log.Add($"Save Result to file: {xmlFile.FullName}");
+            common.m_log.Add_File($"Save Result to file: {xmlFile.FullName}", log_file.FullName);
         }
         #endregion
 
@@ -1682,8 +1699,11 @@ namespace MultiControl
                     }
                 }
             }
-
             await CMDHelper.Adb_KillServer();
+
+            //清除残留的无用后台进程
+            MyExcel.DeleteExcelExe();
+            common.DeleteConhostExe();
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1774,6 +1794,28 @@ namespace MultiControl
         private void configurateToSysinfocfgLocationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SpecifySysInfocfgFile();
+        }
+
+        private void defaultConfigPathToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // 验证config存放路径
+            string config_path = ConfigurationHelper.ReadConfig("Test_Config_Folder");
+            FileInfo dir_config_path = new FileInfo(config_path + @"\cfg.ini");
+            FileInfo cfg_ini_file = new FileInfo(dir_config_path.FullName);
+
+            IniFile iniFile = new IniFile(cfg_ini_file.FullName);
+            FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
+            folder_dialog.Description = "please specify default PQAA test config folder for all models.";
+            folder_dialog.SelectedPath = this.m_default_config_folder.FullName;
+            while (true)
+            {
+                if (folder_dialog.ShowDialog() == DialogResult.OK)
+                {
+                    this.m_default_config_folder = new DirectoryInfo(folder_dialog.SelectedPath);
+                    iniFile.IniWriteValue("config", "Folder", this.m_default_config_folder.FullName);
+                    break;
+                }
+            }
         }
 
         private void viewGlobalLogToolStripMenuItem_Click(object sender, EventArgs e)

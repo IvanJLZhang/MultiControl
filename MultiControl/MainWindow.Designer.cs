@@ -46,6 +46,7 @@
             this.sDCardPathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.initializeToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.configurateToSysinfocfgLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pQAAAPKToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewVersionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewPQAAApkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,7 +54,7 @@
             this.defaultToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.configurateToSysinfocfgLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.defaultConfigPathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ms_CommandBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -121,6 +122,7 @@
             // configurationToolStripMenuItem
             // 
             this.configurationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.defaultConfigPathToolStripMenuItem,
             this.multiModelConfigurationToolStripMenuItem,
             this.portIndexTableToolStripMenuItem,
             this.sDCardPathToolStripMenuItem,
@@ -197,6 +199,13 @@
             this.editToolStripMenuItem1.Text = "&Edit";
             this.editToolStripMenuItem1.Click += new System.EventHandler(this.editToolStripMenuItem1_Click);
             // 
+            // configurateToSysinfocfgLocationToolStripMenuItem
+            // 
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Name = "configurateToSysinfocfgLocationToolStripMenuItem";
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Text = "Specify sysinfo.cfg file";
+            this.configurateToSysinfocfgLocationToolStripMenuItem.Click += new System.EventHandler(this.configurateToSysinfocfgLocationToolStripMenuItem_Click);
+            // 
             // pQAAAPKToolStripMenuItem
             // 
             this.pQAAAPKToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -253,12 +262,12 @@
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "statusStrip1";
             // 
-            // configurateToSysinfocfgLocationToolStripMenuItem
+            // defaultConfigPathToolStripMenuItem
             // 
-            this.configurateToSysinfocfgLocationToolStripMenuItem.Name = "configurateToSysinfocfgLocationToolStripMenuItem";
-            this.configurateToSysinfocfgLocationToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
-            this.configurateToSysinfocfgLocationToolStripMenuItem.Text = "Specify sysinfo.cfg file";
-            this.configurateToSysinfocfgLocationToolStripMenuItem.Click += new System.EventHandler(this.configurateToSysinfocfgLocationToolStripMenuItem_Click);
+            this.defaultConfigPathToolStripMenuItem.Name = "defaultConfigPathToolStripMenuItem";
+            this.defaultConfigPathToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.defaultConfigPathToolStripMenuItem.Text = "Default config Path";
+            this.defaultConfigPathToolStripMenuItem.Click += new System.EventHandler(this.defaultConfigPathToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -308,5 +317,6 @@
         private System.Windows.Forms.ToolStripMenuItem addNewPQAAApkToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem removeAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem configurateToSysinfocfgLocationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem defaultConfigPathToolStripMenuItem;
     }
 }

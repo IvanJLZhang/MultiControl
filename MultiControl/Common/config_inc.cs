@@ -64,7 +64,7 @@ namespace MultiControl.Common
                                          };
 
         public static readonly string[] mFileFooter = {
-                                           "Result"
+                                           "Test_Result"
                                        };
     }
 

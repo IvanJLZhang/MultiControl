@@ -36,4 +36,10 @@
     <Path>C:\Users\zjl40\Documents\Visual Studio 2015\Projects\MultiControl\MultiControl\bin\Debug\default</Path>
     <Estimate>300</Estimate>
   </model>
+  <model>
+    <Name>H30-C02</Name>
+    <Brand>Huawei</Brand>
+    <Path>C:\Users\zjl40\Documents\Visual Studio 2015\Projects\MultiControl\MultiControl\bin\Debug\H30-C02</Path>
+    <Estimate>300</Estimate>
+  </model>
 </ConfigData>
