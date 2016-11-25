@@ -68,7 +68,7 @@
             this.aboutToolStripMenuItem});
             this.ms_CommandBar.Location = new System.Drawing.Point(0, 0);
             this.ms_CommandBar.Name = "ms_CommandBar";
-            this.ms_CommandBar.Size = new System.Drawing.Size(372, 25);
+            this.ms_CommandBar.Size = new System.Drawing.Size(201, 25);
             this.ms_CommandBar.TabIndex = 0;
             this.ms_CommandBar.Text = "menuStrip1";
             // 

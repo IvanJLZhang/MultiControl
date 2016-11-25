@@ -76,7 +76,7 @@
   <PropertyGroup />
   <PropertyGroup />
   <PropertyGroup>
-    <ApplicationIcon>www.ico.la_15506277bc7bfe8c52a1eeeb4cd31d17_32X32.ico</ApplicationIcon>
+    <ApplicationIcon>www.ico.la_69211777f60b1fe2613ebedb505b393a_128X128.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>6A0E20EA813438432AEB520CF5A7E14539426118</ManifestCertificateThumbprint>
@@ -120,9 +120,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="ThoughtWorks.QRCode">
       <HintPath>refs\ThoughtWorks.QRCode.dll</HintPath>
-    </Reference>
-    <Reference Include="UserGridClassLibrary">
-      <HintPath>..\UserGridClassLibrary\bin\Debug\UserGridClassLibrary.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -316,7 +313,22 @@
       <DependentUpon>RegisterForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="ConfigData\cfg.ini" />
+    <None Include="apks\configcheck.apk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="config\cfg.ini">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="default\audio_loopback.cfg" />
+    <None Include="default\gps.cfg" />
+    <None Include="default\headsetloopback.cfg" />
+    <None Include="default\monipower.cfg" />
+    <None Include="default\pqaa.cfg" />
+    <None Include="default\sysinfo.cfg" />
+    <None Include="default\wifi.cfg" />
+    <None Include="apks\Generic_PQAA.apk">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Properties\app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -329,10 +341,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="ConfigData\ConfigData.xml" />
-    <Content Include="ConfigData\ConfigPath.xml" />
-    <Content Include="ConfigData\PortToIndex.xml" />
-    <Content Include="www.ico.la_15506277bc7bfe8c52a1eeeb4cd31d17_32X32.ico" />
+    <Content Include="config\ConfigData.xml" />
+    <Content Include="config\ConfigPath.xml" />
+    <Content Include="config\PortToIndex.xml" />
+    <Content Include="www.ico.la_69211777f60b1fe2613ebedb505b393a_128X128.ico" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Core">
@@ -362,6 +374,10 @@
     <ProjectReference Include="..\EZUSB\EZUSB\EZUSB.csproj">
       <Project>{ec5728d8-256f-45a7-bcee-174745b27c8a}</Project>
       <Name>EZUSB</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UserGridClassLibrary\UserGridClassLibrary.csproj">
+      <Project>{e179d716-9df4-4f52-82dd-2eaf2058e474}</Project>
+      <Name>UserGridClassLibrary</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -537,7 +537,7 @@ namespace MultiControl
             common.m_log.Add(cmd_str);
             common.m_log.Add(response);
 
-            cmd_str = $"adb -s {device.SerialNumber} install -r Generic_PQAA.apk";
+            cmd_str = $"adb -s {device.SerialNumber} install -r \"./apks/Generic_PQAA.apk\"";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add(cmd_str);
             common.m_log.Add(response);
@@ -582,7 +582,7 @@ namespace MultiControl
             #endregion
 
             #region get sysinfo.cfg
-            cmd_str = $"adb -s {device.SerialNumber} install -r configcheck.apk";
+            cmd_str = $"adb -s {device.SerialNumber} install -r \"./apks/configcheck.apk\"";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add(cmd_str);
             common.m_log.Add(response);
@@ -736,7 +736,7 @@ namespace MultiControl
             common.m_log.Add_File(cmd_str, log_file.FullName);
             common.m_log.Add_File(response, log_file.FullName);
 
-            cmd_str = $"adb -s {dut_device.SerialNumber} install -r Generic_PQAA.apk";
+            cmd_str = $"adb -s {dut_device.SerialNumber} install -r \"./apks/Generic_PQAA.apk\"";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add_File(cmd_str, log_file.FullName);
             common.m_log.Add_File(response, log_file.FullName);
