@@ -582,7 +582,7 @@ namespace UserGridClassLibrary
                 switch (Way)
                 {
                     case TestWay.TW_AUTO:
-                        g.DrawString("Auto", font, Brushes.DarkGreen, Rect.Left + 6 + 100, Rect.Top + 6 + 80);
+                        g.DrawString("Auto", font, Brushes.DarkGreen, Rect.Left + 6 + 90, Rect.Top + 6 + 80);
                         break;
                     case TestWay.TW_MANUAL:
                         g.DrawString("Manual", font, Brushes.Red, Rect.Left + 6 + 80, Rect.Top + 6 + 80);
