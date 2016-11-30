@@ -6,4 +6,10 @@
     <Path>C:\Users\zjl40\Documents\Visual Studio 2015\Projects\MultiControl\MultiControl\bin\Debug\H30-C02</Path>
     <Estimate>300</Estimate>
   </model>
+  <model>
+    <Name>GT-I9300</Name>
+    <Brand>Samsung</Brand>
+    <Path>C:\Users\zjl40\Documents\Visual Studio 2015\Projects\MultiControl\MultiControl\bin\Debug\GT-I9300</Path>
+    <Estimate>300</Estimate>
+  </model>
 </ConfigData>
