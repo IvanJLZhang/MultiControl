@@ -698,6 +698,7 @@ namespace MultiControl
                         dut_device.ConfigPath = row["Path"].ToString();
                         dut_device.Brand = row["Brand"].ToString();
                         dut_device.Estimate = float.Parse(row["Estimate"].ToString());
+                        break;
                     }
                 }
             }
@@ -781,6 +782,7 @@ namespace MultiControl
             string config_path = String.Empty;
             string remote_path = dut_device.SDCard + config_inc.CFG_FILE_ROOT;
             string remote_pqaa_path = dut_device.SDCard + config_inc.CFG_FILE_PQAA;
+
             if (IsMultiModelTest && Directory.Exists(dut_device.ConfigPath))
             {
                 config_path = dut_device.ConfigPath;
