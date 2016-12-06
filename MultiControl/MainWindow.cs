@@ -87,6 +87,8 @@ namespace MultiControl
         public event PropertyChangedEventHandler PropertyChanged;
 
         public object lock_obj = new object();
+
+        private DirectoryInfo m_apk_folder = new DirectoryInfo("./apks/");
         #endregion
 
         #region 全局静态变量
@@ -537,7 +539,15 @@ namespace MultiControl
             common.m_log.Add(cmd_str);
             common.m_log.Add(response);
 
-            cmd_str = $"adb -s {device.SerialNumber} install -r \"./apks/Generic_PQAA.apk\"";
+            FileInfo generic_pqaa_file = new FileInfo(this.m_apk_folder.FullName + @"\Generic_PQAA.apk");
+            if (!generic_pqaa_file.Exists)
+            {
+                MessageBox.Show($"{generic_pqaa_file.FullName} doesn't exist! please check this file.");
+                common.m_log.Add($"{generic_pqaa_file.FullName} doesn't exist! please check this file.");
+                return;
+            }
+
+            cmd_str = $"adb -s {device.SerialNumber} install -r \"{generic_pqaa_file.FullName}\"";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add(cmd_str);
             common.m_log.Add(response);
@@ -582,7 +592,16 @@ namespace MultiControl
             #endregion
 
             #region get sysinfo.cfg
-            cmd_str = $"adb -s {device.SerialNumber} install -r \"./apks/configcheck.apk\"";
+
+            FileInfo configcheck_file = new FileInfo(this.m_apk_folder.FullName + @"\configcheck.apk");
+            if (!configcheck_file.Exists)
+            {
+                MessageBox.Show($"{configcheck_file.FullName} doesn't exist! please check this file.");
+                common.m_log.Add($"{configcheck_file.FullName} doesn't exist! please check this file.");
+                return;
+            }
+
+            cmd_str = $"adb -s {device.SerialNumber} install -r \"{configcheck_file.FullName}\"";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add(cmd_str);
             common.m_log.Add(response);
@@ -597,9 +616,8 @@ namespace MultiControl
             folder_dialog.Description = "please select the folder that sysinfo.cfg should be saved.";
             folder_dialog.ShowDialog();
 
-            this.m_default_config_folder = new DirectoryInfo(folder_dialog.SelectedPath);
             string remote_sysinfo_file = $"{sd_card_path}/Android/data/com.wistron.get.config.information/files/sysinfo.cfg";
-            string local_sysinfo_file = $"{this.m_default_config_folder.FullName}\\sysinfo.cfg";
+            string local_sysinfo_file = $"{folder_dialog.SelectedPath}\\sysinfo.cfg";
 
             if (File.Exists(local_sysinfo_file))
             {
@@ -737,7 +755,15 @@ namespace MultiControl
             common.m_log.Add_File(cmd_str, log_file.FullName);
             common.m_log.Add_File(response, log_file.FullName);
 
-            cmd_str = $"adb -s {dut_device.SerialNumber} install -r \"./apks/Generic_PQAA.apk\"";
+            FileInfo generic_pqaa_file = new FileInfo(this.m_apk_folder.FullName + @"\Generic_PQAA.apk");
+            if (!generic_pqaa_file.Exists)
+            {
+                //MessageBox.Show($"{generic_pqaa_file.FullName} doesn't exist! please check this file.");
+                common.m_log.Add($"{generic_pqaa_file.FullName} doesn't exist! please check this file.");
+                return;
+            }
+
+            cmd_str = $"adb -s {dut_device.SerialNumber} install -r \"{generic_pqaa_file.FullName}\"";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add_File(cmd_str, log_file.FullName);
             common.m_log.Add_File(response, log_file.FullName);
@@ -1212,6 +1238,7 @@ namespace MultiControl
             }
             common.m_log.Add_File($"Save Result to file: {xmlFile.FullName}", log_file.FullName);
         }
+
         #endregion
 
         #region 线程中更新UI
