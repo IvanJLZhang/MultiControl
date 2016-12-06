@@ -109,6 +109,12 @@ namespace MultiControl
             common.m_log = new LogHelper.LogMsg(Application.StartupPath);
             Boolean.TryParse(ConfigurationHelper.ReadConfig("DebugLogEnabled"), out common.m_log.IsEnable);
 
+            if (!CheckVersion())
+            {
+                this.Close();
+                return;
+            }
+
             if (!CheckRegister())
             {
                 common.m_log.Add("Can not register this machine.", LogHelper.MessageType.ERROR);
@@ -126,6 +132,25 @@ namespace MultiControl
         }
 
         #region Initialize UI/data
+        bool CheckVersion()
+        {
+            string version = ConfigurationHelper.ReadConfig("Config_Version");
+            int tool_version = common.ConvertVersionStringToInt(config_inc.MULTICONTROL_VERSION);
+            int config_version = common.ConvertVersionStringToInt(version);
+            if (tool_version > config_version)
+            {
+                common.m_log.Add("The config version is out of date, please upgrade the config first, thanks!", LogHelper.MessageType.ERROR);
+                MessageBox.Show("The config version is out of date, please upgrade the config first, thanks!", "error");
+                return false;
+            }
+            else if (tool_version < config_version)
+            {
+                common.m_log.Add("The tool version is out of date, please upgrade the tool first, thanks!", LogHelper.MessageType.ERROR);
+                MessageBox.Show("The tool version is out of date, please upgrade the tool first, thanks!", "error");
+                return false;
+            }
+            return true;
+        }
         /// <summary>
         /// 检查注册信息
         /// </summary>
@@ -133,7 +158,6 @@ namespace MultiControl
         bool CheckRegister()
         {
             // 检测是否已经注册
-            //this.Hide();
             while (!m_bLicensed)
             {
                 RegisterForm register_form = new RegisterForm();
@@ -153,7 +177,6 @@ namespace MultiControl
                 string computer_name = common.GetComputerName();
                 this.m_md5_code = common.GetMD5Code(computer_name);
             }
-            //this.Show();
             return m_bLicensed;
         }
         bool InitializeConfigData()
@@ -270,7 +293,7 @@ namespace MultiControl
             //this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
             this.Size = new Size(1320, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = $"Multi-Control Test Tool——{config_inc.MULTICONTROL_VERSION}";
+            this.Text = $"Multi-Control Test Tool——{config_inc.MULTICONTROL_VERSION} {config_inc.BUILD_DATE}";
             this.Resize += MainWindow_Resize;
 
             m_DeviceList_UI = new UserGrid();

@@ -185,5 +185,22 @@ namespace MultiControl.Common
                     catch { }
                 }
         }
+
+
+        public static Int32 ConvertVersionStringToInt(string version)
+        {// V1.6.5
+            if (String.IsNullOrEmpty(version))
+                return -1;
+            string return_value = String.Empty;
+            version = version.Replace("V", "");
+            string[] versions = version.Split('.');
+            foreach (var item in versions)
+            {
+                return_value += item;
+            }
+            int return_value_int = -1;
+            Int32.TryParse(return_value, out return_value_int);
+            return return_value_int;
+        }
     }
 }

@@ -25,13 +25,23 @@ namespace MultiControl.Common
     public class config_inc
     {
         /// <summary>
+        /// tool版本号
+        /// </summary>
+        public const string MULTICONTROL_VERSION = "V1.6.6";
+        /// <summary>
+        /// Build日期
+        /// </summary>
+        public const string BUILD_DATE = "Build20161206";
+
+
+        /// <summary>
         /// adb命令可重复执行最大次数
         /// </summary>
         public const int CMD_REPEAT_MAX_TIME = 10;
 
         public const int CMD_REPEAT_WAIT_TIME = 1000 * 1;
 
-        public const string MULTICONTROL_VERSION = "V1.6.5 Build20161125";
+
 
         public const string PQAA_SW_VERSION = "V1.4.0";
         /// <summary>
