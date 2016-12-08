@@ -1,5 +1,5 @@
 <?xml version="1.0" standalone="yes"?>
-<ConfigPath>
+<SDCardPath>
   <model>
     <Name>Sample1</Name>
     <InternalCard>/mnt/sdcard</InternalCard>
@@ -112,4 +112,4 @@
     <Name>Sample28</Name>
     <InternalCard>/sotrage/exsdcard</InternalCard>
   </model>
-</ConfigPath>
+</SDCardPath>

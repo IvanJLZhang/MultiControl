@@ -62,7 +62,17 @@ namespace MultiControl
             SpecifiedConfigPathFactory.Save();
             Close();
         }
-
+        private void dataGridViewPath_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (this.dataGridViewPath.Columns[e.ColumnIndex].Name.CompareTo("Choose") == 0)
+            {
+                if (this.folderBrowserDialog1.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    DataGridViewTextBoxCell cell = (DataGridViewTextBoxCell)this.dataGridViewPath.Rows[e.RowIndex].Cells["Path"];
+                    cell.Value = folderBrowserDialog1.SelectedPath;
+                }
+            }
+        }
         private void editTestItemsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FormEditItems items = new FormEditItems();

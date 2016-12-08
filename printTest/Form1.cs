@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Lee.Barcode;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -53,6 +54,7 @@ namespace printTest
 
             }
         }
+        BarcodeLib.Barcode b = new BarcodeLib.Barcode();
         private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
             ////打印内容 为 整个Form
@@ -97,10 +99,49 @@ namespace printTest
 
            
                //e.Graphics.DrawString("Hello world ", font, bru,0, 0);
-             e.Graphics.DrawImage(image, 20, 20);
+           //  e.Graphics.DrawImage(image, 20, 20);
 
+
+            //一维条形
+           // BarcodeDraw draw = null;
+           // draw = InstallBarcodeDraw(draw);
+            Image image2;
+        //     draw.Draw("1123456789", 80);
+
+      //      e.Graphics.DrawImage(draw.Draw("1123456789", 80), 40, 40);
+
+            //
+            image2 = b.Encode(BarcodeLib.TYPE.CODE128, "234566661234567", ForeColor,BackColor, 200,50);
+  
+
+
+
+            Bitmap image3 = new Bitmap(40, 40 + ((int)new Font("@宋体", 13).Height));
+
+            Font font = new Font("宋体", 12);
+
+            string x = "234566661234567";
+            int w;
+            int h;
+            w = image2.Width - x.Length*8;
+            e.Graphics.DrawString(x, font, bru, w/2, 60);
+            e.Graphics.DrawImage(image2, 0, 0);
+          
+           
         }
-
+        private BarcodeDraw InstallBarcodeDraw(BarcodeDraw draw)
+        {
+            switch ("Code11C")
+            {
+                case "Code11C":
+                    draw = BarcodeDrawFactory.GetSymbology(BarcodeSymbology.Code11C); break;
+                case "Code39NC":
+                    draw = BarcodeDrawFactory.GetSymbology(BarcodeSymbology.Code11NC); break;
+                default:break;
+                  
+            
+      }          return draw;
+        }
         private void label1_Click(object sender, EventArgs e)
         {
 

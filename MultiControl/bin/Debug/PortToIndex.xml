@@ -13,7 +13,7 @@
   </Node>
   <Node>
     <Index>3</Index>
-    <Port />
+    <Port>#6--USB#VID_04CC&amp;PID_1521#6&amp;8208cd3&amp;0&amp;2#{f18a0e88-c30c-11d0-8815-00a0c906bed8}</Port>
   </Node>
   <Node>
     <Index>4</Index>
@@ -21,15 +21,15 @@
   </Node>
   <Node>
     <Index>5</Index>
-    <Port />
+    <Port>#5--USB#VID_04CC&amp;PID_1521#6&amp;8208cd3&amp;0&amp;2#{f18a0e88-c30c-11d0-8815-00a0c906bed8}</Port>
   </Node>
   <Node>
     <Index>6</Index>
-    <Port />
+    <Port>#2--USB#VID_04CC&amp;PID_1521#6&amp;8208cd3&amp;0&amp;2#{f18a0e88-c30c-11d0-8815-00a0c906bed8}</Port>
   </Node>
   <Node>
     <Index>7</Index>
-    <Port />
+    <Port>#1--USB#VID_04CC&amp;PID_1521#6&amp;8208cd3&amp;0&amp;2#{f18a0e88-c30c-11d0-8815-00a0c906bed8}</Port>
   </Node>
   <Node>
     <Index>8</Index>

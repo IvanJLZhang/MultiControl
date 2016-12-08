@@ -23,6 +23,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeTest_WPF", "CodeTest_WP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EZUSB", "EZUSB\EZUSB\EZUSB.csproj", "{EC5728D8-256F-45A7-BCEE-174745B27C8A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "printTest", "printTest\printTest.csproj", "{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarcodeLib", "E:\study\DimensionalbarcodeGeneration_81813790-983a-4637-b02f-6ea79fbd4570\BarcodeLib\BarcodeLib.csproj", "{F8646414-0C9C-49BB-9DA3-3923BF78A398}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +107,22 @@ Global
 		{EC5728D8-256F-45A7-BCEE-174745B27C8A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EC5728D8-256F-45A7-BCEE-174745B27C8A}.Release|x86.ActiveCfg = Release|Any CPU
 		{EC5728D8-256F-45A7-BCEE-174745B27C8A}.Release|x86.Build.0 = Release|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Debug|x86.Build.0 = Debug|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Release|x86.ActiveCfg = Release|Any CPU
+		{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}.Release|x86.Build.0 = Release|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Debug|x86.Build.0 = Debug|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Release|x86.ActiveCfg = Release|Any CPU
+		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

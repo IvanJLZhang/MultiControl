@@ -18,6 +18,7 @@ using MultiControl.Functions;
 using MultiControl.Lib;
 using ThoughtWorks.QRCode.Codec;
 using UserGridClassLibrary;
+using System.Drawing.Printing;
 
 namespace MultiControl
 {
@@ -76,6 +77,8 @@ namespace MultiControl
         /// </summary>
         bool IsMultiModelTest = true;
 
+        bool save_as_excel = true;
+        bool save_as_xml = true;
         Int32 m_PseudoTotal = 0;
         //Event
         public event OnStartUpdateHandle StartUpdate;
@@ -83,6 +86,8 @@ namespace MultiControl
         public event OnProgressUpdateHandle ProgressUpdate;
         public event OnFinishUpdateHandle FinishUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public object lock_obj = new object();
         #endregion
 
         #region 全局静态变量
@@ -96,10 +101,12 @@ namespace MultiControl
             InitializeComponent();
             this.Load += MainWindow_Load;
         }
-
+        BarcodeLib.Barcode b = new BarcodeLib.Barcode();
         private void MainWindow_Load(object sender, EventArgs e)
         {
             // 初始化日志记录
+            printDocument1 = new PrintDocument();//添加打印事件
+            printDocument1.PrintPage += new PrintPageEventHandler(this.printDocument1_PrintPage);
             common.m_log = new LogHelper.LogMsg(Application.StartupPath);
             Boolean.TryParse(ConfigurationHelper.ReadConfig("DebugLogEnabled"), out common.m_log.IsEnable);
 
@@ -150,6 +157,7 @@ namespace MultiControl
             //this.Show();
             return m_bLicensed;
         }
+        bool autoPrint = true ;
         bool InitializeConfigData()
         {
             FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
@@ -190,6 +198,9 @@ namespace MultiControl
             Int32.TryParse(iniFile.IniReadValue("layout", "Row"), out m_Rows);
             Int32.TryParse(iniFile.IniReadValue("layout", "Column"), out m_Cols);
             Boolean.TryParse(iniFile.IniReadValue("mode", "MultiSupport"), out this.IsMultiModelTest);
+            Boolean.TryParse(iniFile.IniReadValue("result", "save_as_excel"), out this.save_as_excel);
+            Boolean.TryParse(iniFile.IniReadValue("result", "save_as_xml"), out this.save_as_xml);
+            Boolean.TryParse(iniFile.IniReadValue("autoprint", "AutoPrint"), out this.autoPrint );
 
             if (!this.m_default_config_folder.Exists)
             {
@@ -259,14 +270,16 @@ namespace MultiControl
 
             this.viewGlobalLogToolStripMenuItem.Enabled = common.m_log.IsEnable;
 
-            this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
+            //this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
+            this.Size = new Size(1320, 700);
+            this.StartPosition = FormStartPosition.CenterScreen;
             this.Text = $"Multi-Control Test Tool——{config_inc.MULTICONTROL_VERSION}";
-
+            this.Resize += MainWindow_Resize;
 
             m_DeviceList_UI = new UserGrid();
             m_DeviceList_UI.Location = new Point(20, 30);
             m_DeviceList_UI.Width = this.Width - 64;
-            m_DeviceList_UI.Height = this.Height - 120;
+            m_DeviceList_UI.Height = this.Height - 100;
             m_DeviceList_UI.Row = m_Rows;
             m_DeviceList_UI.Column = m_Cols;
             m_DeviceList_UI.InitializeGridItems();
@@ -275,6 +288,27 @@ namespace MultiControl
             m_DeviceList_UI.OnGridItemFocus += new UserGridClassLibrary.UserGrid.GridItemFocusHandle(this.OnGridItemFocusHandle);
             m_DeviceList_UI.OnGridItemReset += new UserGridClassLibrary.UserGrid.GridItemResetHandle(this.OnGridItemResetHandle);
 
+        }
+
+        private void MainWindow_Resize(object sender, EventArgs e)
+        {
+            m_DeviceList_UI.OnGridItemFocus -= new UserGridClassLibrary.UserGrid.GridItemFocusHandle(this.OnGridItemFocusHandle);
+            m_DeviceList_UI.OnGridItemReset -= new UserGridClassLibrary.UserGrid.GridItemResetHandle(this.OnGridItemResetHandle);
+            this.Controls.Remove(m_DeviceList_UI);
+
+            m_DeviceList_UI = new UserGrid();
+            m_DeviceList_UI.Location = new Point(20, 30);
+            m_DeviceList_UI.Width = this.Width - 64;
+            m_DeviceList_UI.Height = this.Height - 100;
+            m_DeviceList_UI.Row = m_Rows;
+            m_DeviceList_UI.Column = m_Cols;
+            m_DeviceList_UI.InitializeGridItems();
+            this.Controls.Add(m_DeviceList_UI);
+
+            m_DeviceList_UI.OnGridItemFocus += new UserGridClassLibrary.UserGrid.GridItemFocusHandle(this.OnGridItemFocusHandle);
+            m_DeviceList_UI.OnGridItemReset += new UserGridClassLibrary.UserGrid.GridItemResetHandle(this.OnGridItemResetHandle);
+
+            StartBtnTest();
         }
         #endregion
         private delegate void DeviceChanged(DeviceNotifyEventArgs e);
@@ -419,7 +453,6 @@ namespace MultiControl
                 newTestDevice.test_thread.Start(device);
             }
         }
-
         void StartCheckedBtnTest()
         {
             if (GetCheckedDUT() > 0)
@@ -448,7 +481,6 @@ namespace MultiControl
                 }
             }
         }
-
         private int GetCheckedDUT()
         {
             int count = 0, index = 0;
@@ -464,10 +496,188 @@ namespace MultiControl
             }
             return count;
         }
+
+        async void SpecifySysInfocfgFile()
+        {
+            common.m_log.Add("Reset All test events by user.");
+            common.m_log.Add("specify sysinfo.cfg file.");
+            //RESET TIME
+            foreach (DutDevice terminal in m_DeviceList)
+            {
+                terminal.BenginTime = DateTime.Now;
+                terminal.Reset();
+            }
+            //CHECK DEVICES 
+            foreach (UserGridClassLibrary.GridItem dut in m_DeviceList_UI)
+            {
+                if (!string.IsNullOrEmpty(dut.GetDutSN()))
+                {
+                    int id = dut.GetDutGridID();
+                    dut.Reset();
+                }
+            }
+            common.m_log.Add("Detect All Usb Android devices.");
+            // 对新加入的设备， 获取该设备的端口号等相关信息
+            UsbPortTree.RefreshUsbPort();
+            if (UsbPortTree.ConnectedAndroidDevices.Count <= 0)
+            {
+                common.m_log.Add("none of android devices is detected, please retry!");
+                MessageBox.Show("none of android devices is detected, please retry!", "Warning");
+                return;
+            }
+            var device = UsbPortTree.ConnectedAndroidDevices[0];
+            bool adb_avaiable = await m_adb.CheckDeviceConnection(device);
+            if (!adb_avaiable)
+            {
+                common.m_log.Add($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.Port}", MessageType.ERROR);
+                MessageBox.Show($"adb: can not connect to this device:SN: {device.SerialNumber}; Port: {device.Port}", "Warning");
+                return;
+            }
+            string cmd_str = String.Empty;
+            string response = String.Empty;
+            #region get sd card path
+            // uninstall pqaa
+            cmd_str = $"adb -s {device.SerialNumber} uninstall com.wistron.generic.pqaa";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            cmd_str = $"adb -s {device.SerialNumber} install -r \"./apks/Generic_PQAA.apk\"";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            cmd_str = $"adb -s {device.SerialNumber} shell am startservice --user 0 -a com.wistron.generic.get.sdcard.path";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+
+            string sd_card_path = String.Empty;
+            DataTable model_table = SDCardPathFactory.SDCardPath_Table;
+            int count = 0;
+            while (String.IsNullOrEmpty(sd_card_path) && count < config_inc.CMD_REPEAT_MAX_TIME)
+            {
+                foreach (DataRow item in model_table.Rows)
+                {
+                    string remote_file = $"{item["InternalCard"].ToString()}{config_inc.SPECIFIC_TAG_PATH}";
+                    string local_file = $".\\{config_inc.PATH_VERIFY_PATH}";
+
+                    cmd_str = $"adb -s {device.SerialNumber} pull {remote_file} \"{local_file}\"";
+                    response = await m_adb.CMD_RunAsync(cmd_str);
+                    await Task.Delay(50);
+
+                    if (File.Exists(local_file))
+                    {
+                        common.m_log.Add(cmd_str);
+                        common.m_log.Add(response);
+                        sd_card_path = item["InternalCard"].ToString();
+                        File.Delete(local_file);
+                        break;
+                    }
+                }
+                count++;
+            }
+            if (sd_card_path == String.Empty)
+            {
+                common.m_log.Add($"{device.SerialNumber}: Test fail: No available SD card for testing...", MessageType.ERROR);
+                MessageBox.Show($"{device.SerialNumber}: Test fail: No available SD card for testing...", "Warning");
+                return;
+            }
+            #endregion
+
+            #region get sysinfo.cfg
+            cmd_str = $"adb -s {device.SerialNumber} install -r \"./apks/configcheck.apk\"";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            cmd_str = $"adb -s {device.SerialNumber} shell am start -n com.wistron.get.config.information/.MainActivity";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
+            folder_dialog.SelectedPath = this.m_default_config_folder.FullName;
+            folder_dialog.Description = "please select the folder that sysinfo.cfg should be saved.";
+            folder_dialog.ShowDialog();
+
+            this.m_default_config_folder = new DirectoryInfo(folder_dialog.SelectedPath);
+            string remote_sysinfo_file = $"{sd_card_path}/Android/data/com.wistron.get.config.information/files/sysinfo.cfg";
+            string local_sysinfo_file = $"{this.m_default_config_folder.FullName}\\sysinfo.cfg";
+
+            if (File.Exists(local_sysinfo_file))
+            {
+                File.Delete(local_sysinfo_file);
+            }
+            cmd_str = $"adb -s {device.SerialNumber} pull {remote_sysinfo_file} \"{local_sysinfo_file}\"";
+
+            count = 0;
+            while (!File.Exists(local_sysinfo_file) && count < config_inc.CMD_REPEAT_MAX_TIME)
+            {
+                response = await m_adb.CMD_RunAsync(cmd_str);
+                count++;
+                common.m_log.Add(cmd_str);
+                common.m_log.Add(response);
+                await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
+            }
+            if (!File.Exists(local_sysinfo_file))
+            {
+                MessageBox.Show($"can not pull sysinfo.cfg file.error: {response.Trim()}");
+                common.m_log.Add($"can not pull sysinfo.cfg file.error: {response.Trim()}", MessageType.ERROR);
+            }
+            #endregion
+
+            // uninstall 
+            cmd_str = $"adb -s {device.SerialNumber} uninstall com.wistron.get.config.information";
+            response = await m_adb.CMD_RunAsync(cmd_str);
+            common.m_log.Add(cmd_str);
+            common.m_log.Add(response);
+
+            common.m_log.Add("specify sysinfo.cfg file.--done!");
+            MessageBox.Show("specify sysinfo.cfg file.--done!", "OK");
+        }
+
+
+        #region 打印
+        int barcodeW = 0;
+        int barcodeH = 0;
+        int fontSize = 12;
+        int printI=0;
+        private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        {                       
+             Font font = new Font("宋体", fontSize);
+            Font font1 = new Font("宋体",10);
+            Brush bru = Brushes.Black ;
+            if (printI >= 24)
+                printI = 0;
+
+             for(; printI < 24; printI++)
+            {    if(m_DeviceList[printI].IsPrint ==true )
+                {
+                    barcodeW=4 * fontSize;
+                    barcodeH = 8 * fontSize;
+                    e.Graphics.DrawString(m_DeviceList[printI].PringString, font, bru, 0, 0);
+                    image[printI] = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI , ForeColor, BackColor, 140, 35);
+                    e.Graphics.DrawImage(image[printI], barcodeW, barcodeH);
+                   int  w = image[printI].Width - m_DeviceList[printI].IMEI.Length * 8;
+                    e.Graphics.DrawString(m_DeviceList[printI ].IMEI , font1, bru, w / 2+ barcodeW, barcodeH + image[printI].Height+4);
+                    m_DeviceList[printI].IsPrint = false;
+
+                }                             
+
+            }
+
+          
+          //  e.Graphics.DrawImage(image, 20, 20);
+
+        }
+        #endregion
         #region 测试线程
 
         async void TestThread(object obj)
         {
+           
             UsbDeviceInfoEx device = obj as UsbDeviceInfoEx;
             int ThreadIndex = device.Index;
             var dut_device = m_DeviceList[ThreadIndex];
@@ -568,7 +778,7 @@ namespace MultiControl
             common.m_log.Add_File(cmd_str, log_file.FullName);
             common.m_log.Add_File(response, log_file.FullName);
 
-            cmd_str = $"adb -s {dut_device.SerialNumber} install -r Generic_PQAA.apk";
+            cmd_str = $"adb -s {dut_device.SerialNumber} install -r \"./apks/Generic_PQAA.apk\"";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add_File(cmd_str, log_file.FullName);
             common.m_log.Add_File(response, log_file.FullName);
@@ -615,7 +825,7 @@ namespace MultiControl
             string remote_pqaa_path = dut_device.SDCard + config_inc.CFG_FILE_PQAA;
             if (IsMultiModelTest && Directory.Exists(dut_device.ConfigPath))
             {
-                config_path = this.m_default_config_folder.FullName;
+                config_path = dut_device.ConfigPath;
             }
             else
             {
@@ -690,6 +900,7 @@ namespace MultiControl
                         dut_device.FLASH = await reader.ReadLineAsync();
                         dut_device.BuildNumber = await reader.ReadLineAsync();
                         dut_device.BuildNumber = await reader.ReadLineAsync();
+                       
                     }
                 }
                 File.Delete(local_wInfo_file);
@@ -787,27 +998,26 @@ namespace MultiControl
 
                 dut_device.ExitRunningThread = true;
                 await Task.Delay(300);
-                common.m_log.Add_File($"Write result to log: ", log_file.FullName);
+                common.m_log.Add_File($"Write result to log.", log_file.FullName);
                 // 保存测试结果
-                SaveResultToFile(local_result_file, ThreadIndex);
+                SaveResultToFile(local_result_file, ThreadIndex, log_file);
                 common.m_log.Add_File($"Test Over.", log_file.FullName);
                 SetDutTestFinishInvoke(value);
                 #endregion
             }
         }
-        private int SaveResultToFile(string source, int index)
+        private int SaveResultToFile(string source, int index, FileInfo log_file)
         {
             var dut_device = this.m_DeviceList[index];
             string log_date = DateTime.Now.ToString("yyyyMMdd");
             string logDateTime = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
 
-            DirectoryInfo log_folder = new DirectoryInfo(this.m_result_folder.FullName);
-            if (!log_folder.Exists)
+            if (!m_result_folder.Exists)
             {
-                common.m_log.Add($"log folder can not be found:{log_folder}");
+                common.m_log.Add($"log folder can not be found:{m_result_folder}");
                 return -1;
             }
-            DirectoryInfo log_model_path = new DirectoryInfo(log_folder.FullName + $@"\{dut_device.Model}");
+            DirectoryInfo log_model_path = new DirectoryInfo(m_result_folder.FullName + $@"\{dut_device.Model}");
             if (!log_model_path.Exists)
                 log_model_path.Create();
 
@@ -818,7 +1028,7 @@ namespace MultiControl
             }
             if (!File.Exists(source))
             {
-                common.m_log.Add($"can not find result file: {source}");
+                common.m_log.Add_File($"can not find result file: {source}", log_file.FullName);
                 return -1;
             }
 
@@ -927,13 +1137,19 @@ namespace MultiControl
                 #endregion
             }
             newrow["TestTime"] = (int)total_testtime;
-            newrow["Result"] = total_test_result.ToString();
-            output_resultToXls(newrow, result_xls_file);
-            output_resultToXml(newrow, result_xml_file);
+            newrow["Test_Result"] = total_test_result.ToString();
+
+            lock (lock_obj)
+            {// 由于按照Model为result文件名， 所以需要考虑相同机型同时测试 时候访问同一个result文件出现的错误
+                if (save_as_excel)
+                    output_resultToXls(newrow, result_xls_file, log_file);
+                if (save_as_xml)
+                    output_resultToXml(newrow, result_xml_file, log_file);
+            }
             File.Delete(result_file);
             return 0;
         }
-        private void output_resultToXls(DataRow newrow, FileInfo xlsFile)
+        private void output_resultToXls(DataRow newrow, FileInfo xlsFile, FileInfo log_file)
         {
             MyExcel xlsApp = null;
             try
@@ -1014,41 +1230,49 @@ namespace MultiControl
             xlsApp.AutoFitAll();
             xlsApp.Save();
             xlsApp.Exit();
-            common.m_log.Add($"Save Result to file:{xlsFile.FullName}");
+            common.m_log.Add_File($"Save Result to file: {xlsFile.FullName}", log_file.FullName);
         }
 
-        private void output_resultToXml(DataRow newrow, FileInfo xmlFile)
+        private void output_resultToXml(DataRow newrow, FileInfo xmlFile, FileInfo log_file)
         {
-            DataSet ds = new DataSet("PQAA_Test_Rsult");
-            DataTable result_table = null;
-            if (xmlFile.Exists)
+            try
             {
-                ds.ReadXml(xmlFile.FullName);
-                result_table = ds.Tables["Result"];
-
-                DataTable table = result_table.Clone();
-
-                for (int index = 0; index < table.Columns.Count; index++)
+                DataSet ds = new DataSet("PQAA_Test_Rsult");
+                DataTable result_table = null;
+                if (xmlFile.Exists)
                 {
-                    table.Columns[index].DataType = typeof(String);
+                    ds.ReadXml(xmlFile.FullName);
+                    result_table = ds.Tables["Result"];
+
+                    DataTable table = result_table.Clone();
+
+                    for (int index = 0; index < table.Columns.Count; index++)
+                    {
+                        table.Columns[index].DataType = typeof(String);
+                    }
+                    foreach (DataRow row in result_table.Rows)
+                    {
+                        table.Rows.Add(row.ItemArray);
+                    }
+                    result_table = table;
                 }
-                foreach (DataRow row in result_table.Rows)
+                else
                 {
-                    table.Rows.Add(row.ItemArray);
+                    newrow.Table.TableName = "Result";
+                    result_table = newrow.Table.Clone();
                 }
-                result_table = table;
+                result_table.Rows.Add(newrow.ItemArray);
+
+                ds = new DataSet("PQAA_Test_Rsult");
+                ds.Tables.Add(result_table);
+                ds.WriteXml(xmlFile.FullName);
             }
-            else
+            catch (Exception ex)
             {
-                newrow.Table.TableName = "Result";
-                result_table = newrow.Table.Clone();
+                common.m_log.Add_File($"Save Result to file: {xmlFile.FullName}, Error: {ex.Message}", log_file.FullName);
+                return;
             }
-            result_table.Rows.Add(newrow.ItemArray);
-
-            ds = new DataSet("PQAA_Test_Rsult");
-            ds.Tables.Add(result_table);
-            ds.WriteXml(xmlFile.FullName);
-            common.m_log.Add($"Save Result to file: {xmlFile.FullName}");
+            common.m_log.Add_File($"Save Result to file: {xmlFile.FullName}", log_file.FullName);
         }
         #endregion
 
@@ -1177,7 +1401,9 @@ namespace MultiControl
                 m_DeviceList_UI[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
             }), new object[] { index });
         }
-
+       // string[] PringString=new string[24];
+      //  bool [] pringNO=new bool [24] ;
+        Image[] image = new Image[24];
         private void SetDutIMEI(object index)
         {
             int i = (int)index;
@@ -1186,6 +1412,7 @@ namespace MultiControl
             m_DeviceList_UI[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
             //SET QRCODE
             QRCodeEncoder qrCodeEncoder = new QRCodeEncoder();
+            
             qrCodeEncoder.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;
             qrCodeEncoder.QRCodeScale = 1;
             qrCodeEncoder.QRCodeVersion = 9;
@@ -1197,9 +1424,24 @@ namespace MultiControl
                 "OS Version:" + m_DeviceList[i].BuildId + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "IMEI:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
-                "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
-                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:";//bonnie20160805
+                "RAM:" + m_DeviceList[i].RAM + System.Environment.NewLine +
+                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:"+m_DeviceList[i].BuildNumber;//bonnie20160805
 
+            // pringNO[i]= true ;
+            m_DeviceList[i].PringString = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
+                "OS Version:" + m_DeviceList[i].BuildId + System.Environment.NewLine +
+                "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine+
+                "RAM:" + m_DeviceList[i].RAM + System.Environment.NewLine +
+                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine+"IMEI:";
+            m_DeviceList[i].IsPrint = true;
+            if (i<printI)
+            {
+                printI = i;
+
+            }      
+            this.printDocument1.Print();//开始打印
+           
+            
             image = qrCodeEncoder.Encode(data + BN);
             m_DeviceList_UI[i].SetQRCode_IMEI(image);
         }
@@ -1490,7 +1732,7 @@ namespace MultiControl
                 m_DeviceList_UI[index].UpdateElapseTime(e.Elapsed);
             }
         }
-        private void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
+        private async void MainWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (this.UsbDeviceNotifier != null)
             {
@@ -1518,6 +1760,11 @@ namespace MultiControl
                     }
                 }
             }
+            await CMDHelper.Adb_KillServer();
+
+            //清除残留的无用后台进程
+            MyExcel.DeleteExcelExe();
+            common.DeleteConhostExe();
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1603,6 +1850,33 @@ namespace MultiControl
         private void startSelectedDevicesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             StartCheckedBtnTest();
+        }
+
+        private void configurateToSysinfocfgLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SpecifySysInfocfgFile();
+        }
+
+        private void defaultConfigPathToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // 验证config存放路径
+            string config_path = ConfigurationHelper.ReadConfig("Test_Config_Folder");
+            FileInfo dir_config_path = new FileInfo(config_path + @"\cfg.ini");
+            FileInfo cfg_ini_file = new FileInfo(dir_config_path.FullName);
+
+            IniFile iniFile = new IniFile(cfg_ini_file.FullName);
+            FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
+            folder_dialog.Description = "please specify default PQAA test config folder for all models.";
+            folder_dialog.SelectedPath = this.m_default_config_folder.FullName;
+            while (true)
+            {
+                if (folder_dialog.ShowDialog() == DialogResult.OK)
+                {
+                    this.m_default_config_folder = new DirectoryInfo(folder_dialog.SelectedPath);
+                    iniFile.IniWriteValue("config", "Folder", this.m_default_config_folder.FullName);
+                    break;
+                }
+            }
         }
 
         private void viewGlobalLogToolStripMenuItem_Click(object sender, EventArgs e)

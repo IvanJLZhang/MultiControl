@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Lee.Barcode">
+      <HintPath>E:\study\Lee.Barcode.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -81,6 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="E:\study\DimensionalbarcodeGeneration_81813790-983a-4637-b02f-6ea79fbd4570\BarcodeLib\BarcodeLib.csproj">
+      <Project>{f8646414-0c9c-49bb-9da3-3923bf78a398}</Project>
+      <Name>BarcodeLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

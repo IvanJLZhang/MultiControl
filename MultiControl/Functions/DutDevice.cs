@@ -67,7 +67,19 @@ namespace MultiControl
             get { return bExitRunningThread; }
             set { bExitRunningThread = value; }
         }
-
+        private  bool isPrint;
+        private string printString;
+  
+        public string PringString
+        {
+            get { return printString; }
+            set { printString = value ; }
+        }
+        public bool IsPrint
+        {
+            get { return isPrint; }
+            set { isPrint = value ; }
+        }
         public bool Connected
         {
             get { return bConnected; }
