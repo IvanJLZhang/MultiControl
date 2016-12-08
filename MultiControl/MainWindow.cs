@@ -740,6 +740,7 @@ namespace MultiControl
                         dut_device.ConfigPath = row["Path"].ToString();
                         dut_device.Brand = row["Brand"].ToString();
                         dut_device.Estimate = float.Parse(row["Estimate"].ToString());
+                        break;
                     }
                 }
             }
@@ -823,6 +824,7 @@ namespace MultiControl
             string config_path = String.Empty;
             string remote_path = dut_device.SDCard + config_inc.CFG_FILE_ROOT;
             string remote_pqaa_path = dut_device.SDCard + config_inc.CFG_FILE_PQAA;
+
             if (IsMultiModelTest && Directory.Exists(dut_device.ConfigPath))
             {
                 config_path = dut_device.ConfigPath;
@@ -832,36 +834,15 @@ namespace MultiControl
                 config_path = this.m_default_config_folder.FullName;
             }
 
-            cmd_str = $"adb -s {dut_device.SerialNumber} push \"{config_path}\\audio_loopback.cfg\" {remote_pqaa_path}";
-            response = await m_adb.CMD_RunAsync(cmd_str);
-            common.m_log.Add_File(cmd_str, log_file.FullName);
-            common.m_log.Add_File(response, log_file.FullName);
-
-            cmd_str = $"adb -s {dut_device.SerialNumber} push \"{config_path}\\monipower.cfg\" {remote_pqaa_path}";
-            response = await m_adb.CMD_RunAsync(cmd_str);
-            common.m_log.Add_File(cmd_str, log_file.FullName);
-            common.m_log.Add_File(response, log_file.FullName);
-
-            cmd_str = $"adb -s {dut_device.SerialNumber} push \"{config_path}\\sysinfo.cfg\" {remote_pqaa_path}";
-            response = await m_adb.CMD_RunAsync(cmd_str);
-            common.m_log.Add_File(cmd_str, log_file.FullName);
-            common.m_log.Add_File(response, log_file.FullName);
-
-            cmd_str = $"adb -s {dut_device.SerialNumber} push \"{config_path}\\wifi.cfg\" {remote_pqaa_path}";
-            response = await m_adb.CMD_RunAsync(cmd_str);
-            common.m_log.Add_File(cmd_str, log_file.FullName);
-            common.m_log.Add_File(response, log_file.FullName);
-
-            cmd_str = $"adb -s {dut_device.SerialNumber} push \"{config_path}\\gps.cfg\" {remote_pqaa_path}";
-            response = await m_adb.CMD_RunAsync(cmd_str);
-            common.m_log.Add_File(cmd_str, log_file.FullName);
-            common.m_log.Add_File(response, log_file.FullName);
-
-            cmd_str = $"adb -s {dut_device.SerialNumber} push \"{config_path}\\pqaa.cfg\" {remote_pqaa_path}";
-            response = await m_adb.CMD_RunAsync(cmd_str);
-            common.m_log.Add_File(cmd_str, log_file.FullName);
-            common.m_log.Add_File(response, log_file.FullName);
-
+            DirectoryInfo config_folder = new DirectoryInfo(config_path);
+            FileInfo[] config_files = config_folder.GetFiles("*.cfg", SearchOption.TopDirectoryOnly);
+            foreach (var config_file in config_files)
+            {
+                cmd_str = $"adb -s {dut_device.SerialNumber} push \"{config_file.FullName}\" {remote_pqaa_path}";
+                response = await m_adb.CMD_RunAsync(cmd_str);
+                common.m_log.Add_File(cmd_str, log_file.FullName);
+                common.m_log.Add_File(response, log_file.FullName);
+            }
             DateTime dtEnd = DateTime.Now;
             var ts = dtEnd - dut_device.BenginTime;
             dut_device_ui.InstallTime = (float)ts.TotalMilliseconds / 1000;
