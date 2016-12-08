@@ -1860,6 +1860,127 @@ namespace MultiControl
             }
         }
 
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+          
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem8_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem9_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem10_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem11_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem12_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem13_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem14_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem15_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem16_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem17_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem18_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem19_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem20_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem21_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem22_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void toolStripMenuItem23_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void toolStripMenuItem24_Click(object sender, EventArgs e)
+        {
+           
+        }
+
+        private void toolStripMenuItem25_Click(object sender, EventArgs e)
+        {
+            
+
+        }
+
         private void viewGlobalLogToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Process.Start("explorer", common.m_log.LogFilePath);
