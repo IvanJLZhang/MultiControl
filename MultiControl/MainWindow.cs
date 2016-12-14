@@ -1399,7 +1399,7 @@ namespace MultiControl
             Image image;
             string BN = m_DeviceList[i].BuildNumber;
             string data = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
-                "OS Version:" + m_DeviceList[i].BuildId + System.Environment.NewLine +
+                "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "IMEI:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
@@ -1407,16 +1407,16 @@ namespace MultiControl
 
             // pringNO[i]= true ;
             m_DeviceList[i].PringString = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
-                "OS Version:" + m_DeviceList[i].BuildId + System.Environment.NewLine +
+                "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine+
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine+"IMEI:";
             m_DeviceList[i].IsPrint = true;
-            if (i<printI)
-            {
-                printI = i;
-
-            }      
+           // if (i<printI)
+           // {
+          //      printI = i;
+          
+          //  }      
           //  this.printDocument1.Print();//开始打印
            
             
