@@ -105,6 +105,7 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsm_operator,
             this.startToolStripMenuItem,
             this.startSelectedDevicesToolStripMenuItem,
             this.resetToolStripMenuItem,

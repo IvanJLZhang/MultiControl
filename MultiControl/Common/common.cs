@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -87,19 +88,51 @@ namespace MultiControl.Common
         {
             try
             {
-                string name = System.Environment.UserDomainName;
-                if (string.IsNullOrEmpty(name))
-                {
-                    name = System.Environment.MachineName;
-                }
-                //return System.Environment.GetEnvironmentVariable("ComputerName");
-                return name;
+                return System.Environment.MachineName;
             }
             catch
             {
                 return "unknown";
             }
         }
+        public static string GetUserName()
+        {
+            try
+            {
+                return System.Environment.UserName;
+            }
+            catch
+            {
+                return "unknown";
+            }
+        }
+
+        public static string GetUserDomainName()
+        {
+            try
+            {
+                return System.Environment.UserDomainName;
+            }
+            catch
+            {
+                return "unknown";
+            }
+        }
+
+        public static string GetIPAddress()
+        {
+            ///获取本地的IP地址
+            string AddressIP = string.Empty;
+            foreach (IPAddress _IPAddress in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
+            {
+                if (_IPAddress.AddressFamily.ToString() == "InterNetwork")
+                {
+                    AddressIP = _IPAddress.ToString();
+                }
+            }
+            return AddressIP;
+        }
+
         /// <summary>
         /// 筛选出command命令执行的结果
         /// </summary>
@@ -184,6 +217,22 @@ namespace MultiControl.Common
                     }
                     catch { }
                 }
+        }
+
+        public static Int32 ConvertVersionStringToInt(string version)
+        {// V1.6.5
+            if (String.IsNullOrEmpty(version))
+                return -1;
+            string return_value = String.Empty;
+            version = version.Replace("V", "");
+            string[] versions = version.Split('.');
+            foreach (var item in versions)
+            {
+                return_value += item;
+            }
+            int return_value_int = -1;
+            Int32.TryParse(return_value, out return_value_int);
+            return return_value_int;
         }
     }
 }

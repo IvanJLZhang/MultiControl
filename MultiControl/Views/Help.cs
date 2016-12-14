@@ -27,7 +27,7 @@ namespace MultiControl
         private void Help_Load(object sender, EventArgs e)
         {
             this.textBoxKey.Text = File.ReadAllText("license.dat", Encoding.Unicode).Trim();
-            this.lbl_tool_version.Text = config_inc.MULTICONTROL_VERSION;
+            this.lbl_tool_version.Text = config_inc.MULTICONTROL_VERSION + " " + config_inc.BUILD_DATE;
         }
     }
 }

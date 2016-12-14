@@ -11,11 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ExcelOperaNamespace;
+using Helpers;
 using LibUsbDotNet.DeviceNotify;
 using LogHelper;
 using MultiControl.Common;
 using MultiControl.Functions;
 using MultiControl.Lib;
+using MultiControl.Views;
 using ThoughtWorks.QRCode.Codec;
 using UserGridClassLibrary;
 using System.Drawing.Printing;
@@ -85,7 +87,7 @@ namespace MultiControl
         public event OnResultUpdateHandle ResultUpdate;
         public event OnProgressUpdateHandle ProgressUpdate;
         public event OnFinishUpdateHandle FinishUpdate;
-        public event PropertyChangedEventHandler PropertyChanged;
+        //public event PropertyChangedEventHandler PropertyChanged;
 
         public object lock_obj = new object();
 
@@ -97,6 +99,10 @@ namespace MultiControl
         /// 机器是否注册
         /// </summary>
         public static bool m_bLicensed = false;
+
+        public static bool m_enable_mysql = false;
+
+        public static bool m_AndriodReport = false;
         #endregion
         public MainWindow()
         {
@@ -112,6 +118,12 @@ namespace MultiControl
             common.m_log = new LogHelper.LogMsg(Application.StartupPath);
             Boolean.TryParse(ConfigurationHelper.ReadConfig("DebugLogEnabled"), out common.m_log.IsEnable);
 
+            if (!CheckVersion())
+            {
+                this.Close();
+                return;
+            }
+
             if (!CheckRegister())
             {
                 common.m_log.Add("Can not register this machine.", LogHelper.MessageType.ERROR);
@@ -120,8 +132,16 @@ namespace MultiControl
             }
             InitializeVariable();
 
-            if (!InitializeConfigData())
+            if (!await InitializeConfigData())
             {
+                this.Close();
+                return;
+            }
+
+            Login login_form = new Login();
+            if (login_form.ShowDialog() == DialogResult.Cancel)
+            {
+                common.m_log.Add("user cancel login.", LogHelper.MessageType.INFO);
                 this.Close();
                 return;
             }
@@ -129,6 +149,25 @@ namespace MultiControl
         }
 
         #region Initialize UI/data
+        bool CheckVersion()
+        {
+            string version = ConfigurationHelper.ReadConfig("Config_Version");
+            int tool_version = common.ConvertVersionStringToInt(config_inc.MULTICONTROL_VERSION);
+            int config_version = common.ConvertVersionStringToInt(version);
+            if (tool_version > config_version)
+            {
+                common.m_log.Add("The config version is out of date, please upgrade the config first, thanks!", LogHelper.MessageType.ERROR);
+                MessageBox.Show("The config version is out of date, please upgrade the config first, thanks!", "error");
+                return false;
+            }
+            else if (tool_version < config_version)
+            {
+                common.m_log.Add("The tool version is out of date, please upgrade the tool first, thanks!", LogHelper.MessageType.ERROR);
+                MessageBox.Show("The tool version is out of date, please upgrade the tool first, thanks!", "error");
+                return false;
+            }
+            return true;
+        }
         /// <summary>
         /// 检查注册信息
         /// </summary>
@@ -136,7 +175,6 @@ namespace MultiControl
         bool CheckRegister()
         {
             // 检测是否已经注册
-            //this.Hide();
             while (!m_bLicensed)
             {
                 RegisterForm register_form = new RegisterForm();
@@ -156,7 +194,6 @@ namespace MultiControl
                 string computer_name = common.GetComputerName();
                 this.m_md5_code = common.GetMD5Code(computer_name);
             }
-            //this.Show();
             return m_bLicensed;
         }
         bool autoPrint = true ;
@@ -199,7 +236,7 @@ namespace MultiControl
 
             Int32.TryParse(iniFile.IniReadValue("layout", "Row"), out m_Rows);
             Int32.TryParse(iniFile.IniReadValue("layout", "Column"), out m_Cols);
-            Boolean.TryParse(iniFile.IniReadValue("mode", "MultiSupport"), out this.IsMultiModelTest);
+            Boolean.TryParse(iniFile.IniReadValue("main", "MultiSupport"), out this.IsMultiModelTest);
             Boolean.TryParse(iniFile.IniReadValue("result", "save_as_excel"), out this.save_as_excel);
             Boolean.TryParse(iniFile.IniReadValue("result", "save_as_xml"), out this.save_as_xml);
             autoPrint = false;
@@ -218,6 +255,28 @@ namespace MultiControl
                     }
                 }
             }
+
+            // mysql
+            string conn_str = String.Empty;
+            string host = iniFile.IniReadValue("mysql", "host");
+            string user = iniFile.IniReadValue("mysql", "user");
+            string pwd = iniFile.IniReadValue("mysql", "password");
+            string db_name = iniFile.IniReadValue("mysql", "database_name");
+            conn_str = $"server={host};uid={user};pwd={pwd};database={db_name}";
+            //MySqlHelper = conn_str;
+            Boolean.TryParse(iniFile.IniReadValue("main", "mysql"), out m_enable_mysql);
+            if (m_enable_mysql)
+            {
+                // check connection
+                string ret = await MySqlHelper.CheckConnection(conn_str);
+                if (ret != String.Empty)
+                {
+                    common.m_log.Add("ret", MessageType.ERROR);
+                    m_enable_mysql = false;
+                }
+            }
+
+            Boolean.TryParse(iniFile.IniReadValue("main", "AndriodReport"), out m_AndriodReport);
             #endregion
 
             // 加载/初始化 相关config data
@@ -276,7 +335,7 @@ namespace MultiControl
             //this.Size = new Size(Screen.PrimaryScreen.WorkingArea.Width - 32, Screen.PrimaryScreen.WorkingArea.Height - 25);
             this.Size = new Size(1320, 700);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = $"Multi-Control Test Tool——{config_inc.MULTICONTROL_VERSION}";
+            this.Text = $"Multi-Control Test Tool——{config_inc.MULTICONTROL_VERSION} {config_inc.BUILD_DATE}";
             this.Resize += MainWindow_Resize;
 
             m_DeviceList_UI = new UserGrid();
@@ -290,6 +349,8 @@ namespace MultiControl
 
             m_DeviceList_UI.OnGridItemFocus += new UserGridClassLibrary.UserGrid.GridItemFocusHandle(this.OnGridItemFocusHandle);
             m_DeviceList_UI.OnGridItemReset += new UserGridClassLibrary.UserGrid.GridItemResetHandle(this.OnGridItemResetHandle);
+
+            this.tsm_operator.Text = $"{Login.Operator["operator_name"].ToString()}--{Login.Operator["purchase_no"].ToString()}";
 
         }
 
@@ -324,7 +385,7 @@ namespace MultiControl
                 case EventType.DeviceArrival:
                     if (e.Device != null)
                     {
-                        common.m_log.Add($"Device arrival.{e.Device.SerialNumber}");
+                        common.m_log.Add($"Device arrival: {e.Device.SerialNumber}");
                         #region 插入设备
                         UsbDeviceInfoEx device = new UsbDeviceInfoEx();
                         device.SerialNumber = e.Device.SerialNumber;
@@ -375,7 +436,7 @@ namespace MultiControl
                 case EventType.DeviceRemoveComplete:
                     if (e.Device != null)
                     {
-                        common.m_log.Add($"Device removed.{e.Device.SerialNumber}");
+                        common.m_log.Add($"Device removed: {e.Device.SerialNumber}");
                         #region 设备拔出
                         UsbDeviceInfoEx device = new UsbDeviceInfoEx();
                         device.SerialNumber = e.Device.SerialNumber;
@@ -895,19 +956,29 @@ namespace MultiControl
             }
             if (File.Exists(local_wInfo_file))
             {
-                using (FileStream file = new FileStream(local_wInfo_file, FileMode.Open, FileAccess.Read))
-                {
-                    using (StreamReader reader = new StreamReader(file))
-                    {
-                        dut_device.IMEI = await reader.ReadLineAsync();
-                        dut_device.RAM = await reader.ReadLineAsync();
-                        dut_device.FLASH = await reader.ReadLineAsync();
-                        dut_device.BuildNumber = await reader.ReadLineAsync();
-                        dut_device.BuildNumber = await reader.ReadLineAsync();
-                       
-                    }
-                }
+                string local_wInfo_xml_file = log_model_date_path.FullName + $@"\{dut_device.SerialNumber}_wInfo.xml";
+                DataReadingFactory data_read = new DataReadingFactory();
+
+                common.m_log.Add_File("read device information from wInfo.txt.", log_file.FullName);
+                var wInfoList = await data_read.ReadwInfoFileData(local_wInfo_file, dut_device.Port_Index, local_wInfo_xml_file);
+                DataRow row = data_read.Android_Report_Table.Rows[0];
+                dut_device.IMEI = wInfoList["IMEI"];
+                dut_device.RAM = wInfoList["RAM"];
+                dut_device.FLASH = wInfoList["Memory"];
+                dut_device.BuildNumber = wInfoList["BUILD_NUMBER"];
+                //if(wInfoList.ContainsKey())
                 File.Delete(local_wInfo_file);
+                if (m_enable_mysql)
+                {// 保存到dabase
+                    common.m_log.Add_File("insert dr items informations to database.", log_file.FullName);
+                    data_read.Insert_one_record_to_database();
+                }
+                if (m_AndriodReport)
+                {
+                    common.m_log.Add_File($"save android report information to file: {local_wInfo_xml_file}.", log_file.FullName);
+                    // 将info保存为xml文件
+                    data_read.Save(local_wInfo_xml_file);
+                }
             }
             else
             {
@@ -1881,6 +1952,34 @@ namespace MultiControl
                     iniFile.IniWriteValue("config", "Folder", this.m_default_config_folder.FullName);
                     break;
                 }
+            }
+        }
+
+        private void logoutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Login.Operator["operator_name"] = String.Empty;
+            Login.Operator["purchase_no"] = String.Empty;
+            Login login_form = new Login();
+            if (login_form.ShowDialog() == DialogResult.Cancel)
+            {
+                this.Close();
+            }
+            else
+            {
+                this.tsm_operator.Text = $"{Login.Operator["operator_name"].ToString()}--{Login.Operator["purchase_no"].ToString()}";
+            }
+        }
+
+        private void switchUserToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Login login_form = new Login();
+            if (login_form.ShowDialog() == DialogResult.Cancel)
+            {
+                this.Close();
+            }
+            else
+            {
+                this.tsm_operator.Text = $"{Login.Operator["operator_name"].ToString()}--{Login.Operator["purchase_no"].ToString()}";
             }
         }
 

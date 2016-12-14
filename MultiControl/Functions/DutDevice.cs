@@ -31,6 +31,7 @@ namespace MultiControl
         private DateTime mBegin;
         public Int32 Port_Index = -1;
         public string Port_Path = String.Empty;
+        public string PQAA_Version = String.Empty;
         /// <summary>
         /// 由Port path和port index组成的port值
         /// </summary>
