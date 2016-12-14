@@ -177,6 +177,8 @@ namespace MultiControl.Functions
                         if (!String.IsNullOrEmpty(NodeConnectionInfo.DeviceDescriptor.Product))
                         {   // 产品名称
                             PortNode.Name = String.Concat(PortNode.Name, ": ", NodeConnectionInfo.DeviceDescriptor.Product);
+                            common.m_log.Add($"{PortNode.Name}");
+                            common.m_log.Add($"P_ID:{NodeConnectionInfo.DeviceDescriptor.idProduct};V_ID:{NodeConnectionInfo.DeviceDescriptor.idVendor};Product:{NodeConnectionInfo.DeviceDescriptor.Product}");
                             if (NodeConnectionInfo.DeviceDescriptor.Product.ToUpper().Contains("ANDROID"))
                             {
                                 UsbDeviceInfoEx device = new UsbDeviceInfoEx();

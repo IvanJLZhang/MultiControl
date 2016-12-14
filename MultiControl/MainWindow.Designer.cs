@@ -37,6 +37,7 @@
             this.viewGlobalLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.configurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.defaultConfigPathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.multiModelConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.initializeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -54,7 +55,9 @@
             this.defaultToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.defaultConfigPathToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsm_operator = new System.Windows.Forms.ToolStripMenuItem();
+            this.logoutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.switchUserToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ms_CommandBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -68,13 +71,14 @@
             this.aboutToolStripMenuItem});
             this.ms_CommandBar.Location = new System.Drawing.Point(0, 0);
             this.ms_CommandBar.Name = "ms_CommandBar";
-            this.ms_CommandBar.Size = new System.Drawing.Size(201, 25);
+            this.ms_CommandBar.Size = new System.Drawing.Size(372, 25);
             this.ms_CommandBar.TabIndex = 0;
             this.ms_CommandBar.Text = "menuStrip1";
             // 
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsm_operator,
             this.startToolStripMenuItem,
             this.startSelectedDevicesToolStripMenuItem,
             this.resetToolStripMenuItem,
@@ -130,6 +134,13 @@
             this.configurationToolStripMenuItem.Name = "configurationToolStripMenuItem";
             this.configurationToolStripMenuItem.Size = new System.Drawing.Size(99, 21);
             this.configurationToolStripMenuItem.Text = "&Configuration";
+            // 
+            // defaultConfigPathToolStripMenuItem
+            // 
+            this.defaultConfigPathToolStripMenuItem.Name = "defaultConfigPathToolStripMenuItem";
+            this.defaultConfigPathToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.defaultConfigPathToolStripMenuItem.Text = "Default config Path";
+            this.defaultConfigPathToolStripMenuItem.Click += new System.EventHandler(this.defaultConfigPathToolStripMenuItem_Click);
             // 
             // multiModelConfigurationToolStripMenuItem
             // 
@@ -262,12 +273,28 @@
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "statusStrip1";
             // 
-            // defaultConfigPathToolStripMenuItem
+            // tsm_operator
             // 
-            this.defaultConfigPathToolStripMenuItem.Name = "defaultConfigPathToolStripMenuItem";
-            this.defaultConfigPathToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
-            this.defaultConfigPathToolStripMenuItem.Text = "Default config Path";
-            this.defaultConfigPathToolStripMenuItem.Click += new System.EventHandler(this.defaultConfigPathToolStripMenuItem_Click);
+            this.tsm_operator.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.logoutToolStripMenuItem,
+            this.switchUserToolStripMenuItem});
+            this.tsm_operator.Name = "tsm_operator";
+            this.tsm_operator.Size = new System.Drawing.Size(209, 22);
+            this.tsm_operator.Text = "&Operator";
+            // 
+            // logoutToolStripMenuItem
+            // 
+            this.logoutToolStripMenuItem.Name = "logoutToolStripMenuItem";
+            this.logoutToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.logoutToolStripMenuItem.Text = "&Logout";
+            this.logoutToolStripMenuItem.Click += new System.EventHandler(this.logoutToolStripMenuItem_Click);
+            // 
+            // switchUserToolStripMenuItem
+            // 
+            this.switchUserToolStripMenuItem.Name = "switchUserToolStripMenuItem";
+            this.switchUserToolStripMenuItem.Size = new System.Drawing.Size(170, 22);
+            this.switchUserToolStripMenuItem.Text = "&Switch Operator";
+            this.switchUserToolStripMenuItem.Click += new System.EventHandler(this.switchUserToolStripMenuItem_Click);
             // 
             // MainWindow
             // 
@@ -318,5 +345,8 @@
         private System.Windows.Forms.ToolStripMenuItem removeAllToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem configurateToSysinfocfgLocationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem defaultConfigPathToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tsm_operator;
+        private System.Windows.Forms.ToolStripMenuItem logoutToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem switchUserToolStripMenuItem;
     }
 }
