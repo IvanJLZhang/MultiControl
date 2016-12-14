@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EZUSB", "EZUSB\EZUSB\EZUSB.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "printTest", "printTest\printTest.csproj", "{1E7CE72E-4332-4F85-8013-46B74F7CEEC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarcodeLib", "E:\study\DimensionalbarcodeGeneration_81813790-983a-4637-b02f-6ea79fbd4570\BarcodeLib\BarcodeLib.csproj", "{F8646414-0C9C-49BB-9DA3-3923BF78A398}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarcodeLib", "..\BarcodeLib\BarcodeLib\BarcodeLib.csproj", "{F8646414-0C9C-49BB-9DA3-3923BF78A398}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
