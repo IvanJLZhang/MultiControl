@@ -393,6 +393,10 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\BarcodeLib\BarcodeLib\BarcodeLib.csproj">
+      <Project>{f8646414-0c9c-49bb-9da3-3923bf78a398}</Project>
+      <Name>BarcodeLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\LibWinUsb\LibUsbDotNet.csproj">
       <Project>{0a78f6ff-5586-4052-8104-e23ff83a7ce1}</Project>
       <Name>LibUsbDotNet</Name>
@@ -404,10 +408,6 @@
     <ProjectReference Include="..\UserGridClassLibrary\UserGridClassLibrary.csproj">
       <Project>{e179d716-9df4-4f52-82dd-2eaf2058e474}</Project>
       <Name>UserGridClassLibrary</Name>
-    </ProjectReference>
-    <ProjectReference Include="E:\study\DimensionalbarcodeGeneration_81813790-983a-4637-b02f-6ea79fbd4570\BarcodeLib\BarcodeLib.csproj">
-      <Project>{f8646414-0c9c-49bb-9da3-3923bf78a398}</Project>
-      <Name>BarcodeLib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
