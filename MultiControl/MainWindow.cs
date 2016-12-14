@@ -18,6 +18,7 @@ using MultiControl.Functions;
 using MultiControl.Lib;
 using ThoughtWorks.QRCode.Codec;
 using UserGridClassLibrary;
+using System.Drawing.Printing;
 
 namespace MultiControl
 {
@@ -102,10 +103,12 @@ namespace MultiControl
             InitializeComponent();
             this.Load += MainWindow_Load;
         }
-
+        BarcodeLib.Barcode b = new BarcodeLib.Barcode();
         private void MainWindow_Load(object sender, EventArgs e)
         {
             // 初始化日志记录
+            printDocument1 = new PrintDocument();//添加打印事件
+            printDocument1.PrintPage += new PrintPageEventHandler(this.printDocument1_PrintPage);
             common.m_log = new LogHelper.LogMsg(Application.StartupPath);
             Boolean.TryParse(ConfigurationHelper.ReadConfig("DebugLogEnabled"), out common.m_log.IsEnable);
 
@@ -156,6 +159,7 @@ namespace MultiControl
             //this.Show();
             return m_bLicensed;
         }
+        bool autoPrint = true ;
         bool InitializeConfigData()
         {
             FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
@@ -198,7 +202,9 @@ namespace MultiControl
             Boolean.TryParse(iniFile.IniReadValue("mode", "MultiSupport"), out this.IsMultiModelTest);
             Boolean.TryParse(iniFile.IniReadValue("result", "save_as_excel"), out this.save_as_excel);
             Boolean.TryParse(iniFile.IniReadValue("result", "save_as_xml"), out this.save_as_xml);
-
+            autoPrint = false;
+            Boolean.TryParse(iniFile.IniReadValue("autoprint", "AutoPrint"), out this.autoPrint );
+            Int32.TryParse(iniFile.IniReadValue("PrintFont", "FontSize"), out fontSize );
             if (!this.m_default_config_folder.Exists)
             {
                 folder_dialog.Description = "please specify default PQAA test config folder for all models.";
@@ -650,10 +656,43 @@ namespace MultiControl
             common.m_log.Add("specify sysinfo.cfg file.--done!");
             MessageBox.Show("specify sysinfo.cfg file.--done!", "OK");
         }
+
+
+        #region 打印
+        int barcodeW = 0;
+        int barcodeH = 0;
+        int fontSize = 12;
+        int printI=0;
+        private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        {                       
+             Font font = new Font("黑体", fontSize,FontStyle.Bold );
+            Font font1 = new Font("黑体", 10, FontStyle.Bold);
+            Brush bru = Brushes.Black ;
+            /* if (printI >= 24)
+                 printI = 0;
+                Font font2 = new Font("华文行楷", 10, FontStyle.Bold);
+                Image x;
+               x = Image.FromFile("E:\\捕获2.PNG");
+                e.Graphics.DrawImage(x, 20, 20);*/
+
+
+            barcodeH = 8 * fontSize;
+            barcodeW = 4 * fontSize;
+                e.Graphics.DrawString(m_DeviceList[printI].PringString, font, bru, 0, 0);
+                image[printI] = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI , ForeColor, BackColor, 140, 35);
+                e.Graphics.DrawImage(image[printI], barcodeW, barcodeH);
+               int  w = image[printI].Width - m_DeviceList[printI].IMEI.Length * 8;
+                e.Graphics.DrawString(m_DeviceList[printI ].IMEI , font1, bru, w / 2+ barcodeW, barcodeH + image[printI].Height+4);   
+
+            //  e.Graphics.DrawImage(image, 20, 20);
+
+        }
+        #endregion
         #region 测试线程
 
         async void TestThread(object obj)
         {
+           
             UsbDeviceInfoEx device = obj as UsbDeviceInfoEx;
             int ThreadIndex = device.Index;
             var dut_device = m_DeviceList[ThreadIndex];
@@ -865,6 +904,7 @@ namespace MultiControl
                         dut_device.FLASH = await reader.ReadLineAsync();
                         dut_device.BuildNumber = await reader.ReadLineAsync();
                         dut_device.BuildNumber = await reader.ReadLineAsync();
+                       
                     }
                 }
                 File.Delete(local_wInfo_file);
@@ -1366,7 +1406,9 @@ namespace MultiControl
                 m_DeviceList_UI[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
             }), new object[] { index });
         }
-
+       // string[] PringString=new string[24];
+      //  bool [] pringNO=new bool [24] ;
+        Image[] image = new Image[24];
         private void SetDutIMEI(object index)
         {
             int i = (int)index;
@@ -1375,6 +1417,7 @@ namespace MultiControl
             m_DeviceList_UI[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
             //SET QRCODE
             QRCodeEncoder qrCodeEncoder = new QRCodeEncoder();
+            
             qrCodeEncoder.QRCodeEncodeMode = QRCodeEncoder.ENCODE_MODE.BYTE;
             qrCodeEncoder.QRCodeScale = 1;
             qrCodeEncoder.QRCodeVersion = 9;
@@ -1383,12 +1426,27 @@ namespace MultiControl
             Image image;
             string BN = m_DeviceList[i].BuildNumber;
             string data = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
-                "OS Version:" + m_DeviceList[i].BuildId + System.Environment.NewLine +
+                "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "IMEI:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
-                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:";//bonnie20160805
+                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:"+m_DeviceList[i].BuildNumber;//bonnie20160805
 
+            // pringNO[i]= true ;
+            m_DeviceList[i].PringString = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
+                "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
+                "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine+
+                "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
+                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine+"IMEI:";
+            m_DeviceList[i].IsPrint = true;
+           // if (i<printI)
+           // {
+          //      printI = i;
+          
+          //  }      
+          //  this.printDocument1.Print();//开始打印
+           
+            
             image = qrCodeEncoder.Encode(data + BN);
             m_DeviceList_UI[i].SetQRCode_IMEI(image);
         }
@@ -1824,6 +1882,320 @@ namespace MultiControl
                     break;
                 }
             }
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            printI = 0;
+            if (m_DeviceList[printI].IMEI != null&& m_DeviceList[printI].IMEI !=""&&m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+
+        }
+
+        private void toolStripMenuItem3_Click(object sender, EventArgs e)
+        {
+            printI =1;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem4_Click(object sender, EventArgs e)
+        {
+            printI = 2;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem5_Click(object sender, EventArgs e)
+        {
+            printI = 3;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem6_Click(object sender, EventArgs e)
+        {
+            printI = 4;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem7_Click(object sender, EventArgs e)
+        {
+            printI = 5;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem8_Click(object sender, EventArgs e)
+        {
+            printI = 6;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem9_Click(object sender, EventArgs e)
+        {
+            printI =7;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem10_Click(object sender, EventArgs e)
+        {
+            printI = 8;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem11_Click(object sender, EventArgs e)
+        {
+            printI = 9;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem12_Click(object sender, EventArgs e)
+        {
+            printI = 10;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem13_Click(object sender, EventArgs e)
+        {
+            printI =11;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem14_Click(object sender, EventArgs e)
+        {
+            printI = 12;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem15_Click(object sender, EventArgs e)
+        {
+            printI = 13;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem16_Click(object sender, EventArgs e)
+        {
+            printI = 14;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem17_Click(object sender, EventArgs e)
+        {
+            printI = 15;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem18_Click(object sender, EventArgs e)
+        {
+            printI = 16;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem19_Click(object sender, EventArgs e)
+        {
+            printI = 17;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem20_Click(object sender, EventArgs e)
+        {
+            printI = 18;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem21_Click(object sender, EventArgs e)
+        {
+            printI = 19;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem22_Click(object sender, EventArgs e)
+        {
+            printI = 20;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem23_Click(object sender, EventArgs e)
+        {
+            printI = 21;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem24_Click(object sender, EventArgs e)
+        {
+            printI =22;
+            if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+        }
+
+        private void toolStripMenuItem25_Click(object sender, EventArgs e)
+        {
+            printI = 23;
+            if (m_DeviceList[printI].IMEI != null)
+                this.printDocument1.Print();
+            else
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+
+            }
+
         }
 
         private void viewGlobalLogToolStripMenuItem_Click(object sender, EventArgs e)
