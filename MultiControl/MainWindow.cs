@@ -1402,14 +1402,14 @@ namespace MultiControl
                 "OS Version:" + m_DeviceList[i].BuildId + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "IMEI:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
-                "RAM:" + m_DeviceList[i].RAM + System.Environment.NewLine +
+                "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:"+m_DeviceList[i].BuildNumber;//bonnie20160805
 
             // pringNO[i]= true ;
             m_DeviceList[i].PringString = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
                 "OS Version:" + m_DeviceList[i].BuildId + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine+
-                "RAM:" + m_DeviceList[i].RAM + System.Environment.NewLine +
+                "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine+"IMEI:";
             m_DeviceList[i].IsPrint = true;
             if (i<printI)
@@ -1864,7 +1864,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1878,7 +1878,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1891,7 +1891,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1904,7 +1904,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1917,7 +1917,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1930,7 +1930,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1943,7 +1943,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1956,7 +1956,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1969,7 +1969,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1982,7 +1982,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -1995,7 +1995,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2008,7 +2008,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2021,7 +2021,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2034,7 +2034,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2047,7 +2047,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2060,7 +2060,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2073,7 +2073,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2086,7 +2086,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2099,7 +2099,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2112,7 +2112,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2125,7 +2125,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2138,7 +2138,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2151,7 +2151,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！\r\n or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
@@ -2164,7 +2164,7 @@ namespace MultiControl
                 this.printDocument1.Print();
             else
             {
-                MessageBox.Show("This port no device！", "Print Lab", MessageBoxButtons.OK,
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
 
             }
