@@ -45,6 +45,8 @@ namespace MultiControl.Views
 
         private void btn_login_Click(object sender, EventArgs e)
         {
+            if (tb_operator.Text.Trim() == String.Empty || tb_purchase_no.Text.Trim() == String.Empty)
+                return;
             _operator = new DataTable();
             _operator.Columns.Add("operator_name");
             _operator.Columns.Add("purchase_no");

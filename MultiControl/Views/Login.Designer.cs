@@ -41,27 +41,25 @@
             // tb_operator
             // 
             this.tb_operator.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.5F);
-            this.tb_operator.Location = new System.Drawing.Point(147, 77);
+            this.tb_operator.Location = new System.Drawing.Point(147, 83);
             this.tb_operator.Name = "tb_operator";
             this.tb_operator.Size = new System.Drawing.Size(217, 25);
             this.tb_operator.TabIndex = 0;
-            this.tb_operator.Text = "ivan";
             // 
             // tb_purchase_no
             // 
             this.tb_purchase_no.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.5F);
-            this.tb_purchase_no.Location = new System.Drawing.Point(147, 127);
+            this.tb_purchase_no.Location = new System.Drawing.Point(147, 138);
             this.tb_purchase_no.Name = "tb_purchase_no";
             this.tb_purchase_no.Size = new System.Drawing.Size(217, 25);
             this.tb_purchase_no.TabIndex = 1;
-            this.tb_purchase_no.Text = "12asdf";
             // 
             // btn_login
             // 
             this.btn_login.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_login.Location = new System.Drawing.Point(48, 184);
+            this.btn_login.Location = new System.Drawing.Point(48, 199);
             this.btn_login.Name = "btn_login";
-            this.btn_login.Size = new System.Drawing.Size(105, 32);
+            this.btn_login.Size = new System.Drawing.Size(105, 35);
             this.btn_login.TabIndex = 2;
             this.btn_login.Text = "Login";
             this.btn_login.UseVisualStyleBackColor = true;
@@ -72,7 +70,7 @@
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Microsoft YaHei UI", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.label1.Location = new System.Drawing.Point(61, 9);
+            this.label1.Location = new System.Drawing.Point(61, 10);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(303, 25);
             this.label1.TabIndex = 4;
@@ -82,7 +80,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.5F);
-            this.label2.Location = new System.Drawing.Point(44, 80);
+            this.label2.Location = new System.Drawing.Point(44, 87);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(69, 20);
             this.label2.TabIndex = 5;
@@ -92,7 +90,7 @@
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.5F);
-            this.label3.Location = new System.Drawing.Point(44, 130);
+            this.label3.Location = new System.Drawing.Point(44, 141);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(97, 20);
             this.label3.TabIndex = 6;
@@ -101,9 +99,9 @@
             // btn_cancel
             // 
             this.btn_cancel.Font = new System.Drawing.Font("Microsoft YaHei UI", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.btn_cancel.Location = new System.Drawing.Point(259, 184);
+            this.btn_cancel.Location = new System.Drawing.Point(259, 199);
             this.btn_cancel.Name = "btn_cancel";
-            this.btn_cancel.Size = new System.Drawing.Size(105, 32);
+            this.btn_cancel.Size = new System.Drawing.Size(105, 35);
             this.btn_cancel.TabIndex = 7;
             this.btn_cancel.Text = "Cancel";
             this.btn_cancel.UseVisualStyleBackColor = true;
@@ -111,17 +109,17 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Location = new System.Drawing.Point(24, 54);
+            this.groupBox1.Location = new System.Drawing.Point(24, 59);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(368, 124);
+            this.groupBox1.Size = new System.Drawing.Size(368, 134);
             this.groupBox1.TabIndex = 8;
             this.groupBox1.TabStop = false;
             // 
             // Login
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(428, 238);
+            this.ClientSize = new System.Drawing.Size(428, 258);
             this.ControlBox = false;
             this.Controls.Add(this.btn_cancel);
             this.Controls.Add(this.label3);
