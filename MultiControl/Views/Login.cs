@@ -45,7 +45,7 @@ namespace MultiControl.Views
 
         private void btn_login_Click(object sender, EventArgs e)
         {
-            if (tb_operator.Text.Trim() == String.Empty || tb_purchase_no.Text.Trim() == String.Empty)
+            if (this.tb_operator.Text == String.Empty || this.tb_purchase_no.Text == String.Empty)
                 return;
             _operator = new DataTable();
             _operator.Columns.Add("operator_name");
@@ -57,10 +57,19 @@ namespace MultiControl.Views
             DataRow newrow = _operator.NewRow();
             newrow["operator_name"] = this.tb_operator.Text.Trim();
             newrow["purchase_no"] = this.tb_purchase_no.Text.Trim();
-            _operator.Rows.Add(newrow);
-
-            LoginFactory.Operator_Login();
-
+            if (MainWindow.m_enable_mysql)
+            {
+                _operator.Rows.Add(newrow);
+                LoginFactory.Operator_Login();
+            }
+            else
+            {
+                newrow["operator_id"] = "unknown";
+                newrow["purchase_id"] = "unknown";
+                newrow["work_station_id"] = "unknown";
+                newrow["site"] = "unknown";
+                _operator.Rows.Add(newrow);
+            }
             this.DialogResult = DialogResult.OK;
             this.Close();
         }
