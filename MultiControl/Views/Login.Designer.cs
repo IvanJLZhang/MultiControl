@@ -45,7 +45,6 @@
             this.tb_operator.Name = "tb_operator";
             this.tb_operator.Size = new System.Drawing.Size(217, 25);
             this.tb_operator.TabIndex = 0;
-            this.tb_operator.Text = "ivan";
             // 
             // tb_purchase_no
             // 
@@ -54,7 +53,6 @@
             this.tb_purchase_no.Name = "tb_purchase_no";
             this.tb_purchase_no.Size = new System.Drawing.Size(217, 25);
             this.tb_purchase_no.TabIndex = 1;
-            this.tb_purchase_no.Text = "12asdf";
             // 
             // btn_login
             // 
