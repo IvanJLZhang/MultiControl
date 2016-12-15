@@ -159,7 +159,7 @@ where id = @id;";
             string site_string = String.Empty;
             if (site_code == null)
             {
-                site_string = ip_address;
+                site_string = "unknown";
             }
             else
             {

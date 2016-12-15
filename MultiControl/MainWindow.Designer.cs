@@ -31,6 +31,9 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.ms_CommandBar = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsm_operator = new System.Windows.Forms.ToolStripMenuItem();
+            this.logoutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.changeOperatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startSelectedDevicesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -84,9 +87,6 @@
             this.printDocument1 = new System.Drawing.Printing.PrintDocument();
             this.printDialog1 = new System.Windows.Forms.PrintDialog();
             this.printPreviewDialog1 = new System.Windows.Forms.PrintPreviewDialog();
-            this.tsm_operator = new System.Windows.Forms.ToolStripMenuItem();
-            this.logoutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.changeOperatorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ms_CommandBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -117,6 +117,29 @@
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(39, 21);
             this.fileToolStripMenuItem.Text = "&File";
+            // 
+            // tsm_operator
+            // 
+            this.tsm_operator.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.logoutToolStripMenuItem,
+            this.changeOperatorToolStripMenuItem});
+            this.tsm_operator.Name = "tsm_operator";
+            this.tsm_operator.Size = new System.Drawing.Size(209, 22);
+            this.tsm_operator.Text = "&User";
+            // 
+            // logoutToolStripMenuItem
+            // 
+            this.logoutToolStripMenuItem.Name = "logoutToolStripMenuItem";
+            this.logoutToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.logoutToolStripMenuItem.Text = "&Logout";
+            this.logoutToolStripMenuItem.Click += new System.EventHandler(this.logoutToolStripMenuItem_Click);
+            // 
+            // changeOperatorToolStripMenuItem
+            // 
+            this.changeOperatorToolStripMenuItem.Name = "changeOperatorToolStripMenuItem";
+            this.changeOperatorToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
+            this.changeOperatorToolStripMenuItem.Text = "&Change Operator";
+            this.changeOperatorToolStripMenuItem.Click += new System.EventHandler(this.switchUserToolStripMenuItem_Click);
             // 
             // startToolStripMenuItem
             // 
@@ -521,27 +544,6 @@
             this.printPreviewDialog1.Icon = ((System.Drawing.Icon)(resources.GetObject("printPreviewDialog1.Icon")));
             this.printPreviewDialog1.Name = "printPreviewDialog1";
             this.printPreviewDialog1.Visible = false;
-            // 
-            // tsm_operator
-            // 
-            this.tsm_operator.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.logoutToolStripMenuItem,
-            this.changeOperatorToolStripMenuItem});
-            this.tsm_operator.Name = "tsm_operator";
-            this.tsm_operator.Size = new System.Drawing.Size(209, 22);
-            this.tsm_operator.Text = "&User";
-            // 
-            // logoutToolStripMenuItem
-            // 
-            this.logoutToolStripMenuItem.Name = "logoutToolStripMenuItem";
-            this.logoutToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.logoutToolStripMenuItem.Text = "&Logout";
-            // 
-            // changeOperatorToolStripMenuItem
-            // 
-            this.changeOperatorToolStripMenuItem.Name = "changeOperatorToolStripMenuItem";
-            this.changeOperatorToolStripMenuItem.Size = new System.Drawing.Size(178, 22);
-            this.changeOperatorToolStripMenuItem.Text = "&Change Operator";
             // 
             // MainWindow
             // 

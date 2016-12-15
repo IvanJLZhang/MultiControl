@@ -1,0 +1,47 @@
+<?xml version="1.0" standalone="yes"?>
+<PQAA_Test_Rsult>
+  <Result>
+    <PQAA_Version>V1.6.1</PQAA_Version>
+    <SN>3300a396c025c2fb</SN>
+    <Model>SM-J700F</Model>
+    <Android_Version>5.1.1</Android_Version>
+    <IMEI>352462074408846</IMEI>
+    <Log_Time>2016-12-15 03:46:14</Log_Time>
+    <TestTime>21</TestTime>
+    <AudioLoopback>N/A</AudioLoopback>
+    <BlueTooth>N/A</BlueTooth>
+    <Camera>PASS</Camera>
+    <ConfigChk>N/A</ConfigChk>
+    <Display>N/A</Display>
+    <MoniPower>N/A</MoniPower>
+    <SDCard>N/A</SDCard>
+    <TouchPanel>N/A</TouchPanel>
+    <HeadsetLoopback>N/A</HeadsetLoopback>
+    <Vibration>PASS</Vibration>
+    <Wifi>N/A</Wifi>
+    <RAM>N/A</RAM>
+    <OTG>N/A</OTG>
+    <GPS>N/A</GPS>
+    <NFC>N/A</NFC>
+    <SIM>N/A</SIM>
+    <Button>N/A</Button>
+    <ReceiverLoopback>N/A</ReceiverLoopback>
+    <LED>FAIL</LED>
+    <Audio>N/A</Audio>
+    <Brightness>PASS</Brightness>
+    <ECompass>N/A</ECompass>
+    <GSensor>N/A</GSensor>
+    <GyroSensor>N/A</GyroSensor>
+    <LightSensor>N/A</LightSensor>
+    <ProximitySensor>N/A</ProximitySensor>
+    <Headset>N/A</Headset>
+    <MultiTouch>N/A</MultiTouch>
+    <HallSensor>N/A</HallSensor>
+    <HDMI>N/A</HDMI>
+    <BarometerSensor>N/A</BarometerSensor>
+    <LTE>N/A</LTE>
+    <IrDA>N/A</IrDA>
+    <WirelessCharging>N/A</WirelessCharging>
+    <Test_Result>FAIL</Test_Result>
+  </Result>
+</PQAA_Test_Rsult>
