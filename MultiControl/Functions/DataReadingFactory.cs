@@ -131,7 +131,7 @@ namespace MultiControl.Functions
             newrow["Server Time"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             newrow["LocalTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             newrow["TimeCreated"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
-            newrow["Company"] = "Wistron";
+            newrow["Company"] = common.GetCompanyname();
             newrow["Port Number"] = ThreadIndex;
             newrow["saveXmlPath"] = xmlFilePath;
             dr_items.Rows.Add(newrow.ItemArray);
