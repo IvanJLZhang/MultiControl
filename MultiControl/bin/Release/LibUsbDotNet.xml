@@ -1856,11 +1856,6 @@
             Cancels any pending transfer and frees resources.
             </summary>
         </member>
-        <member name="M:LibUsbDotNet.Main.UsbTransfer.Finalize">
-            <summary>
-            
-            </summary>
-        </member>
         <member name="M:LibUsbDotNet.Main.UsbTransfer.Cancel">
             <summary>
             Cancels a pending transfer that was previously submitted with <see cref="M:LibUsbDotNet.Main.UsbTransfer.Submit"/>.

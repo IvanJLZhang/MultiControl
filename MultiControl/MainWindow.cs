@@ -722,7 +722,6 @@ namespace MultiControl
             MessageBox.Show("specify sysinfo.cfg file.--done!", "OK");
         }
 
-
         #region 打印
         int barcodeW = 0;
         int barcodeH = 0;
@@ -753,6 +752,7 @@ namespace MultiControl
 
         }
         #endregion
+
         #region 测试线程
 
         async void TestThread(object obj)

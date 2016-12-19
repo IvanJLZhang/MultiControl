@@ -228,10 +228,10 @@ namespace Helpers
         /// </summary>
         /// <param name="table">数据表</param>
         /// <returns>返回成功插入行数</returns>
-        public int BulkInsert(DataTable table)
-        {
-            return BulkInsert(ConnectionString, table);
-        }
+        //public int BulkInsert(DataTable table)
+        //{
+        //    return BulkInsert(ConnectionString, table);
+        //}
 
         #endregion 批量操作
 
@@ -819,44 +819,44 @@ namespace Helpers
         /// <param name="connectionString">数据库连接字符串</param>
         /// <param name="table">数据表</param>
         /// <returns>返回成功插入行数</returns>
-        public static int BulkInsert(string connectionString, DataTable table)
-        {
-            if (string.IsNullOrEmpty(table.TableName)) throw new Exception("请给DataTable的TableName属性附上表名称");
-            if (table.Rows.Count == 0) return 0;
-            int insertCount = 0;
-            string tmpPath = Path.GetTempFileName();
-            string csv = DataTableToCsv(table);
-            File.WriteAllText(tmpPath, csv);
-            using (MySqlConnection conn = new MySqlConnection(connectionString))
-            {
-                MySqlTransaction tran = null;
-                try
-                {
-                    conn.Open();
-                    tran = conn.BeginTransaction();
-                    MySqlBulkLoader bulk = new MySqlBulkLoader(conn)
-                    {
-                        FieldTerminator = ",",
-                        FieldQuotationCharacter = '"',
-                        EscapeCharacter = '"',
-                        LineTerminator = "\r\n",
-                        FileName = tmpPath,
-                        NumberOfLinesToSkip = 0,
-                        TableName = table.TableName,
-                    };
-                    bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());
-                    insertCount = bulk.Load();
-                    tran.Commit();
-                }
-                catch (MySqlException ex)
-                {
-                    if (tran != null) tran.Rollback();
-                    throw ex;
-                }
-            }
-            File.Delete(tmpPath);
-            return insertCount;
-        }
+        //public static int BulkInsert(string connectionString, DataTable table)
+        //{
+        //    if (string.IsNullOrEmpty(table.TableName)) throw new Exception("请给DataTable的TableName属性附上表名称");
+        //    if (table.Rows.Count == 0) return 0;
+        //    int insertCount = 0;
+        //    string tmpPath = Path.GetTempFileName();
+        //    string csv = DataTableToCsv(table);
+        //    File.WriteAllText(tmpPath, csv);
+        //    using (MySqlConnection conn = new MySqlConnection(connectionString))
+        //    {
+        //        MySqlTransaction tran = null;
+        //        try
+        //        {
+        //            conn.Open();
+        //            tran = conn.BeginTransaction();
+        //            MySqlBulkLoader bulk = new MySqlBulkLoader(conn)
+        //            {
+        //                FieldTerminator = ",",
+        //                FieldQuotationCharacter = '"',
+        //                EscapeCharacter = '"',
+        //                LineTerminator = "\r\n",
+        //                FileName = tmpPath,
+        //                NumberOfLinesToSkip = 0,
+        //                TableName = table.TableName,
+        //            };
+        //            bulk.Columns.AddRange(table.Columns.Cast<DataColumn>().Select(colum => colum.ColumnName).ToList());
+        //            insertCount = bulk.Load();
+        //            tran.Commit();
+        //        }
+        //        catch (MySqlException ex)
+        //        {
+        //            if (tran != null) tran.Rollback();
+        //            throw ex;
+        //        }
+        //    }
+        //    File.Delete(tmpPath);
+        //    return insertCount;
+        //}
 
         /// <summary>
         ///将DataTable转换为标准的CSV
