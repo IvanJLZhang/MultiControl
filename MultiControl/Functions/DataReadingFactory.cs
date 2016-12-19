@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using MultiControl.Common;
 using Helpers;
 using MultiControl.Views;
+using System.Diagnostics;
 
 namespace MultiControl.Functions
 {
@@ -61,7 +62,7 @@ namespace MultiControl.Functions
                 _dr_items_table = value;
             }
         }
-        public async Task<Dictionary<string, string>> ReadwInfoFileData(string wInfo_file, int ThreadIndex, string xmlFilePath)
+        public async Task<Dictionary<string, string>> ReadwInfoFileData(string wInfo_file, int ThreadIndex, string xmlFilePath, Stopwatch sw)
         {
             if (!File.Exists(wInfo_file))
             {
@@ -103,9 +104,8 @@ namespace MultiControl.Functions
             newrow["RESULT"] = TEST_RESULT.PASS.ToString();
             newrow["SOFTWARE_VER"] = config_inc.MULTICONTROL_VERSION;
             newrow["WORKSTATION_NAME"] = common.GetComputerName();
-            newrow["START_TIME"] = start;
-            await Task.Delay(1000);
-            newrow["TOTAL_TIME"] = DateTime.Now.Subtract(start);
+            newrow["START_TIME"] = DateTime.Now.Subtract(sw.Elapsed);
+            newrow["TOTAL_TIME"] = sw.Elapsed;
             newrow["TransactionRef"] = common.GetMD5Code(DateTime.Now.Ticks.ToString() + newrow["SERIAL_NUMBER"].ToString());
             newrow["Port"] = ThreadIndex;
             android_report.Rows.Add(newrow.ItemArray);
@@ -127,7 +127,7 @@ namespace MultiControl.Functions
             newrow["Site"] = Login.Operator["site"];
             newrow["Error Code"] = "N/A";
             newrow["Product Version"] = config_inc.MULTICONTROL_VERSION;
-            newrow["Total time"] = TimeSpan.Zero;
+            newrow["Total time"] = sw.Elapsed;
             newrow["Server Time"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             newrow["LocalTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             newrow["TimeCreated"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -136,6 +136,7 @@ namespace MultiControl.Functions
             newrow["saveXmlPath"] = xmlFilePath;
             dr_items.Rows.Add(newrow.ItemArray);
             _dr_items_table = dr_items;
+            sw.Stop();
             #endregion
             return wInfoList;
         }
@@ -197,6 +198,7 @@ namespace MultiControl.Functions
             _dr_items_table.Columns.Add("TimeCreated");
             _dr_items_table.Columns.Add("Company");
             _dr_items_table.Columns.Add("IMEI");
+            _dr_items_table.Columns.Add("MEID");
             _dr_items_table.Columns.Add("Make");
             _dr_items_table.Columns.Add("Model Number");
             _dr_items_table.Columns.Add("Memory Size");
@@ -227,11 +229,12 @@ INSERT INTO `db_android_dr`.`tbl_records` (`work_station_id`, `user_id`, `purcha
 `Product Version`, `Serial Number`, `OS`, `Transaction ID`, `Error Code`, `Model`, `Port Number`, 
 `Server Time`, `LocalTime`, `Total time`, 
 `MacAddress`, `Jailbroken`, `UDID`, `SIMExist`, `LastCarrier`, `DefaultCarrier`, `Company`, `IMEI`, 
+`MEID`, 
 `Make`, `Model Number`, `Memory Size`, `batteryLevel`, `color`, `SaveXmlPath`, `RegulatoryModelNumber`, 
 `Battery Charge Cycle`, `Mainboard Serial Number`, `Battery ID`, `Carrier Lock`, `TimeCreated`) 
 VALUES (@work_station_id, @user_id, @purchase_no_id, @Site, @PD_Version, @SN, @OS, @T_ID, 
 @EC, @Model, @PN, @ST, @LT, @TT, @MA, @J, @UUID, @SIMExist, @LastCarrier, @DefaultCarrier,
-@Company, @IMEI, @Make, @MN, @MS, @BL, @Color, @SaveXmlPath, @RMN, @BCC, @MSN, @BID, @CL, @TC);
+@Company, @IMEI, @MEID, @Make, @MN, @MS, @BL, @Color, @SaveXmlPath, @RMN, @BCC, @MSN, @BID, @CL, @TC);
 ";
 
             try
@@ -259,6 +262,7 @@ VALUES (@work_station_id, @user_id, @purchase_no_id, @Site, @PD_Version, @SN, @O
                      new MySql.Data.MySqlClient.MySqlParameter("@DefaultCarrier", record["DefaultCarrier"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@Company", record["Company"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@IMEI", record["IMEI"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@MEID", record["MEID"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@Make", record["Make"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@MN", record["Model Number"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@MS", record["Memory Size"]),

@@ -757,7 +757,8 @@ namespace MultiControl
 
         async void TestThread(object obj)
         {
-
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             UsbDeviceInfoEx device = obj as UsbDeviceInfoEx;
             int ThreadIndex = device.Index;
             var dut_device = m_DeviceList[ThreadIndex];
@@ -964,7 +965,7 @@ namespace MultiControl
                 DataReadingFactory data_read = new DataReadingFactory();
 
                 common.m_log.Add_File("read device information from wInfo.txt.", log_file.FullName);
-                var wInfoList = await data_read.ReadwInfoFileData(local_wInfo_file, dut_device.Port_Index, local_wInfo_xml_file);
+                var wInfoList = await data_read.ReadwInfoFileData(local_wInfo_file, ThreadIndex + 1, local_wInfo_xml_file, sw);
                 DataRow row = data_read.Android_Report_Table.Rows[0];
                 dut_device.IMEI = wInfoList["IMEI"];
                 dut_device.RAM = wInfoList["RAM"];
