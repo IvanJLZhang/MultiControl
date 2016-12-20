@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "printTest", "printTest\prin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BarcodeLib", "..\BarcodeLib\BarcodeLib\BarcodeLib.csproj", "{F8646414-0C9C-49BB-9DA3-3923BF78A398}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsFormsApplication1", "WindowsFormsApplication1\WindowsFormsApplication1.csproj", "{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,14 @@ Global
 		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Release|x86.ActiveCfg = Release|Any CPU
 		{F8646414-0C9C-49BB-9DA3-3923BF78A398}.Release|x86.Build.0 = Release|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Debug|x86.Build.0 = Debug|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Release|x86.ActiveCfg = Release|Any CPU
+		{D699A5E6-A6C7-4F9B-AC56-2A9BA2E4274F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

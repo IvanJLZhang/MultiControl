@@ -31,7 +31,7 @@ namespace MultiControl.Common
         /// <summary>
         /// Build日期
         /// </summary>
-        public const string BUILD_DATE = "Build20161206";
+        public const string BUILD_DATE = "Build20161215";
 
 
         /// <summary>
