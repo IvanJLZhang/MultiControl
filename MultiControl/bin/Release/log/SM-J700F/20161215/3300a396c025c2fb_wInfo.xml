@@ -1,0 +1,30 @@
+<?xml version="1.0" standalone="yes"?>
+<AndroidReport>
+  <Model>
+    <SERIAL_NUMBER>3300a396c025c2fb</SERIAL_NUMBER>
+    <MEID_hex>N/A</MEID_hex>
+    <MEID_dec>N/A</MEID_dec>
+    <MEIDwithCheckDigit>352462074408846</MEIDwithCheckDigit>
+    <IMEI>352462074408846</IMEI>
+    <RESULT>PASS</RESULT>
+    <ERRORLIST>N/A</ERRORLIST>
+    <SOFTWARE_VER>V1.6.6</SOFTWARE_VER>
+    <OEM_NAME>samsung</OEM_NAME>
+    <MODEL_NAME>SM-J700F</MODEL_NAME>
+    <WORKSTATION_NAME>DELL_WIN10_IVAN</WORKSTATION_NAME>
+    <ROOTED>false</ROOTED>
+    <START_TIME>2016/12/15 15:45:50</START_TIME>
+    <TOTAL_TIME>00:00:01.0048134</TOTAL_TIME>
+    <OS_VERSION>Android5.1.1</OS_VERSION>
+    <BASEBAND_VERSION>J700FZTU3APK1</BASEBAND_VERSION>
+    <BUILD_NUMBER>LMY48B.J700FZTU3APK1</BUILD_NUMBER>
+    <MAC_ADDRESS>50:c8:e5:72:2b:0d</MAC_ADDRESS>
+    <TransactionRef>927af5ce97a0a2c0ae3ec7e995597462</TransactionRef>
+    <PurchaseOrder>N/A</PurchaseOrder>
+    <Carrier>N/A</Carrier>
+    <Color>N/A</Color>
+    <Memory>16.02GB</Memory>
+    <ModelNumber>SM-J700F</ModelNumber>
+    <Port>1</Port>
+  </Model>
+</AndroidReport>

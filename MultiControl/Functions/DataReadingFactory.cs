@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using MultiControl.Common;
 using Helpers;
 using MultiControl.Views;
+using System.Diagnostics;
 
 namespace MultiControl.Functions
 {
@@ -61,7 +62,7 @@ namespace MultiControl.Functions
                 _dr_items_table = value;
             }
         }
-        public async Task<Dictionary<string, string>> ReadwInfoFileData(string wInfo_file, int ThreadIndex, string xmlFilePath)
+        public async Task<Dictionary<string, string>> ReadwInfoFileData(string wInfo_file, int ThreadIndex, string xmlFilePath, Stopwatch sw)
         {
             if (!File.Exists(wInfo_file))
             {
@@ -103,9 +104,8 @@ namespace MultiControl.Functions
             newrow["RESULT"] = TEST_RESULT.PASS.ToString();
             newrow["SOFTWARE_VER"] = config_inc.MULTICONTROL_VERSION;
             newrow["WORKSTATION_NAME"] = common.GetComputerName();
-            newrow["START_TIME"] = start;
-            await Task.Delay(1000);
-            newrow["TOTAL_TIME"] = DateTime.Now.Subtract(start);
+            newrow["START_TIME"] = DateTime.Now.Subtract(sw.Elapsed);
+            newrow["TOTAL_TIME"] = sw.Elapsed;
             newrow["TransactionRef"] = common.GetMD5Code(DateTime.Now.Ticks.ToString() + newrow["SERIAL_NUMBER"].ToString());
             newrow["Port"] = ThreadIndex;
             android_report.Rows.Add(newrow.ItemArray);
@@ -127,15 +127,16 @@ namespace MultiControl.Functions
             newrow["Site"] = Login.Operator["site"];
             newrow["Error Code"] = "N/A";
             newrow["Product Version"] = config_inc.MULTICONTROL_VERSION;
-            newrow["Total time"] = TimeSpan.Zero;
-            newrow["Server Time"] = DateTime.Now;
-            newrow["LocalTime"] = DateTime.Now;
-            newrow["TimeCreated"] = DateTime.Now;
-            newrow["Company"] = "Wistron";
+            newrow["Total time"] = sw.Elapsed;
+            newrow["Server Time"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            newrow["LocalTime"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            newrow["TimeCreated"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            newrow["Company"] = common.GetCompanyname();
             newrow["Port Number"] = ThreadIndex;
             newrow["saveXmlPath"] = xmlFilePath;
             dr_items.Rows.Add(newrow.ItemArray);
             _dr_items_table = dr_items;
+            sw.Stop();
             #endregion
             return wInfoList;
         }
@@ -197,6 +198,7 @@ namespace MultiControl.Functions
             _dr_items_table.Columns.Add("TimeCreated");
             _dr_items_table.Columns.Add("Company");
             _dr_items_table.Columns.Add("IMEI");
+            _dr_items_table.Columns.Add("MEID");
             _dr_items_table.Columns.Add("Make");
             _dr_items_table.Columns.Add("Model Number");
             _dr_items_table.Columns.Add("Memory Size");
@@ -227,48 +229,58 @@ INSERT INTO `db_android_dr`.`tbl_records` (`work_station_id`, `user_id`, `purcha
 `Product Version`, `Serial Number`, `OS`, `Transaction ID`, `Error Code`, `Model`, `Port Number`, 
 `Server Time`, `LocalTime`, `Total time`, 
 `MacAddress`, `Jailbroken`, `UDID`, `SIMExist`, `LastCarrier`, `DefaultCarrier`, `Company`, `IMEI`, 
+`MEID`, 
 `Make`, `Model Number`, `Memory Size`, `batteryLevel`, `color`, `SaveXmlPath`, `RegulatoryModelNumber`, 
 `Battery Charge Cycle`, `Mainboard Serial Number`, `Battery ID`, `Carrier Lock`, `TimeCreated`) 
 VALUES (@work_station_id, @user_id, @purchase_no_id, @Site, @PD_Version, @SN, @OS, @T_ID, 
 @EC, @Model, @PN, @ST, @LT, @TT, @MA, @J, @UUID, @SIMExist, @LastCarrier, @DefaultCarrier,
-@Company, @IMEI, @Make, @MN, @MS, @BL, @Color, @SaveXmlPath, @RMN, @BCC, @MSN, @BID, @CL, @TC);
+@Company, @IMEI, @MEID, @Make, @MN, @MS, @BL, @Color, @SaveXmlPath, @RMN, @BCC, @MSN, @BID, @CL, @TC);
 ";
-            var ret = MySqlHelper.ExecuteNonQuery(MySqlHelper.ConnectionString, insert,
-                 new MySql.Data.MySqlClient.MySqlParameter("@work_station_id", Login.Operator["work_station_id"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@user_id", Login.Operator["operator_id"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@purchase_no_id", Login.Operator["purchase_id"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@Site", Login.Operator["site"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@PD_Version", record["Product Version"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@SN", record["Serial Number"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@OS", record["OS"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@T_ID", record["Transaction ID"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@EC", record["Error Code"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@Model", record["Model"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@PN", record["Port Number"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@ST", record["Server Time"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@LT", record["LocalTime"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@TT", record["Total time"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@MA", record["MacAddress"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@J", record["Jailbroken"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@UUID", record["UDID"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@SIMExist", record["SIMExist"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@LastCarrier", record["LastCarrier"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@DefaultCarrier", record["DefaultCarrier"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@Company", record["Company"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@IMEI", record["IMEI"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@Make", record["Make"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@MN", record["Model Number"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@MS", record["Memory Size"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@BL", record["batterylevel"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@Color", record["color"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@SaveXmlPath", record["saveXmlPath"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@RMN", record["RegulatoryModelNumber"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@BCC", record["Battery Charge Cycle"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@MSN", record["Mainboard Serial Number"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@BID", record["Battery ID"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@CL", record["Carrier Lock"]),
-                 new MySql.Data.MySqlClient.MySqlParameter("@TC", DateTime.Now)
-                 );
+
+            try
+            {
+                var ret = MySqlHelper.ExecuteNonQuery(MySqlHelper.ConnectionString, insert,
+                     new MySql.Data.MySqlClient.MySqlParameter("@work_station_id", Login.Operator["work_station_id"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@user_id", Login.Operator["operator_id"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@purchase_no_id", Login.Operator["purchase_id"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@Site", Login.Operator["site"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@PD_Version", record["Product Version"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@SN", record["Serial Number"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@OS", record["OS"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@T_ID", record["Transaction ID"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@EC", record["Error Code"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@Model", record["Model"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@PN", record["Port Number"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@ST", record["Server Time"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@LT", record["LocalTime"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@TT", record["Total time"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@MA", record["MacAddress"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@J", record["Jailbroken"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@UUID", record["UDID"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@SIMExist", record["SIMExist"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@LastCarrier", record["LastCarrier"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@DefaultCarrier", record["DefaultCarrier"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@Company", record["Company"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@IMEI", record["IMEI"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@MEID", record["MEID"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@Make", record["Make"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@MN", record["Model Number"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@MS", record["Memory Size"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@BL", record["batterylevel"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@Color", record["color"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@SaveXmlPath", record["saveXmlPath"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@RMN", record["RegulatoryModelNumber"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@BCC", record["Battery Charge Cycle"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@MSN", record["Mainboard Serial Number"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@BID", record["Battery ID"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@CL", record["Carrier Lock"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@TC", DateTime.Now)
+                     );
+            }
+            catch (Exception ex)
+            {
+                common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
+            }
         }
         #endregion
     }

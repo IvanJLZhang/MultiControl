@@ -133,6 +133,11 @@ namespace MultiControl.Common
             return AddressIP;
         }
 
+        public static string GetCompanyname()
+        {
+            return System.Windows.Forms.Application.CompanyName;
+        }
+
         /// <summary>
         /// 筛选出command命令执行的结果
         /// </summary>

@@ -271,8 +271,12 @@ namespace MultiControl
                 string ret = await MySqlHelper.CheckConnection(conn_str);
                 if (ret != String.Empty)
                 {
-                    common.m_log.Add("ret", MessageType.ERROR);
+                    common.m_log.Add(ret, MessageType.ERROR);
                     m_enable_mysql = false;
+                }
+                else
+                {
+                    common.m_log.Add("mysql connection ok!");
                 }
             }
 
@@ -781,7 +785,8 @@ namespace MultiControl
 
         async void TestThread(object obj)
         {
-
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             UsbDeviceInfoEx device = obj as UsbDeviceInfoEx;
             int ThreadIndex = device.Index;
             var dut_device = m_DeviceList[ThreadIndex];
@@ -960,7 +965,7 @@ namespace MultiControl
             dut_device_ui.InstallTime = (float)ts.TotalMilliseconds / 1000;
             #endregion
 
-            #region 开始测试， 并获取wInfo文件
+            #region 开始测试， 并获取wInfo文件信息并保存设备资料
             cmd_str = $"adb -s {dut_device.SerialNumber} shell am start -n com.wistron.generic.pqaa/.TestItemsList --ei block {ThreadIndex + 1} --ei autostart 1 --es md5code {this.m_md5_code}";
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add_File(cmd_str, log_file.FullName);
@@ -988,7 +993,7 @@ namespace MultiControl
                 DataReadingFactory data_read = new DataReadingFactory();
 
                 common.m_log.Add_File("read device information from wInfo.txt.", log_file.FullName);
-                var wInfoList = await data_read.ReadwInfoFileData(local_wInfo_file, dut_device.Port_Index, local_wInfo_xml_file);
+                var wInfoList = await data_read.ReadwInfoFileData(local_wInfo_file, ThreadIndex + 1, local_wInfo_xml_file, sw);
                 DataRow row = data_read.Android_Report_Table.Rows[0];
                 dut_device.IMEI = wInfoList["IMEI"];
                 dut_device.RAM = wInfoList["RAM"];
@@ -998,14 +1003,14 @@ namespace MultiControl
                 File.Delete(local_wInfo_file);
                 if (m_enable_mysql)
                 {// 保存到dabase
-                    common.m_log.Add_File("insert dr items informations to database.", log_file.FullName);
                     data_read.Insert_one_record_to_database();
+                    common.m_log.Add_File("insert one dr-information to database.", log_file.FullName);
                 }
                 if (m_AndriodReport)
                 {
-                    common.m_log.Add_File($"save android report information to file: {local_wInfo_xml_file}.", log_file.FullName);
                     // 将info保存为xml文件
                     data_read.Save(local_wInfo_xml_file);
+                    common.m_log.Add_File($"save android report information to file: {local_wInfo_xml_file}.", log_file.FullName);
                 }
             }
             else
@@ -1105,6 +1110,7 @@ namespace MultiControl
                 // 保存测试结果
                 SaveResultToFile(local_result_file, ThreadIndex, log_file);
                 common.m_log.Add_File($"Test Over.", log_file.FullName);
+                common.m_log.Add($"Thread:{ThreadIndex + 1}--Test Over.");
                 SetDutTestFinishInvoke(value);
                 #endregion
             }

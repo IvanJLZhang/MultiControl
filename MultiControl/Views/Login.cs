@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using MultiControl.Common;
 using MultiControl.Functions;
 
 namespace MultiControl.Views
@@ -60,13 +61,20 @@ namespace MultiControl.Views
             if (MainWindow.m_enable_mysql)
             {
                 _operator.Rows.Add(newrow);
-                LoginFactory.Operator_Login();
+                try
+                {
+                    LoginFactory.Operator_Login();
+                }
+                catch (Exception ex)
+                {
+                    common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
+                }
             }
             else
             {
-                newrow["operator_id"] = "unknown";
-                newrow["purchase_id"] = "unknown";
-                newrow["work_station_id"] = "unknown";
+                newrow["operator_id"] = -1;
+                newrow["purchase_id"] = -1;
+                newrow["work_station_id"] = -1;
                 newrow["site"] = "unknown";
                 _operator.Rows.Add(newrow);
             }
