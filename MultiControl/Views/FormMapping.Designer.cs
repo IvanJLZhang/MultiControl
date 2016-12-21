@@ -60,6 +60,7 @@
             this.dataGridViewPath.Size = new System.Drawing.Size(651, 212);
             this.dataGridViewPath.TabIndex = 0;
             this.dataGridViewPath.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewPath_CellContentClick);
+            this.dataGridViewPath.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.dataGridViewPath_RowsAdded);
             // 
             // contextMenuStrip1
             // 

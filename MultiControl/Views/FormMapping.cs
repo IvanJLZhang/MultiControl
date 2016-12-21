@@ -59,6 +59,14 @@ namespace MultiControl
 
         private void button1_Click(object sender, EventArgs e)
         {
+            for (int index = 0; index < dataGridViewPath.Rows.Count; index++)
+            {// 设置默认的值
+                DataGridViewTextBoxCell cell = (DataGridViewTextBoxCell)this.dataGridViewPath.Rows[index].Cells["Estimate"];
+                if (cell.Value == null || cell.Value.ToString() == String.Empty)
+                {
+                    cell.Value = 300.0f;
+                }
+            }
             SpecifiedConfigPathFactory.Save();
             Close();
         }
@@ -72,6 +80,9 @@ namespace MultiControl
                     cell.Value = folderBrowserDialog1.SelectedPath;
                 }
             }
+        }
+        private void dataGridViewPath_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
+        {
         }
         private void editTestItemsToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -156,5 +167,7 @@ namespace MultiControl
             cfgDlg.mCFGTYPE = FormEditCfg.CfgType.CT_GPS;
             cfgDlg.ShowDialog();
         }
+
+
     }
 }

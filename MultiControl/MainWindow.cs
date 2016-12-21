@@ -146,7 +146,7 @@ namespace MultiControl
                 this.Close();
                 return;
             }
-          
+
             InitializeUI();
             UsbDeviceNotifier.Enabled = true;
         }
@@ -199,7 +199,7 @@ namespace MultiControl
             }
             return m_bLicensed;
         }
-        
+
         async Task<bool> InitializeConfigData()
         {
             FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
@@ -303,7 +303,7 @@ namespace MultiControl
             }
             return true;
         }
-       
+
         void InitializeVariable()
         {
             //清除残留的无用后台进程
@@ -318,8 +318,8 @@ namespace MultiControl
             m_DeviceList = new List<DutDevice>(m_Rows * m_Cols);
             for (int index = 0; index < m_Rows * m_Cols; index++)
             {
-                printLabToolStripMenuItem.DropDownItems.Add((index+1).ToString ());//20161215 bonnie动态添加打印项
-               
+                printLabToolStripMenuItem.DropDownItems.Add((index + 1).ToString());//20161215 bonnie动态添加打印项
+
                 DutDevice device = new DutDevice();
                 device.Reset();
                 m_DeviceList.Add(device);
@@ -333,15 +333,15 @@ namespace MultiControl
 
         private void PrintTest_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            int.TryParse(e.ClickedItem.Text ,out printI );
+            int.TryParse(e.ClickedItem.Text, out printI);
             printI--;
             if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
             {
-             //   m_DeviceList[printI].IsPrint = true;
-               this.printDocument1.Print();
+                //   m_DeviceList[printI].IsPrint = true;
+                this.printDocument1.Print();
 
             }
-               
+
             else
             {
                 MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
@@ -349,8 +349,8 @@ namespace MultiControl
 
             }
 
-           
-          
+
+
         }
 
         void InitializeUI()
@@ -766,8 +766,8 @@ namespace MultiControl
             //  
             Image imagePrint;
 
-                barcodeH = 8 * fontSize;
-                barcodeW = 4 * fontSize;
+            barcodeH = 8 * fontSize;
+            barcodeW = 4 * fontSize;
             if (m_DeviceList[printI].IMEI != null)
             {
                 e.Graphics.DrawString(m_DeviceList[printI].PringString, font, bru, 0, 0);
@@ -778,7 +778,7 @@ namespace MultiControl
                 int w = imagePrint.Width - m_DeviceList[printI].IMEI.Length * 8;
                 e.Graphics.DrawString(m_DeviceList[printI].IMEI, font1, bru, w / 2 + barcodeW, barcodeH + imagePrint.Height + 3);
             }
-                                                 
+
         }
         #endregion
 
@@ -838,19 +838,21 @@ namespace MultiControl
             if (config_path_table == null)
             {
                 dut_device.ConfigPath = this.m_default_config_folder.FullName;
-                dut_device.Estimate = 255.0f;
+                dut_device.Estimate = 300.0f;
             }
             else
             {
                 foreach (DataRow row in config_path_table.Rows)
                 {
                     dut_device.ConfigPath = this.m_default_config_folder.FullName;
-                    dut_device.Estimate = 255.0f;
+                    dut_device.Estimate = 300.0f;
                     if (row["Name"].ToString() == dut_device.Model)
                     {
                         dut_device.ConfigPath = row["Path"].ToString();
                         dut_device.Brand = row["Brand"].ToString();
-                        dut_device.Estimate = float.Parse(row["Estimate"].ToString());
+                        float estimate = 300.0f;
+                        float.TryParse(row["Estimate"].ToString(), out estimate);
+                        dut_device.Estimate = estimate;
                         break;
                     }
                 }
@@ -1546,7 +1548,7 @@ namespace MultiControl
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "IMEI:";
-          //  m_DeviceList[i].IsPrint = true;
+            //  m_DeviceList[i].IsPrint = true;
             // if (i<printI)
             // {
             //      printI = i;
@@ -2020,7 +2022,7 @@ namespace MultiControl
             }
         }
 
-  
+
 
 
         private void viewGlobalLogToolStripMenuItem_Click(object sender, EventArgs e)

@@ -37,6 +37,10 @@ namespace MultiControl.Views
 
         private void Login_Load(object sender, EventArgs e)
         {
+#if DEBUG
+            this.tb_operator.Text = "Ivan";
+            this.tb_purchase_no.Text = "12345";
+#endif
             if (Operator != null)
             {
                 this.tb_operator.Text = Operator["operator_name"].ToString();
