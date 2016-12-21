@@ -164,12 +164,6 @@
     </Compile>
     <Compile Include="Functions\DataReadingFactory.cs" />
     <Compile Include="Functions\DutDevice.cs" />
-    <Compile Include="Form1.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Form1.Designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
     <Compile Include="Functions\SDCardPathFactory.cs" />
     <Compile Include="Functions\SpecifiedConfigPathFactory.cs" />
     <Compile Include="Functions\UsbPortTree.cs" />
@@ -280,9 +274,6 @@
     <Compile Include="Views\VSTreeView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
     </EmbeddedResource>

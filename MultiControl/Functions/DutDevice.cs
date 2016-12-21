@@ -23,6 +23,7 @@ namespace MultiControl
         private string mBrand;
         private string mSDCard;
         private string mIMEI;
+        private string mIMEI2;
         private string mRAM;
         private string mFlashSize;
         private int mIndex;
@@ -128,7 +129,11 @@ namespace MultiControl
             get { return mIMEI; }
             set { mIMEI = value; }
         }
-
+        public string IMEI2
+        {
+            get { return mIMEI2; }
+            set { mIMEI2 = value; }
+        }
         public string BuildNumber//bonnie20160805
         {
             get { return mBuildNumber; }

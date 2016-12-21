@@ -59,7 +59,7 @@ namespace MultiControl.Common
 
         public static readonly string[] mFileHeader = {
                                            "PQAA_Version", "SN", "Brand", "Model", "Android_Version",
-                                           "IMEI", "Log_Time", "TestTime"
+                                           "IMEI1", "IMEI2", "Log_Time", "TestTime"
                                        };
 
         public static readonly string[] mFileTestItem = {

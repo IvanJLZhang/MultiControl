@@ -146,6 +146,7 @@ namespace MultiControl
                 return;
             }
             InitializeUI();
+            UsbDeviceNotifier.Enabled = true;
         }
 
         #region Initialize UI/data
@@ -312,7 +313,7 @@ namespace MultiControl
             m_adb = new CMDHelper();
             UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
             UsbDeviceNotifier.OnDeviceNotify += UsbDeviceNotifier_OnDeviceNotify;
-            UsbDeviceNotifier.Enabled = true;
+            UsbDeviceNotifier.Enabled = false;
 
             m_DeviceList = new List<DutDevice>(m_Rows * m_Cols);
             for (int index = 0; index < m_Rows * m_Cols; index++)
@@ -738,8 +739,6 @@ namespace MultiControl
                 Image x;
                x = Image.FromFile("E:\\捕获2.PNG");
                 e.Graphics.DrawImage(x, 20, 20);*/
-
-
             barcodeH = 8 * fontSize;
             barcodeW = 4 * fontSize;
             e.Graphics.DrawString(m_DeviceList[printI].PringString, font, bru, 0, 0);
@@ -802,6 +801,7 @@ namespace MultiControl
             cmd_str = $"adb -s {dut_device.SerialNumber} shell getprop ro.build.id";
             response = await m_adb.CMD_RunAsync(cmd_str);
             dut_device.BuildId = response.Trim();
+
 
             // 获取ConfigData 参数
             DataTable config_path_table = SpecifiedConfigPathFactory.Model_Table;
@@ -967,11 +967,11 @@ namespace MultiControl
                 common.m_log.Add_File("read device information from wInfo.txt.", log_file.FullName);
                 var wInfoList = await data_read.ReadwInfoFileData(local_wInfo_file, ThreadIndex + 1, local_wInfo_xml_file, sw);
                 DataRow row = data_read.Android_Report_Table.Rows[0];
-                dut_device.IMEI = wInfoList["IMEI"];
+                dut_device.IMEI = wInfoList["IMEI1"];
+                dut_device.IMEI2 = wInfoList["IMEI2"];
                 dut_device.RAM = wInfoList["RAM"];
                 dut_device.FLASH = wInfoList["Memory"];
                 dut_device.BuildNumber = wInfoList["BUILD_NUMBER"];
-                //if(wInfoList.ContainsKey())
                 File.Delete(local_wInfo_file);
                 if (m_enable_mysql)
                 {// 保存到dabase
@@ -1146,7 +1146,8 @@ namespace MultiControl
             newrow[3] = dut_device.Model;
             newrow[4] = dut_device.AndroidVersion;
             newrow[5] = dut_device.IMEI;
-            newrow[6] = logDateTime;
+            newrow[6] = dut_device.IMEI2;
+            newrow[7] = logDateTime;
 
             string[] result_array = File.ReadAllLines(result_file);
             double total_testtime = 0;
@@ -1289,7 +1290,7 @@ namespace MultiControl
             nStartCol = 1;
             foreach (DataColumn column in newrow.Table.Columns)
             {
-                if (column.Caption == "S/N" || column.Caption == "IMEI")
+                if (column.Caption == "S/N" || column.Caption == "IMEI1")
                 {
                     xlsApp.SetItemText(nStartRow, nStartCol, "'" + newrow[column.Caption].ToString());
                 }
@@ -1505,7 +1506,7 @@ namespace MultiControl
             string data = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
                 "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
-                "IMEI:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
+                "IMEI1:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:" + m_DeviceList[i].BuildNumber;//bonnie20160805
 
@@ -1514,7 +1515,7 @@ namespace MultiControl
                 "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
-                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "IMEI:";
+                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "IMEI1:";
             m_DeviceList[i].IsPrint = true;
             // if (i<printI)
             // {

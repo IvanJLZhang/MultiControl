@@ -88,5 +88,13 @@ namespace MultiControl.Views
             this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
+
+        private void Login_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btn_login_Click(null, null);
+            }
+        }
     }
 }
