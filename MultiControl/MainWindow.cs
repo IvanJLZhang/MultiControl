@@ -336,7 +336,7 @@ namespace MultiControl
             printI--;
             if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
             {
-                m_DeviceList[printI].IsPrint = true;
+             //   m_DeviceList[printI].IsPrint = true;
                this.printDocument1.Print();
 
             }
@@ -762,22 +762,22 @@ namespace MultiControl
                 Image x;
                x = Image.FromFile("E:\\捕获2.PNG");
                 e.Graphics.DrawImage(x, 20, 20);*/
-                if (m_DeviceList [printI].IsPrint)
-            {
+            //  
+            Image imagePrint;
+
                 barcodeH = 8 * fontSize;
                 barcodeW = 4 * fontSize;
+            if (m_DeviceList[printI].IMEI != null)
+            {
                 e.Graphics.DrawString(m_DeviceList[printI].PringString, font, bru, 0, 0);
-                image[printI] = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI, ForeColor, BackColor, 140, 35);
-                e.Graphics.DrawImage(image[printI], barcodeW, barcodeH);
-                int w = image[printI].Width - m_DeviceList[printI].IMEI.Length * 8;
-                e.Graphics.DrawString(m_DeviceList[printI].IMEI, font1, bru, w / 2 + barcodeW, barcodeH + image[printI].Height + 4);
-               
+                // image[printI] = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI, ForeColor, BackColor, 140, 35);
+                imagePrint = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI, ForeColor, BackColor, 140, 30);
+
+                e.Graphics.DrawImage(imagePrint, barcodeW, barcodeH);
+                int w = imagePrint.Width - m_DeviceList[printI].IMEI.Length * 8;
+                e.Graphics.DrawString(m_DeviceList[printI].IMEI, font1, bru, w / 2 + barcodeW, barcodeH + imagePrint.Height + 3);
             }
-
-           
-
-            //  e.Graphics.DrawImage(image, 20, 20);
-
+                                                 
         }
         #endregion
 
@@ -1543,7 +1543,7 @@ namespace MultiControl
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "IMEI:";
-            m_DeviceList[i].IsPrint = true;
+          //  m_DeviceList[i].IsPrint = true;
             // if (i<printI)
             // {
             //      printI = i;
