@@ -72,6 +72,8 @@ namespace MultiControl.Functions
             model_table.Columns.Add("Brand");
             model_table.Columns.Add("Path");
             model_table.Columns.Add("Estimate");
+            model_table.Columns["Estimate"].AllowDBNull = false;
+            model_table.Columns["Estimate"].DefaultValue = 255.0f;
             Specified_Config.Tables.Clear();
             Specified_Config.Tables.Add(model_table);
 

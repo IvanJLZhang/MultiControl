@@ -146,7 +146,7 @@ namespace MultiControl
                 this.Close();
                 return;
             }
-          
+
             InitializeUI();
             UsbDeviceNotifier.Enabled = true;
         }
@@ -199,7 +199,7 @@ namespace MultiControl
             }
             return m_bLicensed;
         }
-        
+
         async Task<bool> InitializeConfigData()
         {
             FolderBrowserDialog folder_dialog = new FolderBrowserDialog();
@@ -303,7 +303,7 @@ namespace MultiControl
             }
             return true;
         }
-       
+
         void InitializeVariable()
         {
             //清除残留的无用后台进程
@@ -318,8 +318,8 @@ namespace MultiControl
             m_DeviceList = new List<DutDevice>(m_Rows * m_Cols);
             for (int index = 0; index < m_Rows * m_Cols; index++)
             {
-                printLabToolStripMenuItem.DropDownItems.Add((index+1).ToString ());//20161215 bonnie动态添加打印项
-               
+                printLabToolStripMenuItem.DropDownItems.Add((index + 1).ToString());//20161215 bonnie动态添加打印项
+
                 DutDevice device = new DutDevice();
                 device.Reset();
                 m_DeviceList.Add(device);
@@ -333,15 +333,15 @@ namespace MultiControl
 
         private void PrintTest_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
-            int.TryParse(e.ClickedItem.Text ,out printI );
+            int.TryParse(e.ClickedItem.Text, out printI);
             printI--;
             if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
             {
-             //   m_DeviceList[printI].IsPrint = true;
-               this.printDocument1.Print();
+                //   m_DeviceList[printI].IsPrint = true;
+                this.printDocument1.Print();
 
             }
-               
+
             else
             {
                 MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
@@ -349,8 +349,8 @@ namespace MultiControl
 
             }
 
-           
-          
+
+
         }
 
         void InitializeUI()
@@ -752,11 +752,6 @@ namespace MultiControl
         int barcodeH = 0;
         int fontSize = 12;
         int printI = 0;
-        int imeistringH;
-        int barcode2W;
-        int barcode2H;
-        int imeisgring2H;
-        int w;
         private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
             Font font = new Font("黑体", fontSize, FontStyle.Bold);
@@ -771,31 +766,19 @@ namespace MultiControl
             //  
             Image imagePrint;
 
-                barcodeH = 8 * fontSize;
-                barcodeW = 5* fontSize;
-               
+            barcodeH = 8 * fontSize;
+            barcodeW = 4 * fontSize;
             if (m_DeviceList[printI].IMEI != null)
             {
                 e.Graphics.DrawString(m_DeviceList[printI].PringString, font, bru, 0, 0);
                 // image[printI] = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI, ForeColor, BackColor, 140, 35);
                 imagePrint = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI, ForeColor, BackColor, 140, 30);
-                e.Graphics.DrawImage(imagePrint, barcodeW, barcodeH);
-                w = imagePrint.Width - m_DeviceList[printI].IMEI.Length * 8;
-                imeistringH = barcodeH + imagePrint.Height + 3;
-                e.Graphics.DrawString(m_DeviceList[printI].IMEI, font1, bru, w / 2 + barcodeW, imeistringH);
-            }
-            if(m_DeviceList[printI].IMEI2 != "N/A"&& m_DeviceList[printI].IMEI2 !=null )
-            {
-                barcode2H = imeistringH +fontSize+4;
-                e.Graphics.DrawString("IMEI2:",font,bru,0, barcode2H);
-                Image image2;
-                image2= b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI2, ForeColor, BackColor, 140, 30);
-                e.Graphics.DrawImage(image2,barcodeW, barcode2H);
-                imeisgring2H = barcode2H + image2.Height + 3;
-                e.Graphics.DrawString(m_DeviceList[printI].IMEI2, font, bru, w / 2 + barcodeW, imeisgring2H);
 
+                e.Graphics.DrawImage(imagePrint, barcodeW, barcodeH);
+                int w = imagePrint.Width - m_DeviceList[printI].IMEI.Length * 8;
+                e.Graphics.DrawString(m_DeviceList[printI].IMEI, font1, bru, w / 2 + barcodeW, barcodeH + imagePrint.Height + 3);
             }
-                                                 
+
         }
         #endregion
 
@@ -855,19 +838,21 @@ namespace MultiControl
             if (config_path_table == null)
             {
                 dut_device.ConfigPath = this.m_default_config_folder.FullName;
-                dut_device.Estimate = 255.0f;
+                dut_device.Estimate = 300.0f;
             }
             else
             {
                 foreach (DataRow row in config_path_table.Rows)
                 {
                     dut_device.ConfigPath = this.m_default_config_folder.FullName;
-                    dut_device.Estimate = 255.0f;
+                    dut_device.Estimate = 300.0f;
                     if (row["Name"].ToString() == dut_device.Model)
                     {
                         dut_device.ConfigPath = row["Path"].ToString();
                         dut_device.Brand = row["Brand"].ToString();
-                        dut_device.Estimate = float.Parse(row["Estimate"].ToString());
+                        float estimate = 300.0f;
+                        float.TryParse(row["Estimate"].ToString(), out estimate);
+                        dut_device.Estimate = estimate;
                         break;
                     }
                 }
@@ -1531,8 +1516,9 @@ namespace MultiControl
                 m_DeviceList_UI[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
             }), new object[] { index });
         }
-        
-        
+        // string[] PringString=new string[24];
+        //  bool [] pringNO=new bool [24] ;
+        Image[] image = new Image[24];
         private void SetDutIMEI(object index)
         {
             int i = (int)index;
@@ -1562,7 +1548,7 @@ namespace MultiControl
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "IMEI:";
-          //  m_DeviceList[i].IsPrint = true;
+            //  m_DeviceList[i].IsPrint = true;
             // if (i<printI)
             // {
             //      printI = i;
@@ -2036,7 +2022,7 @@ namespace MultiControl
             }
         }
 
-  
+
 
 
         private void viewGlobalLogToolStripMenuItem_Click(object sender, EventArgs e)
