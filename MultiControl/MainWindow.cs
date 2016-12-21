@@ -752,6 +752,11 @@ namespace MultiControl
         int barcodeH = 0;
         int fontSize = 12;
         int printI = 0;
+        int imeistringH;
+        int barcode2W;
+        int barcode2H;
+        int imeisgring2H;
+        int w;
         private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
             Font font = new Font("黑体", fontSize, FontStyle.Bold);
@@ -767,16 +772,28 @@ namespace MultiControl
             Image imagePrint;
 
                 barcodeH = 8 * fontSize;
-                barcodeW = 4 * fontSize;
+                barcodeW = 5* fontSize;
+               
             if (m_DeviceList[printI].IMEI != null)
             {
                 e.Graphics.DrawString(m_DeviceList[printI].PringString, font, bru, 0, 0);
                 // image[printI] = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI, ForeColor, BackColor, 140, 35);
                 imagePrint = b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI, ForeColor, BackColor, 140, 30);
-
                 e.Graphics.DrawImage(imagePrint, barcodeW, barcodeH);
-                int w = imagePrint.Width - m_DeviceList[printI].IMEI.Length * 8;
-                e.Graphics.DrawString(m_DeviceList[printI].IMEI, font1, bru, w / 2 + barcodeW, barcodeH + imagePrint.Height + 3);
+                w = imagePrint.Width - m_DeviceList[printI].IMEI.Length * 8;
+                imeistringH = barcodeH + imagePrint.Height + 3;
+                e.Graphics.DrawString(m_DeviceList[printI].IMEI, font1, bru, w / 2 + barcodeW, imeistringH);
+            }
+            if(m_DeviceList[printI].IMEI2 != "N/A"&& m_DeviceList[printI].IMEI2 !=null )
+            {
+                barcode2H = imeistringH +fontSize+4;
+                e.Graphics.DrawString("IMEI2:",font,bru,0, barcode2H);
+                Image image2;
+                image2= b.Encode(BarcodeLib.TYPE.CODE128, m_DeviceList[printI].IMEI2, ForeColor, BackColor, 140, 30);
+                e.Graphics.DrawImage(image2,barcodeW, barcode2H);
+                imeisgring2H = barcode2H + image2.Height + 3;
+                e.Graphics.DrawString(m_DeviceList[printI].IMEI2, font, bru, w / 2 + barcodeW, imeisgring2H);
+
             }
                                                  
         }
@@ -1514,9 +1531,8 @@ namespace MultiControl
                 m_DeviceList_UI[i].BackgroundGradientMode = UserGridClassLibrary.GridItem.DutBoxGradientMode.Vertical;
             }), new object[] { index });
         }
-        // string[] PringString=new string[24];
-        //  bool [] pringNO=new bool [24] ;
-        Image[] image = new Image[24];
+        
+        
         private void SetDutIMEI(object index)
         {
             int i = (int)index;
