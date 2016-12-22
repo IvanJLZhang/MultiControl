@@ -25,6 +25,7 @@ using MultiControl.Common;
 using Helpers;
 using MultiControl.Views;
 using System.Diagnostics;
+using SMEConnector;
 
 namespace MultiControl.Functions
 {
@@ -218,6 +219,11 @@ namespace MultiControl.Functions
             ds_client = new DataSet("AndroidReport");
             ds_client.Tables.Add(this.Android_Report_Table);
             ds_client.WriteXml(data_path);
+
+            WebConnector webconnector = new WebConnector();
+            StringBuilder sb = new StringBuilder();
+            webconnector.GetSessionId();
+            webconnector.SendXml("sss", "sss", sb);
         }
 
         #region database methods

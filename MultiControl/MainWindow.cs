@@ -757,13 +757,13 @@ namespace MultiControl
         int barcode2H;
         int imeisgring2H;
         int w;
-      private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
+        private void printDocument1_PrintPage(object sender, System.Drawing.Printing.PrintPageEventArgs e)
         {
 
             Font font = new Font("黑体", fontSize, FontStyle.Bold);
             Font font1 = new Font("黑体", 10, FontStyle.Bold);
             Brush bru = Brushes.Black;
-          
+
             Image imagePrint;
             barcodeH = 8 * fontSize;
             barcodeW = 5 * fontSize;
@@ -984,6 +984,32 @@ namespace MultiControl
             response = await m_adb.CMD_RunAsync(cmd_str);
             common.m_log.Add_File(cmd_str, log_file.FullName);
             common.m_log.Add_File(response, log_file.FullName);
+            #region 加入start_test同步验证
+            string remote_start_test_file = remote_path + "start.test";
+            string local_start_test_file = log_model_date_path.FullName + $@"\start.test";
+            cmd_str = $"adb -s {dut_device.SerialNumber} pull {remote_start_test_file} \"{local_start_test_file}\"";
+            common.m_log.Add_File("wait for start.test command", log_file.FullName);
+            count = 0;
+#if DEBUG
+            dut_device.Estimate = 10;
+#endif
+            while (!File.Exists(local_start_test_file) && count < (int)dut_device.Estimate)
+            {
+                response = await m_adb.CMD_RunAsync(cmd_str);
+                await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
+                count++;
+            }
+            if (File.Exists(local_start_test_file))
+            {
+                File.Delete(local_start_test_file);
+            }
+            else
+            {
+                common.m_log.Add_File($"timeout, can not receive start.test command", log_file.FullName, MessageType.ERROR);
+                SetDutTestFinishInvoke($"{ThreadIndex}/0/0/FAIL");
+                return;
+            }
+            #endregion
             SetDutStartPQAAInvoke(ThreadIndex);
 
             string remote_wInfo_file = remote_path + "wInfo.txt";
@@ -1558,7 +1584,7 @@ namespace MultiControl
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "IMEI:";
-          
+
 
 
             image = qrCodeEncoder.Encode(data + BN);
