@@ -41,7 +41,7 @@ namespace MultiControl.Common
 
         public const int CMD_REPEAT_WAIT_TIME = 1000 * 1;
 
-        public const string PQAA_SW_VERSION = "V1.6.1";
+        public static string PQAA_SW_VERSION = "V1.6.1";
         /// <summary>
         /// 文件根目录
         /// </summary>
@@ -68,7 +68,7 @@ namespace MultiControl.Common
                                             "Wifi","RAM","OTG","GPS","NFC","SIM","Button","ReceiverLoopback",
                                             "LED","Audio","Brightness","ECompass","GSensor","GyroSensor",
                                             "LightSensor","ProximitySensor","Headset","MultiTouch","HallSensor",
-                                            "HDMI","BarometerSensor","ReceiverLoopback","LTE","IrDA","WirelessCharging"
+                                            "HDMI","BarometerSensor","LTE","IrDA","WirelessCharging"
                                          };
 
         public static readonly string[] mFileFooter = {

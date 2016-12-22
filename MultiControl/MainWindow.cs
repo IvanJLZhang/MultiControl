@@ -21,6 +21,7 @@ using MultiControl.Views;
 using ThoughtWorks.QRCode.Codec;
 using UserGridClassLibrary;
 using System.Drawing.Printing;
+using SMEConnector;
 
 namespace MultiControl
 {
@@ -103,6 +104,9 @@ namespace MultiControl
         public static bool m_enable_mysql = false;
 
         public static bool m_AndriodReport = false;
+
+        public static bool EnableServerME = false;
+
         #endregion
         public MainWindow()
         {
@@ -282,6 +286,16 @@ namespace MultiControl
             }
 
             Boolean.TryParse(iniFile.IniReadValue("main", "AndriodReport"), out m_AndriodReport);
+
+            // service ME
+            Boolean.TryParse(iniFile.IniReadValue("main", "EnableServerME"), out EnableServerME);
+            string sme_uname = iniFile.IniReadValue("EnableServerME", "username");
+            string sme_pwd = iniFile.IniReadValue("EnableServerME", "password");
+            if (sme_uname != String.Empty && sme_pwd != String.Empty)
+            {
+                WebConnector.UserName = sme_uname;
+                WebConnector.PWD = sme_pwd;
+            }
             #endregion
 
             // 加载/初始化 相关config data
@@ -1010,6 +1024,7 @@ namespace MultiControl
                 return;
             }
             #endregion
+            common.m_log.Add_File("Start PQAA test.", log_file.FullName);
             SetDutStartPQAAInvoke(ThreadIndex);
 
             string remote_wInfo_file = remote_path + "wInfo.txt";
@@ -1027,6 +1042,7 @@ namespace MultiControl
                 await Task.Delay(config_inc.CMD_REPEAT_WAIT_TIME);
                 count++;
             }
+            string record_id = String.Empty;
             if (File.Exists(local_wInfo_file))
             {
                 string local_wInfo_xml_file = log_model_date_path.FullName + $@"\{dut_device.SerialNumber}_wInfo.xml";
@@ -1040,17 +1056,24 @@ namespace MultiControl
                 dut_device.RAM = wInfoList["RAM"];
                 dut_device.FLASH = wInfoList["Memory"];
                 dut_device.BuildNumber = wInfoList["BUILD_NUMBER"];
+                config_inc.PQAA_SW_VERSION = wInfoList["PQAA_Version"];
                 File.Delete(local_wInfo_file);
                 if (m_enable_mysql)
                 {// 保存到dabase
-                    data_read.Insert_one_record_to_database();
+                    record_id = data_read.Insert_one_record_to_database();
                     common.m_log.Add_File("insert one dr-information to database.", log_file.FullName);
                 }
                 if (m_AndriodReport)
                 {
                     // 将info保存为xml文件
-                    data_read.Save(local_wInfo_xml_file);
+                    await data_read.Save(local_wInfo_xml_file);
                     common.m_log.Add_File($"save android report information to file: {local_wInfo_xml_file}.", log_file.FullName);
+                }
+                if (EnableServerME)
+                {// 上抛到SME
+                    common.m_log.Add_File("upload xml data to SME.", log_file.FullName);
+                    response = await data_read.UploadToSME(local_wInfo_xml_file);
+                    common.m_log.Add_File("upload xml data to SME:" + response, log_file.FullName);
                 }
             }
             else
@@ -1148,14 +1171,14 @@ namespace MultiControl
                 await Task.Delay(300);
                 common.m_log.Add_File($"Write result to log.", log_file.FullName);
                 // 保存测试结果
-                SaveResultToFile(local_result_file, ThreadIndex, log_file);
+                SaveResult(local_result_file, ThreadIndex, record_id, log_file);
                 common.m_log.Add_File($"Test Over.", log_file.FullName);
                 common.m_log.Add($"Thread:{ThreadIndex + 1}--Test Over.");
                 SetDutTestFinishInvoke(value);
                 #endregion
             }
         }
-        private int SaveResultToFile(string source, int index, FileInfo log_file)
+        private int SaveResult(string source, int index, string record_id, FileInfo log_file)
         {
             var dut_device = this.m_DeviceList[index];
             string log_date = DateTime.Now.ToString("yyyyMMdd");
@@ -1295,6 +1318,8 @@ namespace MultiControl
                     output_resultToXls(newrow, result_xls_file, log_file);
                 if (save_as_xml)
                     output_resultToXml(newrow, result_xml_file, log_file);
+                if (m_enable_mysql)
+                    output_resultToDB(newrow, record_id, log_file);
             }
             File.Delete(result_file);
             return 0;
@@ -1389,31 +1414,9 @@ namespace MultiControl
             {
                 DataSet ds = new DataSet("PQAA_Test_Rsult");
                 DataTable result_table = null;
-                if (xmlFile.Exists)
-                {
-                    ds.ReadXml(xmlFile.FullName);
-                    result_table = ds.Tables["Result"];
-
-                    DataTable table = result_table.Clone();
-
-                    for (int index = 0; index < table.Columns.Count; index++)
-                    {
-                        table.Columns[index].DataType = typeof(String);
-                    }
-                    foreach (DataRow row in result_table.Rows)
-                    {
-                        table.Rows.Add(row.ItemArray);
-                    }
-                    result_table = table;
-                }
-                else
-                {
-                    newrow.Table.TableName = "Result";
-                    result_table = newrow.Table.Clone();
-                }
+                newrow.Table.TableName = "Result";
+                result_table = newrow.Table.Clone();
                 result_table.Rows.Add(newrow.ItemArray);
-
-                ds = new DataSet("PQAA_Test_Rsult");
                 ds.Tables.Add(result_table);
                 ds.WriteXml(xmlFile.FullName);
             }
@@ -1425,6 +1428,32 @@ namespace MultiControl
             common.m_log.Add_File($"Save Result to file: {xmlFile.FullName}", log_file.FullName);
         }
 
+        private void output_resultToDB(DataRow newrow, string record_id, FileInfo log_file)
+        {
+            string insert = @"insert into db_android_dr.tbl_test_results( record_id ";
+            foreach (DataColumn col in newrow.Table.Columns)
+            {
+                insert += $", {col.ColumnName}";
+            }
+            insert += " ) Values ( @record_id ";
+            List<MySql.Data.MySqlClient.MySqlParameter> paralist = new List<MySql.Data.MySqlClient.MySqlParameter>();
+            paralist.Add(new MySql.Data.MySqlClient.MySqlParameter("@record_id", record_id));
+            foreach (DataColumn col in newrow.Table.Columns)
+            {
+                insert += $", @{col.ColumnName}";
+                paralist.Add(new MySql.Data.MySqlClient.MySqlParameter($"@{col.ColumnName}", newrow[col.ColumnName]));
+            }
+            insert += ");";
+            try
+            {
+                var ret = MySqlHelper.ExecuteNonQuery(MySqlHelper.ConnectionString, insert, paralist.ToArray());
+                common.m_log.Add_File("insert one test result into database.", log_file.FullName);
+            }
+            catch (Exception ex)
+            {
+                common.m_log.Add_File(ex.Message, log_file.FullName, MessageType.ERROR);
+            }
+        }
         #endregion
 
         #region 线程中更新UI

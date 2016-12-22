@@ -20,7 +20,8 @@ namespace SMEConnector
                 ((sender, certificate, chain, sslPolicyErrors) => true);
 
         }
-
+        public static string UserName { get; set; } = "WSFDI";
+        public static string PWD { get; set; } = "123";
         public void SendXml(string ssid, string strxml, StringBuilder result)
         {
             //string ssid = GetSessionId();
@@ -33,6 +34,7 @@ namespace SMEConnector
             {
                 //keep log
                 _log.Error("sendXML error", soapEx);
+                result.Append(soapEx.Message);
                 if (soapEx.Message.Contains("Session ID timeout or invalid."))
                 {
                     ssid = GetSessionId(); // get sessionId again
@@ -50,8 +52,8 @@ namespace SMEConnector
                 UserName = GetUserPwd("username"),
                 PassWord = GetUserPwd("password")
             };
-            input.UserName = "G_WSFDI";
-            input.PassWord = "123";
+            input.UserName = UserName;
+            input.PassWord = PWD;
             SMEServiceReferenceLogin.LoginOutput output = auth.Login(input);
 
             if (output.Success)
