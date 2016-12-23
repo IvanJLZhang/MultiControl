@@ -27,11 +27,11 @@ namespace MultiControl.Common
         /// <summary>
         /// tool版本号
         /// </summary>
-        public const string MULTICONTROL_VERSION = "V1.6.6";
+        public const string MULTICONTROL_VERSION = "V1.6.7";
         /// <summary>
         /// Build日期
         /// </summary>
-        public const string BUILD_DATE = "Build20161219";
+        public const string BUILD_DATE = "Build20161221";
 
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace MultiControl.Common
 
         public const int CMD_REPEAT_WAIT_TIME = 1000 * 1;
 
-        public const string PQAA_SW_VERSION = "V1.6.1";
+        public const string PQAA_SW_VERSION = "V1.6.2";
         /// <summary>
         /// 文件根目录
         /// </summary>

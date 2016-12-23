@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 using System.Collections;
 using System.Drawing.Drawing2D;
+using System.IO;
 
 namespace UserGridClassLibrary
 {
@@ -555,11 +556,20 @@ namespace UserGridClassLibrary
                     g.DrawString(Status, font, Brushes.Black, Rect.Left + 6 + 56, Rect.Top + 6 + 2);
                 }
                 //画进度条
+
                 Rectangle bar = new Rectangle(Rect.Left + 6, Rect.Top + 28, Rect.Width - 10, 14);
                 ProgressBar.Rect = bar;
                 g.SmoothingMode = SmoothingMode.Default;
                 ProgressBar.Draw(g);
                 g.SmoothingMode = SmoothingMode.AntiAlias;
+                /* Button but = new Button( );
+                 but.Text = "打印";
+                 but.Location = new Point(Rect.Width - 5,14);*/
+                string haarXmlPath = @"../../打印图标.png";
+
+                FileInfo file = new FileInfo(haarXmlPath);
+                string fullName = file.FullName;
+             
                 //画SN
                 if (!string.IsNullOrEmpty(SerialNumber))
                 {
@@ -605,6 +615,13 @@ namespace UserGridClassLibrary
                     g.DrawImageUnscaled(QRCode, bar);
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                 }
+
+
+                Image x = Image.FromFile(Application.StartupPath + "\\打印图标.png"); ;
+
+                g.SmoothingMode = SmoothingMode.None;
+                g.DrawImage(x, Rect.Right - 98, Rect.Top + 104);
+                g.SmoothingMode = SmoothingMode.AntiAlias;
             }
             else // disconnected - TESTING & FAIL
             {
