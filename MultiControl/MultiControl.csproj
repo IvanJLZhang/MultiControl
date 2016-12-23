@@ -400,6 +400,10 @@
       <Project>{ec5728d8-256f-45a7-bcee-174745b27c8a}</Project>
       <Name>EZUSB</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SMEConnector\SMEConnector.csproj">
+      <Project>{85e53693-6c3b-485c-88f9-dac173bf0a3c}</Project>
+      <Name>SMEConnector</Name>
+    </ProjectReference>
     <ProjectReference Include="..\UserGridClassLibrary\UserGridClassLibrary.csproj">
       <Project>{e179d716-9df4-4f52-82dd-2eaf2058e474}</Project>
       <Name>UserGridClassLibrary</Name>

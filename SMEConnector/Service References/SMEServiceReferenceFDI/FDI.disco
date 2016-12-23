@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="https://smeqas.wistron.com:449/PARTNER/FDI.asmx?wsdl" docRef="https://smeqas.wistron.com:449/PARTNER/FDI.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="https://smeqas.wistron.com:449/PARTNER/FDI.asmx" xmlns:q1="http://wistron.com/webservices/" binding="q1:FDISoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="https://smeqas.wistron.com:449/PARTNER/FDI.asmx" xmlns:q2="http://wistron.com/webservices/" binding="q2:FDISoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

@@ -25,6 +25,7 @@ using MultiControl.Common;
 using Helpers;
 using MultiControl.Views;
 using System.Diagnostics;
+using SMEConnector;
 
 namespace MultiControl.Functions
 {
@@ -213,18 +214,52 @@ namespace MultiControl.Functions
             _dr_items_table.Columns.Add("Battery ID");
             _dr_items_table.Columns.Add("Carrier Lock");
         }
-        public void Save(string data_path)
+        public async Task Save(string data_path)
         {
-            ds_client = new DataSet("AndroidReport");
+            ds_client = new DataSet("transactionReport");
             ds_client.Tables.Add(this.Android_Report_Table);
             ds_client.WriteXml(data_path);
+            string xmlStr = String.Empty;
+            using (StreamReader reader = new StreamReader(data_path))
+            {
+                xmlStr = await reader.ReadToEndAsync();
+                xmlStr = xmlStr.Replace("<Model>\r\n", "");
+                xmlStr = xmlStr.Replace("</Model>\r\n", "");
+            }
+            using (StreamWriter writer = new StreamWriter(data_path))
+            {
+                await writer.WriteAsync(xmlStr);
+            }
         }
-
+        /// <summary>
+        /// 上传到SME
+        /// </summary>
+        /// <param name="data_path"></param>
+        /// <returns></returns>
+        public async Task<string> UploadToSME(string data_path)
+        {
+            using (StreamReader reader = new StreamReader(data_path))
+            {
+                try
+                {
+                    string xmlStr = await reader.ReadToEndAsync();
+                    WebConnector webconnector = new WebConnector();
+                    StringBuilder sb = new StringBuilder();
+                    string session_id = webconnector.GetSessionId();
+                    webconnector.SendXml(session_id, xmlStr, sb);
+                    return sb.ToString();
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
+            }
+        }
         #region database methods
-        public void Insert_one_record_to_database()
+        public string Insert_one_record_to_database()
         {
             if (DR_Items_Table == null || DR_Items_Table.Rows.Count <= 0)
-                return;
+                return String.Empty;
             DataRow record = DR_Items_Table.Rows[0];
             string insert = @"
 INSERT INTO `db_android_dr`.`tbl_records` (`work_station_id`, `user_id`, `purchase_no_id`, `Site`, 
@@ -242,6 +277,7 @@ VALUES (@work_station_id, @user_id, @purchase_no_id, @Site, @PD_Version, @SN, @O
             try
             {
                 var ret = MySqlHelper.ExecuteNonQuery(MySqlHelper.ConnectionString, insert,
+                #region parameter
                      new MySql.Data.MySqlClient.MySqlParameter("@work_station_id", Login.Operator["work_station_id"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@user_id", Login.Operator["operator_id"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@purchase_no_id", Login.Operator["purchase_id"]),
@@ -278,11 +314,20 @@ VALUES (@work_station_id, @user_id, @purchase_no_id, @Site, @PD_Version, @SN, @O
                      new MySql.Data.MySqlClient.MySqlParameter("@BID", record["Battery ID"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@CL", record["Carrier Lock"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@TC", DateTime.Now)
+                #endregion
                      );
+
+                string query = @"
+select id from `db_android_dr`.`tbl_records` 
+where `Transaction ID` = @TID";
+                string id = MySqlHelper.ExecuteScalar(MySqlHelper.ConnectionString, query,
+                    new MySql.Data.MySqlClient.MySqlParameter("@TID", record["Transaction ID"])).ToString();
+                return id;
             }
             catch (Exception ex)
             {
                 common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
+                return String.Empty;
             }
         }
         #endregion

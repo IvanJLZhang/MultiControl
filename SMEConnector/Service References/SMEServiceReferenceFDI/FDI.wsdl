@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://wistron.com/webservices/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" targetNamespace="http://wistron.com/webservices/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://wistron.com/webservices/">
+      <s:element name="FdiIrT">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xmlStr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FdiIrTResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="FdiIrTResult" type="tns:FdiResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="FdiResult">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Result" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="FdiGreenT">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xmlStr" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FdiGreenTResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="FdiGreenTResult" type="tns:FdiResult" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="FdiIrTSoapIn">
+    <wsdl:part name="parameters" element="tns:FdiIrT" />
+  </wsdl:message>
+  <wsdl:message name="FdiIrTSoapOut">
+    <wsdl:part name="parameters" element="tns:FdiIrTResponse" />
+  </wsdl:message>
+  <wsdl:message name="FdiGreenTSoapIn">
+    <wsdl:part name="parameters" element="tns:FdiGreenT" />
+  </wsdl:message>
+  <wsdl:message name="FdiGreenTSoapOut">
+    <wsdl:part name="parameters" element="tns:FdiGreenTResponse" />
+  </wsdl:message>
+  <wsdl:portType name="FDISoap">
+    <wsdl:operation name="FdiIrT">
+      <wsdl:input message="tns:FdiIrTSoapIn" />
+      <wsdl:output message="tns:FdiIrTSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FdiGreenT">
+      <wsdl:input message="tns:FdiGreenTSoapIn" />
+      <wsdl:output message="tns:FdiGreenTSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="FDISoap" type="tns:FDISoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="FdiIrT">
+      <soap:operation soapAction="http://wistron.com/webservices/FdiIrT" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FdiGreenT">
+      <soap:operation soapAction="http://wistron.com/webservices/FdiGreenT" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="FDISoap12" type="tns:FDISoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="FdiIrT">
+      <soap12:operation soapAction="http://wistron.com/webservices/FdiIrT" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FdiGreenT">
+      <soap12:operation soapAction="http://wistron.com/webservices/FdiGreenT" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="FDI">
+    <wsdl:port name="FDISoap" binding="tns:FDISoap">
+      <soap:address location="https://smeqas.wistron.com:449/PARTNER/FDI.asmx" />
+    </wsdl:port>
+    <wsdl:port name="FDISoap12" binding="tns:FDISoap12">
+      <soap12:address location="https://smeqas.wistron.com:449/PARTNER/FDI.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
