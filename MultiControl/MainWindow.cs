@@ -1606,7 +1606,10 @@ namespace MultiControl
                 "IMEI1:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:" + m_DeviceList[i].BuildNumber;//bonnie20160805
-
+            if (m_DeviceList[i].IMEI2!="N/A"&& m_DeviceList[i].IMEI2!=null )
+            {
+                data = data + System.Environment.NewLine + "IMEI2:" + m_DeviceList[i].IMEI2;
+            }
             // pringNO[i]= true ;
             m_DeviceList[i].PringString = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
                 "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +

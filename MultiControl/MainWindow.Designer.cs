@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainWindow));
             this.ms_CommandBar = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,6 +64,7 @@
             this.printDocument1 = new System.Drawing.Printing.PrintDocument();
             this.printDialog1 = new System.Windows.Forms.PrintDialog();
             this.printPreviewDialog1 = new System.Windows.Forms.PrintPreviewDialog();
+            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.ms_CommandBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -328,6 +330,11 @@
             this.printPreviewDialog1.Name = "printPreviewDialog1";
             this.printPreviewDialog1.Visible = false;
             // 
+            // notifyIcon1
+            // 
+            this.notifyIcon1.Text = "notifyIcon1";
+            this.notifyIcon1.Visible = true;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -385,5 +392,6 @@
         private System.Windows.Forms.ToolStripMenuItem tsm_operator;
         private System.Windows.Forms.ToolStripMenuItem logoutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeOperatorToolStripMenuItem;
+        private System.Windows.Forms.NotifyIcon notifyIcon1;
     }
 }
