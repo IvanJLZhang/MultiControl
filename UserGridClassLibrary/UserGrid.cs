@@ -10,6 +10,7 @@ using System.Windows.Forms.Design;
 using System.Collections;
 using System.Drawing.Drawing2D;
 using System.IO;
+using System.Drawing.Printing;
 
 namespace UserGridClassLibrary
 {
@@ -20,10 +21,13 @@ namespace UserGridClassLibrary
         private int _value;
         private string _caption;
         private Rectangle _rect;
-
+        private Rectangle _printIocn;    //20161223 bonnie  
         public GridProgressBar()
         {
+           
         }
+
+        
 
         public int Min
         {
@@ -53,6 +57,12 @@ namespace UserGridClassLibrary
         {
             get { return _rect; }
             set { _rect = value; }
+        }
+
+        public Rectangle PrintIocn//20161323 bonnie
+        {
+            get { return _printIocn; }
+            set { _printIocn = value; }
         }
 
         public void Draw(Graphics g)
@@ -119,15 +129,18 @@ namespace UserGridClassLibrary
         private int _id;
         private string _name;
         private Rectangle _rect;
+        private Rectangle _printIocn;//bonnie
         private bool _connected;
         private bool _active;
         private bool _checked;
+        private bool _isPrint;//bonnie
         private bool _focus;
         private string _status;
         private string _serial;
         private string _imei;
         private string _model;
         private Image _qrCode;
+        private Image _PrintIocn;
         private GridProgressBar _progressBar = new GridProgressBar();
         //Additional Request
         private TestWay _testWay;
@@ -384,7 +397,11 @@ namespace UserGridClassLibrary
             get { return _active; }
             set { _active = value; }
         }
-
+        public bool Print
+        {
+            get { return _isPrint; }
+            set { _isPrint = value; }
+        }
         public bool Checked
         {
             get { return _checked; }
@@ -431,6 +448,17 @@ namespace UserGridClassLibrary
         {
             get { return _qrCode; }
             set { _qrCode = value; }
+        }
+        
+        public Image PrintIocnImage
+        {
+            get { return _PrintIocn; }
+            set { _PrintIocn = value; }
+        }
+        public Rectangle PrintIocn//20161223 bonnie
+        {
+            get { return _printIocn; }
+            set { _printIocn = value; }
         }
 
         public Rectangle Rect
@@ -565,6 +593,8 @@ namespace UserGridClassLibrary
                 /* Button but = new Button( );
                  but.Text = "打印";
                  but.Location = new Point(Rect.Width - 5,14);*/
+
+                //画打印图标 20161223 bonnie
                 string haarXmlPath = @"../../打印图标.png";
 
                 FileInfo file = new FileInfo(haarXmlPath);
@@ -616,12 +646,15 @@ namespace UserGridClassLibrary
                     g.SmoothingMode = SmoothingMode.AntiAlias;
                 }
 
-
-                Image x = Image.FromFile(Application.StartupPath + "\\打印图标.png"); ;
-
-                g.SmoothingMode = SmoothingMode.None;
-                g.DrawImage(x, Rect.Right - 98, Rect.Top + 104);
-                g.SmoothingMode = SmoothingMode.AntiAlias;
+                if(QRCode != null)
+                {
+                    PrintIocnImage=Image.FromFile(Application.StartupPath + "\\打印图标.png");
+                    g.SmoothingMode = SmoothingMode.None;
+                    g.DrawImage(PrintIocnImage, Rect.Right - 98, Rect.Top + 104);
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                }
+                
+                
             }
             else // disconnected - TESTING & FAIL
             {
@@ -1069,6 +1102,7 @@ namespace UserGridClassLibrary
                 int top = SidePadding + row * (ItemHeight + GridPadding);
                 Rectangle rect = new Rectangle(left, top, ItemWidth, ItemHeight);
                 item.Rect = rect;
+                item.PrintIocn = new Rectangle(item.Rect.Right  - 98,item.Rect.Top + 104,30,25);//20161223 bonnie
                 item.Draw(g);
                 column++;
                 if (column >= this.Column)
@@ -1122,15 +1156,23 @@ namespace UserGridClassLibrary
 
             return false;
         }
-
+        BarcodeLib.Barcode b = new BarcodeLib.Barcode();
         private bool OnHandleItemClicked(int x, int y)
         {
             int index = 0;
             foreach (GridItem item in GridItems)
             {
+                if(item.Active && item.PrintIocn.Contains (x,y))
+                {
+                    item.Print = true;
+                    
+                }
                 if (item.Active && item.Rect.Contains(x, y))
                 {
+                    
                     item.Checked = !item.Checked;
+                    
+                    
                     Invalidate(item.Rect);
                     if (OnGridItemChecked != null)
                     {
@@ -1330,7 +1372,7 @@ namespace UserGridClassLibrary
 
         public delegate void GridItemCheckedHandle(object sender, CheckedEventArgs e);
         public event GridItemCheckedHandle OnGridItemChecked;
-
+      //  public event PrintEventHandler p;
         public delegate void GridItemResetHandle(object sender, UserGridClassLibrary.GridItem.ResetEventArgs e);
         public event GridItemResetHandle OnGridItemReset;
 
