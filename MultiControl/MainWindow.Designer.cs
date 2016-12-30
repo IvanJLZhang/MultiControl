@@ -57,7 +57,6 @@
             this.addNewPQAAApkToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.removeAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.defaultToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.printLabToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.pageSetupDialog1 = new System.Windows.Forms.PageSetupDialog();
@@ -75,11 +74,10 @@
             this.fileToolStripMenuItem,
             this.configurationToolStripMenuItem,
             this.pQAAAPKToolStripMenuItem,
-            this.printLabToolStripMenuItem,
             this.aboutToolStripMenuItem});
             this.ms_CommandBar.Location = new System.Drawing.Point(0, 0);
             this.ms_CommandBar.Name = "ms_CommandBar";
-            this.ms_CommandBar.Size = new System.Drawing.Size(272, 25);
+            this.ms_CommandBar.Size = new System.Drawing.Size(201, 25);
             this.ms_CommandBar.TabIndex = 0;
             this.ms_CommandBar.Text = "menuStrip1";
             // 
@@ -288,12 +286,6 @@
             this.defaultToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.defaultToolStripMenuItem.Text = "&Default";
             // 
-            // printLabToolStripMenuItem
-            // 
-            this.printLabToolStripMenuItem.Name = "printLabToolStripMenuItem";
-            this.printLabToolStripMenuItem.Size = new System.Drawing.Size(71, 21);
-            this.printLabToolStripMenuItem.Text = "Print Lab";
-            // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
@@ -388,7 +380,6 @@
         private System.Drawing.Printing.PrintDocument printDocument1;
         private System.Windows.Forms.PrintDialog printDialog1;
         private System.Windows.Forms.PrintPreviewDialog printPreviewDialog1;
-        private System.Windows.Forms.ToolStripMenuItem printLabToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tsm_operator;
         private System.Windows.Forms.ToolStripMenuItem logoutToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem changeOperatorToolStripMenuItem;

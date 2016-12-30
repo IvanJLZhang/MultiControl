@@ -41,7 +41,6 @@ namespace MultiControl.Common
 
         public const int CMD_REPEAT_WAIT_TIME = 1000 * 1;
 
-        public const string PQAA_SW_VERSION = "V1.6.2";
         /// <summary>
         /// 文件根目录
         /// </summary>

@@ -22,6 +22,7 @@ using ThoughtWorks.QRCode.Codec;
 using UserGridClassLibrary;
 using System.Drawing.Printing;
 using SMEConnector;
+using System.Windows.Threading;
 
 namespace MultiControl
 {
@@ -43,6 +44,7 @@ namespace MultiControl
         /// <summary>
         /// 生成的机器md5 code
         /// </summary>
+       
         private string m_md5_code = String.Empty;
         /// <summary>
         /// 蒙板图层(用于实时显示机器测试进度信息)
@@ -93,6 +95,8 @@ namespace MultiControl
         public object lock_obj = new object();
 
         private DirectoryInfo m_apk_folder = new DirectoryInfo("./apks/");
+
+        DispatcherTimer PrintTimer = new DispatcherTimer();
         #endregion
 
         #region 全局静态变量
@@ -111,8 +115,54 @@ namespace MultiControl
         public MainWindow()
         {
             InitializeComponent();
+            PrintTimer.Interval = TimeSpan.FromMilliseconds(500);
+            PrintTimer.Tick += PrintTimer_Tick;
+            
+            
             this.Load += MainWindow_Load;
         }
+
+        private void PrintTimer_Tick(object sender, EventArgs e)//监听开始打印事件20161223 bonnie
+        {
+            PrintTimer.Stop();
+            int index = 0;
+            int x = 0;
+            foreach (UserGridClassLibrary.GridItem ctrl in m_DeviceList_UI)
+            {
+                x++;
+                if (ctrl.Print)
+                {
+                    index++;
+                    printI = x-1;
+                    if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
+                    {
+                        //   m_DeviceList[printI].IsPrint = true;
+                        this.printDocument1.Print();
+
+                    }
+
+                    else
+                    {
+                        MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+                        ctrl.Print = false;
+                        index = 0;
+
+                    }
+                }
+                
+            }
+            if(index==0)
+            {
+                PrintTimer.Start();
+            }
+           /* if (m_DeviceList_UI[2]!=null)
+            {
+                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+            }*/
+        }
+
         BarcodeLib.Barcode b = new BarcodeLib.Barcode();
         private async void MainWindow_Load(object sender, EventArgs e)
         {
@@ -153,6 +203,7 @@ namespace MultiControl
 
             InitializeUI();
             UsbDeviceNotifier.Enabled = true;
+            PrintTimer.Start();// bonnie20161223
         }
 
         #region Initialize UI/data
@@ -328,11 +379,11 @@ namespace MultiControl
             UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
             UsbDeviceNotifier.OnDeviceNotify += UsbDeviceNotifier_OnDeviceNotify;
             UsbDeviceNotifier.Enabled = false;
-            printLabToolStripMenuItem.DropDownItemClicked += PrintTest_DropDownItemClicked;
+           // printLabToolStripMenuItem.DropDownItemClicked += PrintTest_DropDownItemClicked;//bonnie 子菜单点击事件
             m_DeviceList = new List<DutDevice>(m_Rows * m_Cols);
             for (int index = 0; index < m_Rows * m_Cols; index++)
             {
-                printLabToolStripMenuItem.DropDownItems.Add((index + 1).ToString());//20161215 bonnie动态添加打印项
+               // printLabToolStripMenuItem.DropDownItems.Add((index + 1).ToString());//20161215 bonnie动态添加打印项
 
                 DutDevice device = new DutDevice();
                 device.Reset();
@@ -345,7 +396,7 @@ namespace MultiControl
             FinishUpdate += MainWindow_FinishUpdate;
         }
 
-        private void PrintTest_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        private void PrintTest_DropDownItemClicked(object sender, ToolStripItemClickedEventArgs e)//bonnie 打印子菜单点击事件
         {
             int.TryParse(e.ClickedItem.Text, out printI);
             printI--;
@@ -380,7 +431,6 @@ namespace MultiControl
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Text = $"Multi-Control Test Tool——{config_inc.MULTICONTROL_VERSION} {config_inc.BUILD_DATE}";
             this.Resize += MainWindow_Resize;
-
             m_DeviceList_UI = new UserGrid();
             m_DeviceList_UI.Location = new Point(20, 30);
             m_DeviceList_UI.Width = this.Width - 64;
@@ -802,7 +852,8 @@ namespace MultiControl
                 imeisgring2H = barcode2H + image2.Height + 3;
                 e.Graphics.DrawString(m_DeviceList[printI].IMEI2, font, bru, w / 2 + barcodeW, imeisgring2H);
             }
-
+            m_DeviceList_UI[printI].Print = false;
+            PrintTimer.Start();
         }
         #endregion
 
@@ -1056,7 +1107,8 @@ namespace MultiControl
                 dut_device.RAM = wInfoList["RAM"];
                 dut_device.FLASH = wInfoList["Memory"];
                 dut_device.BuildNumber = wInfoList["BUILD_NUMBER"];
-                config_inc.PQAA_SW_VERSION = wInfoList["PQAA_Version"];
+                dut_device.PQAA_Version = wInfoList["PQAA_Version"];
+              
                 File.Delete(local_wInfo_file);
                 if (m_enable_mysql)
                 {// 保存到dabase
@@ -1231,7 +1283,7 @@ namespace MultiControl
                 newrow[col.Caption] = "N/A";// 默认设为N/A
             }
             // 纪录设备信息
-            newrow[0] = config_inc.PQAA_SW_VERSION;
+            newrow[0] = dut_device.PQAA_Version;
             newrow[1] = dut_device.SerialNumber;
             newrow[2] = dut_device.Brand;
             newrow[3] = dut_device.Model;
@@ -1599,7 +1651,7 @@ namespace MultiControl
             qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.M;
 
             Image image;
-            string BN = m_DeviceList[i].BuildNumber;
+          
             string data = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
                 "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
@@ -1608,7 +1660,14 @@ namespace MultiControl
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:" + m_DeviceList[i].BuildNumber;//bonnie20160805
             if (m_DeviceList[i].IMEI2!="N/A"&& m_DeviceList[i].IMEI2!=null )
             {
-                data = data + System.Environment.NewLine + "IMEI2:" + m_DeviceList[i].IMEI2;
+               
+                data = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
+                "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
+                "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
+                "IMEI1:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
+                "IMEI2:" + m_DeviceList[i].IMEI2.ToUpper() + System.Environment.NewLine +
+                "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
+                "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:" + m_DeviceList[i].BuildNumber;//bonnie20160805
             }
             // pringNO[i]= true ;
             m_DeviceList[i].PringString = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
@@ -1619,7 +1678,7 @@ namespace MultiControl
 
 
 
-            image = qrCodeEncoder.Encode(data + BN);
+            image = qrCodeEncoder.Encode(data);
             m_DeviceList_UI[i].SetQRCode_IMEI(image);
         }
 
