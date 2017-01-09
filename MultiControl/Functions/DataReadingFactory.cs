@@ -91,8 +91,13 @@ namespace MultiControl.Functions
             if (wInfoList.Count <= 0)
                 return null;
 
+            var imei_list = filter_imei_list(wInfoList["IMEI"]);
             #region xml_table
             DataTable android_report = Android_Report_Table;
+            for (int index = 0; index < imei_list.Count; index++)
+            {
+                android_report.Columns.Add($"IMEI{index + 1}");
+            }
             DataRow newrow = android_report.NewRow();
             foreach (DataColumn item in android_report.Columns)
             {
@@ -101,6 +106,10 @@ namespace MultiControl.Functions
                 {
                     newrow[item.ColumnName] = wInfoList[item.ColumnName];
                 }
+            }
+            for (int index = 0; index < imei_list.Count; index++)
+            {
+                newrow[$"IMEI{index + 1}"] = imei_list[index];
             }
             newrow["RESULT"] = TEST_RESULT.PASS.ToString();
             newrow["SOFTWARE_VER"] = config_inc.MULTICONTROL_VERSION;
@@ -149,8 +158,6 @@ namespace MultiControl.Functions
             _android_Report_Table.Columns.Add("MEID_hex");
             _android_Report_Table.Columns.Add("MEID_dec");
             _android_Report_Table.Columns.Add("MEIDwithCheckDigit");
-            _android_Report_Table.Columns.Add("IMEI1");
-            _android_Report_Table.Columns.Add("IMEI2");
             _android_Report_Table.Columns.Add("RESULT");
             _android_Report_Table.Columns.Add("ERRORLIST");
             _android_Report_Table.Columns.Add("SOFTWARE_VER");
@@ -199,8 +206,7 @@ namespace MultiControl.Functions
             _dr_items_table.Columns.Add("LocalTime");
             _dr_items_table.Columns.Add("TimeCreated");
             _dr_items_table.Columns.Add("Company");
-            _dr_items_table.Columns.Add("IMEI1");
-            _dr_items_table.Columns.Add("IMEI2");
+            _dr_items_table.Columns.Add("IMEI");
             _dr_items_table.Columns.Add("MEID");
             _dr_items_table.Columns.Add("Make");
             _dr_items_table.Columns.Add("Model Number");
@@ -265,13 +271,13 @@ namespace MultiControl.Functions
 INSERT INTO `db_android_dr`.`tbl_records` (`work_station_id`, `user_id`, `purchase_no_id`, `Site`, 
 `Product Version`, `Serial Number`, `OS`, `Transaction ID`, `Error Code`, `Model`, `Port Number`, 
 `Server Time`, `LocalTime`, `Total time`, 
-`MacAddress`, `Jailbroken`, `UDID`, `SIMExist`, `LastCarrier`, `DefaultCarrier`, `Company`, `IMEI1`, 
-`MEID`, `IMEI2`, 
+`MacAddress`, `Jailbroken`, `UDID`, `SIMExist`, `LastCarrier`, `DefaultCarrier`, `Company`, `IMEI`, 
+`MEID`, 
 `Make`, `Model Number`, `Memory Size`, `batteryLevel`, `color`, `SaveXmlPath`, `RegulatoryModelNumber`, 
 `Battery Charge Cycle`, `Mainboard Serial Number`, `Battery ID`, `Carrier Lock`, `TimeCreated`) 
 VALUES (@work_station_id, @user_id, @purchase_no_id, @Site, @PD_Version, @SN, @OS, @T_ID, 
 @EC, @Model, @PN, @ST, @LT, @TT, @MA, @J, @UUID, @SIMExist, @LastCarrier, @DefaultCarrier,
-@Company, @IMEI1, @MEID, @IMEI2, @Make, @MN, @MS, @BL, @Color, @SaveXmlPath, @RMN, @BCC, @MSN, @BID, @CL, @TC);
+@Company, @IMEI, @MEID, @Make, @MN, @MS, @BL, @Color, @SaveXmlPath, @RMN, @BCC, @MSN, @BID, @CL, @TC);
 ";
 
             try
@@ -299,8 +305,7 @@ VALUES (@work_station_id, @user_id, @purchase_no_id, @Site, @PD_Version, @SN, @O
                      new MySql.Data.MySqlClient.MySqlParameter("@LastCarrier", record["LastCarrier"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@DefaultCarrier", record["DefaultCarrier"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@Company", record["Company"]),
-                     new MySql.Data.MySqlClient.MySqlParameter("@IMEI1", record["IMEI1"]),
-                     new MySql.Data.MySqlClient.MySqlParameter("@IMEI2", record["IMEI2"]),
+                     new MySql.Data.MySqlClient.MySqlParameter("@IMEI", record["IMEI"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@MEID", record["MEID"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@Make", record["Make"]),
                      new MySql.Data.MySqlClient.MySqlParameter("@MN", record["Model Number"]),
@@ -329,6 +334,22 @@ where `Transaction ID` = @TID";
                 common.m_log.Add(ex.Message, LogHelper.MessageType.ERROR);
                 return String.Empty;
             }
+        }
+        #endregion
+
+        #region common methods
+        public static List<string> filter_imei_list(string imeis_string)
+        {
+            List<string> imei_list = new List<string>();
+            if (imeis_string == String.Empty)
+                return imei_list;
+            string[] imei_array = imeis_string.Split(';');
+            foreach (var item in imei_array)
+            {
+                if (item != string.Empty)
+                    imei_list.Add(item);
+            }
+            return imei_list;
         }
         #endregion
     }

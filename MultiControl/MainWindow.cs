@@ -44,7 +44,7 @@ namespace MultiControl
         /// <summary>
         /// 生成的机器md5 code
         /// </summary>
-       
+
         private string m_md5_code = String.Empty;
         /// <summary>
         /// 蒙板图层(用于实时显示机器测试进度信息)
@@ -117,8 +117,8 @@ namespace MultiControl
             InitializeComponent();
             PrintTimer.Interval = TimeSpan.FromMilliseconds(500);
             PrintTimer.Tick += PrintTimer_Tick;
-            
-            
+
+
             this.Load += MainWindow_Load;
         }
 
@@ -133,7 +133,7 @@ namespace MultiControl
                 if (ctrl.Print)
                 {
                     index++;
-                    printI = x-1;
+                    printI = x - 1;
                     if (m_DeviceList[printI].IMEI != null && m_DeviceList[printI].IMEI != "" && m_DeviceList_UI[printI].Connected)
                     {
                         //   m_DeviceList[printI].IsPrint = true;
@@ -150,17 +150,17 @@ namespace MultiControl
 
                     }
                 }
-                
+
             }
-            if(index==0)
+            if (index == 0)
             {
                 PrintTimer.Start();
             }
-           /* if (m_DeviceList_UI[2]!=null)
-            {
-                MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
-                MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
-            }*/
+            /* if (m_DeviceList_UI[2]!=null)
+             {
+                 MessageBox.Show("This port no device or not ready to get information", "Print Lab", MessageBoxButtons.OK,
+                 MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1);
+             }*/
         }
 
         BarcodeLib.Barcode b = new BarcodeLib.Barcode();
@@ -379,11 +379,11 @@ namespace MultiControl
             UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
             UsbDeviceNotifier.OnDeviceNotify += UsbDeviceNotifier_OnDeviceNotify;
             UsbDeviceNotifier.Enabled = false;
-           // printLabToolStripMenuItem.DropDownItemClicked += PrintTest_DropDownItemClicked;//bonnie 子菜单点击事件
+            // printLabToolStripMenuItem.DropDownItemClicked += PrintTest_DropDownItemClicked;//bonnie 子菜单点击事件
             m_DeviceList = new List<DutDevice>(m_Rows * m_Cols);
             for (int index = 0; index < m_Rows * m_Cols; index++)
             {
-               // printLabToolStripMenuItem.DropDownItems.Add((index + 1).ToString());//20161215 bonnie动态添加打印项
+                // printLabToolStripMenuItem.DropDownItems.Add((index + 1).ToString());//20161215 bonnie动态添加打印项
 
                 DutDevice device = new DutDevice();
                 device.Reset();
@@ -1101,14 +1101,11 @@ namespace MultiControl
 
                 common.m_log.Add_File("read device information from wInfo.txt.", log_file.FullName);
                 var wInfoList = await data_read.ReadwInfoFileData(local_wInfo_file, ThreadIndex + 1, local_wInfo_xml_file, sw);
-                DataRow row = data_read.Android_Report_Table.Rows[0];
-                dut_device.IMEI = wInfoList["IMEI1"];
-                dut_device.IMEI2 = wInfoList["IMEI2"];
                 dut_device.RAM = wInfoList["RAM"];
                 dut_device.FLASH = wInfoList["Memory"];
                 dut_device.BuildNumber = wInfoList["BUILD_NUMBER"];
                 dut_device.PQAA_Version = wInfoList["PQAA_Version"];
-              
+                dut_device.IMEIList = DataReadingFactory.filter_imei_list(wInfoList["IMEI"]);
                 File.Delete(local_wInfo_file);
                 if (m_enable_mysql)
                 {// 保存到dabase
@@ -1651,16 +1648,16 @@ namespace MultiControl
             qrCodeEncoder.QRCodeErrorCorrect = QRCodeEncoder.ERROR_CORRECTION.M;
 
             Image image;
-          
+
             string data = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
                 "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +
                 "IMEI1:" + m_DeviceList[i].IMEI.ToUpper() + System.Environment.NewLine +
                 "Memory:" + m_DeviceList[i].RAM + System.Environment.NewLine +
                 "Flash:" + m_DeviceList[i].FLASH + System.Environment.NewLine + "BuildNumber:" + m_DeviceList[i].BuildNumber;//bonnie20160805
-            if (m_DeviceList[i].IMEI2!="N/A"&& m_DeviceList[i].IMEI2!=null )
+            if (m_DeviceList[i].IMEI2 != "N/A" && m_DeviceList[i].IMEI2 != null)
             {
-               
+
                 data = "Model:" + m_DeviceList[i].Model + System.Environment.NewLine +
                 "OS Version:" + m_DeviceList[i].AndroidVersion + System.Environment.NewLine +
                 "SN:" + m_DeviceList[i].SerialNumber.ToUpper() + System.Environment.NewLine +

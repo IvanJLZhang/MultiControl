@@ -69,18 +69,18 @@ namespace MultiControl
             get { return bExitRunningThread; }
             set { bExitRunningThread = value; }
         }
-        private  bool isPrint;
+        private bool isPrint;
         private string printString;
-  
+
         public string PringString
         {
             get { return printString; }
-            set { printString = value ; }
+            set { printString = value; }
         }
         public bool IsPrint
         {
             get { return isPrint; }
-            set { isPrint = value ; }
+            set { isPrint = value; }
         }
         public bool Connected
         {
@@ -126,14 +126,22 @@ namespace MultiControl
 
         public string IMEI
         {
-            get { return mIMEI; }
-            set { mIMEI = value; }
+            get
+            {
+                if (IMEIList != null && IMEIList.Count > 0)
+                {
+                    return IMEIList[0];
+                }
+                return String.Empty;
+            }
         }
         public string IMEI2
         {
             get { return mIMEI2; }
             set { mIMEI2 = value; }
         }
+
+        public List<string> IMEIList;
         public string BuildNumber//bonnie20160805
         {
             get { return mBuildNumber; }
@@ -193,7 +201,8 @@ namespace MultiControl
             SerialNumber = string.Empty;
             Model = string.Empty;
             Connected = false;
-            IMEI = string.Empty;
+            //IMEI = string.Empty;
+            IMEIList = new List<string>();
             BuildNumber = string.Empty;//bonnie20160805
             RAM = string.Empty;
             FLASH = string.Empty;
