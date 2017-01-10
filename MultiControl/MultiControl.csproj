@@ -365,7 +365,9 @@
     <Content Include="config\ConfigData.xml" />
     <Content Include="config\ConfigPath.xml" />
     <Content Include="config\PortToIndex.xml" />
-    <Content Include="pictures\打印图标.png" />
+    <Content Include="pictures\打印图标.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="www.ico.la_69211777f60b1fe2613ebedb505b393a_128X128.ico" />
   </ItemGroup>
   <ItemGroup>
